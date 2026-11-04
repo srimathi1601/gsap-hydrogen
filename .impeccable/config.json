@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-11-04T05:01:46.401Z",
+        "reason": "Pre-existing Google Fonts Inter link from the Hydrogen scaffold in app/root.jsx"
+      }
+    ]
+  }
+}

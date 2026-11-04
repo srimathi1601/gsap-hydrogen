@@ -1,0 +1,31 @@
+/**
+ * ProductGalleryBuybox
+ *
+ * Source: prototype/index.html — <section class="static"> with
+ *   img/gallery-buybox.jpg (1920×3424)
+ * Asset: public/images/product-gallery-buybox/gallery-buybox.jpg
+ *
+ * No animation — the prototype gives this slab no `.rv` class.
+ *
+ * TODO: build as real markup later — flat screenshot, no selectable text.
+ */
+
+import styles from './ProductGalleryBuybox.module.css';
+
+export function ProductGalleryBuybox() {
+  return (
+    <section className={styles.section} id="top">
+      <img
+        className={styles.image}
+        src="/images/product-gallery-buybox/gallery-buybox.jpg"
+        alt="sTread Pro – Galerie und Kaufbox"
+        width="1920"
+        height="3424"
+        loading="eager"
+        decoding="async"
+      />
+    </section>
+  );
+}
+
+export default ProductGalleryBuybox;

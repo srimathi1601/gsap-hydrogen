@@ -1,0 +1,38 @@
+/**
+ * Reviews
+ *
+ * Source: prototype/index.html — <section class="static rv"> with
+ *   img/reviews.jpg (1920×2663)
+ * Asset: public/images/reviews/reviews.jpg
+ *
+ * Animation: shared `.rv` reveal — y 60 → 0, opacity 0 → 1, 1s power3.out,
+ *   ScrollTrigger start "top 88%". No scrub and no toggleActions, so it
+ *   plays once and does not reverse. SOURCE: prototype/js/app.js
+ *
+ * TODO: build as real markup later — flat screenshot, no selectable text.
+ */
+
+import {useRef} from 'react';
+import {useRevealOnScroll} from '~/lib/useRevealOnScroll';
+import styles from './Reviews.module.css';
+
+export function Reviews() {
+  const ref = useRef(null);
+  useRevealOnScroll(ref);
+
+  return (
+    <section ref={ref} className={styles.section} id="reviews">
+      <img
+        className={styles.image}
+        src="/images/reviews/reviews.jpg"
+        alt="Bewertungen"
+        width="1920"
+        height="2663"
+        loading="lazy"
+        decoding="async"
+      />
+    </section>
+  );
+}
+
+export default Reviews;

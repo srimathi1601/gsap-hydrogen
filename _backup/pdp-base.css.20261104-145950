@@ -1,0 +1,100 @@
+/**
+ * pdp-base.css — neutralises the Hydrogen scaffold's base styles for the
+ * full-bleed PDP tree.
+ *
+ * The scaffold ships element-level rules that assume a narrow, gutter-ed
+ * document. The PDP is a full-bleed, pinned-scroll page, so four of them
+ * actively break it:
+ *
+ *   reset.css:81  body > main { margin: 0 1rem 1rem 1rem }
+ *                 -> no section can reach the viewport edge
+ *   reset.css:85  section { padding: 1rem 0 → 2rem 0 }
+ *                 -> white gaps between sections, and the pinned sections'
+ *                    `height: calc(100svh + travel)` box no longer matches
+ *                    the sticky child's travel
+ *   reset.css:126 li { margin-bottom: 0.5rem }
+ *                 -> gallery slides, USP/spec/footer lists
+ *   app.css:11    img { border-radius: 4px }
+ *                 -> rounds the gallery stage and thumbnails
+ *
+ * SPECIFICITY, deliberately:
+ *   `:where(.home)` contributes 0, so every rule below stays at plain
+ *   element specificity (0,0,1). It therefore ties with the scaffold rule
+ *   it is cancelling — and this sheet is linked AFTER reset.css and
+ *   app.css in app/root.jsx, so it wins — while still LOSING to every
+ *   section's own CSS Module class (0,1,0). Nothing here can override a
+ *   section's intentional padding, margin or radius.
+ *
+ *   The one exception is the `<main>` gutter, which lives outside the
+ *   section tree: `body > main:has(> .home)` is (0,1,2) and beats
+ *   `body > main` (0,0,2) outright. Scoped with :has() so the other
+ *   scaffold routes keep their gutter.
+ */
+
+/* The pinned sections lay out a fixed 1920px stage and scale it with a
+   transform, so their LAYOUT width stays 1920px. Each stage is clipped by
+   its own `overflow: hidden` sticky wrapper, but this is the same belt-and
+   -braces guard the prototype uses (prototype/css/site.css:2) against a
+   stray horizontal scrollbar. `clip` rather than `hidden`: it does not
+   create a scroll container, so position:sticky keeps working. */
+html:has(> body > main > .home),
+body:has(> main > .home) {
+  overflow-x: clip;
+}
+
+/* Full-bleed: the PDP sections manage their own horizontal padding via
+   their `.inner` wrappers. */
+body > main:has(> .home) {
+  margin: 0;
+}
+
+:where(.home) {
+  width: 100%;
+}
+
+/* Sections own their vertical rhythm. */
+:where(.home) section {
+  padding: 0;
+}
+
+/* Lists are layout here (carousel track, USP grid, spec grid, footer
+   columns), not prose. */
+:where(.home) li {
+  margin-bottom: 0;
+}
+
+/* Images are either full-bleed inside a rounded parent or carry their own
+   radius from the node data. */
+:where(.home) img {
+  border-radius: 0;
+}
+
+/* The scaffold's prose defaults fight the Figma type scale. Each section's
+   module sets the real values; these just stop the defaults leaking into
+   any element a module does not explicitly size. */
+:where(.home) h1,
+:where(.home) h2,
+:where(.home) h3,
+:where(.home) h4 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+:where(.home) p {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+:where(.home) a {
+  color: inherit;
+}
+
+/* The scaffold's drawers (cart / search / mobile menu) sit at z-index:10
+   (app.css:168). This page's chrome is higher — sub-nav 20, header 30,
+   promo 31, sticky buy bar 100 — so without this an open drawer would be
+   covered by them. Same selector as app.css, linked later, so it wins. */
+.overlay {
+  z-index: 200;
+}

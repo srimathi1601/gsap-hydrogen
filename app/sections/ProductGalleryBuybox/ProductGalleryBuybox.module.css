@@ -1,0 +1,1355 @@
+/**
+ * ProductGalleryBuybox.module.css
+ *
+ * Source: prototype/js/sections.js -> SECTIONS.dtop
+ *           /PDP – gallery + buy box  (249 nodes, 1920 x 3113 at y 216)
+ *             Frame 3 = gallery  [150, 71, 924, 1257]
+ *             Frame 4 = buy box  [1129, 73, 688, 2911]
+ *         prototype/index.html:9-23 -> the mobile markup
+ *         prototype/js/app.js:45-57 -> gallery, toggles
+ *
+ * MODEL: approved Q1b - hand-written semantic responsive flow. The node
+ * coordinates are the spec; type sizes, colours, radii, ring widths and
+ * spacings are verbatim, the LAYOUT is CSS grid/flex so it reflows.
+ *
+ * STICKY GALLERY: approved Q4 - a genuine `position: sticky` column.
+ * prototype/js/app.js:59-66 recomputes translateY + scale on every scroll
+ * frame with hard-coded constants (1440/1667, 3113, 1257, 216, 145, 71, 60)
+ * ONLY because its stage sits inside a CSS transform, where native sticky
+ * cannot work. That hack is deliberately not reproduced.
+ *
+ * Grid: 924 / 55 / 688 = the exact Frame 3 : gap : Frame 4 ratio.
+ */
+
+.section {
+  /* Surfaces */
+  --pg-bg: rgba(255, 255, 255, 1);
+  --pg-surface: rgba(248, 248, 248, 1);
+  --pg-surface-warm: rgba(247, 244, 239, 1);
+  --pg-gallery-bg: rgba(249, 249, 248, 1);
+  --pg-ring: rgba(234, 234, 234, 1);
+  --pg-ring-strong: rgba(31, 31, 31, 1);
+  --pg-tile: rgba(239, 235, 226, 1);
+
+  /* Ink */
+  --pg-ink: rgba(31, 31, 31, 1);
+  --pg-ink-body: rgba(58, 58, 58, 1);
+  --pg-ink-mid: rgba(74, 74, 74, 1);
+  --pg-ink-muted: rgba(107, 107, 107, 1);
+  --pg-ink-faint: rgba(155, 152, 145, 1);
+
+  /* Accents */
+  --pg-save-bg: rgba(220, 231, 253, 1);
+  --pg-save-ink: rgba(30, 95, 216, 1);
+  --pg-free: rgba(31, 122, 85, 1);
+  --pg-total-grad: linear-gradient(
+    90deg,
+    rgba(43, 70, 137, 1) 0%,
+    rgba(27, 45, 99, 1) 100%
+  );
+  --pg-total-save: rgba(143, 220, 201, 1);
+  --pg-total-dim: rgba(201, 210, 234, 1);
+  --pg-cart-bg: rgba(244, 241, 232, 1);
+  --pg-3d-bg: rgba(20, 37, 77, 1);
+  --pg-counter-bg: rgba(94, 94, 94, 1);
+
+  /* Type — TODO: swap to Söhne */
+  --pg-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  /* The sticky product bar is 71px tall; park the gallery just below it. */
+  --pg-sticky-top: 87px;
+
+  display: block;
+  background: var(--pg-bg);
+  font-family: var(--pg-font); /* TODO: swap to Söhne */
+  color: var(--pg-ink);
+  /* Explicit top value too — reset.css:85 pads every <section> by 2rem. */
+  padding: 0 0 96px;
+}
+
+.inner {
+  max-width: 1667px; /* 924 + 55 + 688 */
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Breadcrumb — /PDP – gallery + buy box, y 19, 15.9px / 400 */
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 19px 0 32px;
+  font-size: 15.9px;
+  line-height: 20.26px;
+  color: var(--pg-ink-muted);
+}
+
+.breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbCurrent {
+  color: var(--pg-ink);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 924fr) minmax(0, 688fr);
+  gap: 55px;
+  align-items: start;
+}
+
+/* ── Gallery column ─────────────────────────────────────────────── */
+.galleryCol {
+  position: sticky;
+  top: var(--pg-sticky-top);
+  align-self: start;
+  min-width: 0;
+}
+
+/* Gallery box — [0, 0, 924, 1125], radius 26, bg rgba(249,249,248,1) */
+.stageBox {
+  position: relative;
+  border-radius: 26px;
+  background: var(--pg-gallery-bg);
+  aspect-ratio: 924 / 1125;
+  overflow: hidden;
+}
+
+/* The slide track. Desktop stacks the nine slides and crossfades between
+   them; mobile turns the same element into a scroll-snap carousel
+   (prototype/index.html:10, css/mobile.css:12-13). */
+.track {
+  position: absolute;
+  inset: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.slide {
+  margin: 0; /* reset.css:126 li { margin-bottom: .5rem } */
+  position: absolute;
+  inset: 32px 38px; /* IMG:gallery-main [38, 32, 849, 1050] */
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slideActive {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 0; /* app.css:11 img { border-radius: 4px } */
+}
+
+/* Icon / zoom — [891.5, 8.5, 21, 21] */
+.zoom {
+  position: absolute;
+  right: 11px;
+  top: 9px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--pg-ink);
+  z-index: 2;
+}
+
+.zoomIcon {
+  width: 21px;
+  height: 21px;
+  display: block;
+}
+
+/* Arrow prev / next — ELLIPSE 49x49 at y 438.5 (vertically centred on the
+   1125-tall box), white fill */
+.arrow {
+  position: absolute;
+  top: 44.3%; /* 438.5 + 24.5 of 1125 */
+  width: 49px;
+  height: 49px;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--pg-ink);
+  z-index: 2;
+}
+
+.arrowPrev {
+  left: 18.5px;
+}
+
+.arrowNext {
+  right: 18.5px;
+}
+
+.arrowIcon {
+  width: 19px;
+  height: 19px;
+  display: block;
+}
+
+/* Button / 1 / 9 — [21, 1056, 60, 38], radius 19, bg rgba(94,94,94,1) */
+.counter {
+  position: absolute;
+  left: 21px;
+  bottom: 31px; /* 1125 - 1056 - 38 */
+  min-width: 60px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 19px;
+  background: var(--pg-counter-bg);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 19.11px;
+  z-index: 2;
+}
+
+/* Button / 3D ansehen — [729, 1056, 178, 53], radius 26, bg rgba(20,37,77,1) */
+.view3d {
+  position: absolute;
+  right: 17px; /* 924 - 729 - 178 */
+  bottom: 16px;
+  min-height: 53px;
+  padding: 0 20px;
+  border-radius: 26px;
+  background: var(--pg-3d-bg);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17.8px;
+  font-weight: 600;
+  line-height: 22.68px;
+  text-decoration: none;
+  z-index: 2;
+}
+
+.view3dIcon {
+  width: 19px;
+  height: 19px;
+  display: block;
+  flex: none;
+}
+
+/* Thumb strip — the prototype ships ONE flat 924x113 image
+   (IMG:gallery-thumbs) with eight visible thumbs and overlays invisible
+   115.75px hit zones (app.js:50). Rebuilt here as nine real buttons, so
+   image 9 is reachable and highlights like the rest — app.js:50 only ever
+   created eight zones and app.js:49 clamped the active border with gi<8.
+   Active ring: Active thumb border, radius 15, inset 0 0 0 2px #1f1f1f. */
+.thumbs {
+  display: flex;
+  gap: 8px;
+  margin-top: 19px; /* 1144 - 1125 */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.thumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.thumb {
+  flex: 0 0 auto;
+  width: 100px;
+  height: 100px;
+  padding: 0;
+  border: 0;
+  border-radius: 15px;
+  overflow: hidden;
+  background: var(--pg-gallery-bg);
+  cursor: pointer;
+}
+
+.thumbOn {
+  box-shadow: inset 0 0 0 2px var(--pg-ring-strong);
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Buy box ─────────────────────────────────────────────────────── */
+.buybox {
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 19.11px;
+  letter-spacing: 2.1px;
+  color: var(--pg-ink-muted);
+}
+
+.productTitle {
+  margin: 17px 0 0; /* 36 - 19 */
+  font-size: 54.4px;
+  font-weight: 300;
+  line-height: 69.31px;
+  color: var(--pg-ink);
+}
+
+.rating {
+  margin: 11px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17.8px;
+  line-height: 22.68px;
+  color: var(--pg-ink-muted);
+}
+
+.ratingScore {
+  font-weight: 600;
+  color: var(--pg-ink);
+}
+
+.stars {
+  height: 17px;
+  width: auto;
+  display: block;
+  color: var(--pg-ink);
+}
+
+.lede {
+  margin: 21px 0 0;
+  font-size: 21.6px;
+  font-weight: 400;
+  line-height: 36px;
+  color: var(--pg-ink-body);
+}
+
+.priceRow {
+  margin: 15px 0 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.price {
+  font-size: 60px;
+  font-weight: 400;
+  line-height: 76.44px;
+  color: var(--pg-ink);
+}
+
+.priceWas {
+  font-size: 24.4px;
+  font-weight: 400;
+  line-height: 31.09px;
+  color: var(--pg-ink-muted);
+}
+
+.saving {
+  min-height: 34px;
+  padding: 0 18px;
+  border-radius: 17px;
+  background: var(--pg-save-bg);
+  color: var(--pg-save-ink);
+  display: inline-flex;
+  align-items: center;
+  font-size: 16.9px;
+  font-weight: 600;
+  line-height: 21.53px;
+}
+
+.fineprint {
+  margin: 6px 0 0;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--pg-ink-muted);
+}
+
+.fineprint a {
+  color: var(--pg-ink);
+}
+
+/* Accordion card — [4, 495, 617, 210], radius 23, inset ring */
+.linkCard {
+  margin: 87px 0 0;
+  border-radius: 23px;
+  background: var(--pg-surface);
+  box-shadow: inset 0 0 0 1px var(--pg-ring);
+  overflow: hidden;
+}
+
+.linkRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 70px;
+  padding: 0 30px;
+  font-size: 20.6px;
+  font-weight: 500;
+  line-height: 26.24px;
+  color: var(--pg-ink);
+  text-decoration: none;
+}
+
+.linkRow + .linkRow {
+  border-top: 1px solid var(--pg-ring);
+}
+
+.linkRow:hover {
+  text-decoration: underline;
+}
+
+.rowIcon {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  display: block;
+  color: var(--pg-ink);
+}
+
+/* Numbered step heading — "01 Zustand" etc. */
+.step {
+  margin: 45px 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.stepNum {
+  font-size: 16.9px;
+  font-weight: 400;
+  line-height: 21.53px;
+  color: var(--pg-ink-muted);
+}
+
+.stepTitle {
+  margin: 0;
+  font-size: 25.3px;
+  font-weight: 400;
+  line-height: 32.23px;
+  color: var(--pg-ink);
+}
+
+.stepSub {
+  margin: 7px 0 0;
+  font-size: 17.8px;
+  font-weight: 500;
+  line-height: 22.68px;
+  color: var(--pg-ink-mid);
+}
+
+/* Button / Neu | Refurbished — 199 x 56, radius 28 */
+.options {
+  margin: 20px 0 0;
+  display: flex;
+  gap: 11px;
+}
+
+.option {
+  flex: 1 1 0;
+  min-height: 56px;
+  border: 0;
+  border-radius: 28px;
+  background: var(--pg-surface-warm);
+  box-shadow: inset 0 0 0 1px var(--pg-ring);
+  font-family: inherit;
+  font-size: 18.8px;
+  font-weight: 500;
+  line-height: 23.95px;
+  color: var(--pg-ink);
+  cursor: pointer;
+}
+
+.optionOn {
+  background: var(--pg-surface);
+  box-shadow: inset 0 0 0 2px var(--pg-ring-strong);
+}
+
+/* Accessory cards — 189 x 324, radius 19, image 174 x 131 radius 15 */
+.accessories {
+  margin: 20px 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.accessory {
+  position: relative;
+  display: block;
+  border-radius: 19px;
+  background: var(--pg-surface);
+  box-shadow: inset 0 0 0 1px var(--pg-ring);
+  padding: 5px 5px 16px;
+  cursor: pointer;
+}
+
+.accessory:has(input:checked) {
+  box-shadow: inset 0 0 0 2px var(--pg-ring-strong);
+}
+
+.accessory input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.accessoryBox {
+  position: absolute;
+  left: 18px;
+  top: 17px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(85, 85, 85, 1);
+}
+
+.accessory:has(input:checked) .accessoryBox {
+  background: var(--pg-ink);
+  box-shadow: inset 0 0 0 1px var(--pg-ink);
+}
+
+.accessoryImage {
+  width: 100%;
+  aspect-ratio: 174 / 131;
+  border-radius: 15px;
+  object-fit: cover;
+  display: block;
+}
+
+.accessoryName {
+  margin: 14px 0 0;
+  padding: 0 12px;
+  font-size: 15.9px;
+  font-weight: 600;
+  line-height: 20.26px;
+  color: var(--pg-ink);
+}
+
+.accessoryDesc {
+  margin: 2px 0 0;
+  padding: 0 12px;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 23px;
+  color: var(--pg-ink-mid);
+}
+
+.accessoryTerm {
+  margin: 10px 12px 0;
+  min-height: 41px;
+  padding: 0 11px;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--pg-ring);
+  display: inline-flex;
+  align-items: center;
+  font-size: 15px;
+  line-height: 19.11px;
+  color: var(--pg-ink);
+}
+
+.accessoryPrice {
+  margin: 14px 0 0;
+  padding: 0 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+
+.accessoryPrice b {
+  font-size: 19.7px;
+  font-weight: 600;
+  line-height: 25.1px;
+  color: var(--pg-ink);
+}
+
+.accessoryPrice s {
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--pg-ink-muted);
+}
+
+/* Delivery options — 617 x 113 / 124, radius 23 */
+.delivery {
+  margin: 20px 0 0;
+  display: grid;
+  gap: 10px;
+}
+
+.deliveryOption {
+  display: grid;
+  grid-template-columns: 53px minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: center;
+  text-align: left;
+  width: 100%;
+  padding: 24px 21px;
+  border: 0;
+  border-radius: 23px;
+  background: var(--pg-surface);
+  box-shadow: inset 0 0 0 1px var(--pg-ring);
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--pg-ink);
+}
+
+.deliveryOptionOn {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px var(--pg-ring-strong);
+}
+
+.deliveryTile {
+  width: 53px;
+  height: 53px;
+  border-radius: 50%;
+  background: var(--pg-tile);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pg-ink);
+}
+
+.deliveryTile svg {
+  width: 23px;
+  height: 23px;
+  display: block;
+}
+
+.deliveryName {
+  display: block;
+  font-size: 20.6px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.deliveryNote {
+  display: block;
+  margin-top: 4px;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--pg-ink-mid);
+}
+
+.deliveryPrice {
+  text-align: right;
+  font-size: 18.8px;
+  font-weight: 600;
+  line-height: 23.95px;
+}
+
+.deliveryPriceFree {
+  font-size: 15.9px;
+  color: var(--pg-free);
+}
+
+.deliveryPriceNote {
+  display: block;
+  margin-top: 4px;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--pg-ink-muted);
+}
+
+.inlineLink {
+  margin: 20px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 17.8px;
+  font-weight: 500;
+  line-height: 22.68px;
+  color: var(--pg-ink);
+  text-decoration: none;
+}
+
+.inlineLink:hover {
+  text-decoration: underline;
+}
+
+/* Financing card — 617 x 98, radius 23, white */
+.financing {
+  margin: 20px 0 0;
+  min-height: 98px;
+  padding: 20px 24px;
+  border-radius: 23px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--pg-ring);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.financingAmount {
+  font-size: 17.8px;
+  font-weight: 500;
+  line-height: 22.68px;
+  color: var(--pg-ink);
+}
+
+.financingAmount b {
+  font-size: 28.1px;
+  font-weight: 600;
+  line-height: 35.8px;
+  margin: 0 6px;
+}
+
+.financingNote {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 19.11px;
+  color: var(--pg-ink-muted);
+}
+
+/* Total price box — 617 x 291, radius 34, 90deg gradient + 15/45 shadow */
+.total {
+  margin: 40px 0 0;
+  border-radius: 34px;
+  background: var(--pg-total-grad);
+  box-shadow: 0 15px 45px 0 rgba(0, 0, 0, 0.15);
+  padding: 32px 37px;
+  color: #ffffff;
+}
+
+.totalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.totalLabel {
+  font-size: 20.6px;
+  font-weight: 600;
+  line-height: 26.24px;
+}
+
+.totalValue {
+  font-size: 45px;
+  font-weight: 400;
+  line-height: 57.33px;
+}
+
+.totalMeta {
+  margin: 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 15px;
+  line-height: 19.11px;
+}
+
+.totalSave {
+  font-weight: 600;
+  color: var(--pg-total-save);
+}
+
+.totalMonthly {
+  font-weight: 400;
+  color: var(--pg-total-dim);
+}
+
+/* Button / In den Warenkorb — 540 x 73, radius 37, bg rgba(244,241,232,1) */
+.cart {
+  margin: 26px auto 0;
+  display: block;
+  width: 100%;
+  max-width: 540px;
+  min-height: 73px;
+  border: 0;
+  border-radius: 37px;
+  background: var(--pg-cart-bg);
+  font-family: inherit;
+  font-size: 22.5px;
+  font-weight: 600;
+  line-height: 28.67px;
+  color: var(--pg-ink);
+  cursor: pointer;
+}
+
+/* USP row — four items, icon over 15.9px / 23 centred label */
+.usps {
+  margin: 48px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.usp {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 23px;
+  color: var(--pg-ink-body);
+}
+
+.usp svg {
+  width: 21px;
+  height: 21px;
+  display: block;
+  color: var(--pg-ink);
+}
+
+.secure {
+  margin: 28px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--pg-ink-mid);
+}
+
+.secure svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  display: block;
+  color: var(--pg-ink);
+}
+
+/* Trustpilot card — 617 x 152, radius 23 */
+.trustpilot {
+  margin: 48px 0 0;
+  border-radius: 23px;
+  background: var(--pg-surface);
+  box-shadow: inset 0 0 0 1px var(--pg-ring);
+  padding: 24px 28px;
+}
+
+.trustHead {
+  display: grid;
+  grid-template-columns: 53px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+
+.trustTile {
+  width: 53px;
+  height: 53px;
+  border-radius: 50%;
+  background: var(--pg-tile);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pg-ink);
+}
+
+.trustTile svg {
+  width: 23px;
+  height: 23px;
+  display: block;
+}
+
+.trustTitle {
+  margin: 0;
+  font-size: 20.6px;
+  font-weight: 600;
+  line-height: 26.24px;
+  color: var(--pg-ink);
+}
+
+.trustSub {
+  margin: 3px 0 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 19.11px;
+  color: var(--pg-ink-muted);
+}
+
+.trustFoot {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--pg-ring);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 17.8px;
+  line-height: 22.68px;
+  color: var(--pg-ink-body);
+}
+
+.trustScore {
+  font-size: 18.8px;
+  font-weight: 600;
+  line-height: 23.95px;
+  color: var(--pg-ink);
+}
+
+.trustBrand {
+  margin-left: auto;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 19.11px;
+  color: var(--pg-ink);
+}
+
+/* Room fit card — 617 x 131, radius 23.
+   Static in the prototype: the Figma frame has no inputs and the mobile
+   <details> at index.html:23 opens onto an empty body.
+   TODO: build the room-fit calculator when the real fields are specified. */
+.roomfit {
+  margin: 44px 0 0;
+  border-radius: 23px;
+  background: var(--pg-surface);
+  box-shadow: inset 0 0 0 1px var(--pg-ring);
+  padding: 26px 22px;
+  display: grid;
+  grid-template-columns: 49px minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+
+.roomTile {
+  width: 49px;
+  height: 49px;
+  border-radius: 50%;
+  background: var(--pg-tile);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pg-ink);
+}
+
+.roomTile svg {
+  width: 21px;
+  height: 21px;
+  display: block;
+}
+
+.roomTitle {
+  margin: 0;
+  font-size: 20.6px;
+  font-weight: 600;
+  line-height: 26.24px;
+  color: var(--pg-ink);
+}
+
+.roomSub {
+  margin: 5px 0 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--pg-ink-mid);
+}
+
+.advice {
+  margin: 30px 0 0;
+  text-align: center;
+  font-size: 17.8px;
+  font-weight: 400;
+  line-height: 22.68px;
+  color: var(--pg-ink-mid);
+}
+
+.advice a {
+  color: inherit;
+}
+
+/* Shared focus ring */
+.zoom:focus-visible,
+.arrow:focus-visible,
+.thumb:focus-visible,
+.option:focus-visible,
+.deliveryOption:focus-visible,
+.cart:focus-visible,
+.view3d:focus-visible,
+.linkRow:focus-visible,
+.inlineLink:focus-visible,
+.accessory:has(input:focus-visible) {
+  outline: 3px solid var(--pg-ring-strong);
+  outline-offset: 3px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE < 768 — prototype/index.html:9-23 + css/mobile.css:10-40
+   One column; the gallery becomes a scroll-snap carousel and stops being
+   sticky; the thumb strip scrolls horizontally.
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .galleryCol {
+    position: static;
+  }
+}
+
+@media (max-width: 767px) {
+  .section {
+    padding-bottom: 48px;
+  }
+
+  .inner {
+    padding: 0 16px;
+  }
+
+  .breadcrumb {
+    padding: 12px 0 16px;
+    font-size: 13px;
+  }
+
+  .stageBox {
+    aspect-ratio: 1;
+    border-radius: 20px;
+  }
+
+  /* Native scroll-snap carousel — css/mobile.css:12-13 */
+  .track {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slide {
+    position: relative;
+    inset: auto;
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    opacity: 1;
+    pointer-events: auto;
+    padding: 12px;
+  }
+
+  /* The prototype's mobile gallery has no arrows and no zoom affordance. */
+  .arrow,
+  .zoom {
+    display: none;
+  }
+
+  .counter {
+    left: 12px;
+    bottom: 12px;
+    min-width: 0;
+    height: auto;
+    padding: 6px 12px;
+    border-radius: 19px;
+    background: #ffffff;
+    color: var(--pg-ink);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .view3d {
+    right: 12px;
+    bottom: 12px;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 22px;
+    background: #ffffff;
+    color: var(--pg-ink);
+    font-size: 14px;
+  }
+
+  .thumbs {
+    margin-top: 10px;
+    gap: 8px;
+  }
+
+  .thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+  }
+
+  .eyebrow {
+    font-size: 13px;
+    letter-spacing: 1.2px;
+  }
+
+  .productTitle {
+    margin-top: 6px;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.15;
+  }
+
+  .rating {
+    font-size: 14px;
+  }
+
+  .lede {
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .price {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+
+  .priceWas {
+    font-size: 16px;
+  }
+
+  .saving {
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 16px;
+    font-size: 13px;
+  }
+
+  .fineprint {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .linkCard {
+    margin-top: 24px;
+    border-radius: 23px;
+  }
+
+  .linkRow {
+    min-height: 56px;
+    padding: 0 16px;
+    font-size: 16px;
+  }
+
+  .step {
+    margin-top: 28px;
+  }
+
+  .stepTitle {
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .stepSub {
+    font-size: 14px;
+  }
+
+  .option {
+    font-size: 16px;
+  }
+
+  .accessories {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .accessory {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 23px;
+  }
+
+  .accessoryBox {
+    display: none;
+  }
+
+  .accessoryImage {
+    grid-row: span 4;
+    width: 64px;
+    height: 64px;
+    aspect-ratio: 1;
+    border-radius: 12px;
+  }
+
+  .accessoryName,
+  .accessoryDesc,
+  .accessoryPrice {
+    padding: 0;
+    margin: 0;
+  }
+
+  .accessoryDesc {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .accessoryTerm {
+    margin: 4px 0 0;
+    min-height: 0;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    font-size: 13px;
+    color: var(--pg-save-ink);
+  }
+
+  .accessoryPrice {
+    margin-top: 4px;
+  }
+
+  .deliveryOption {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 23px;
+  }
+
+  .deliveryTile {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .deliveryName {
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  .deliveryNote {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .deliveryPrice {
+    font-size: 14px;
+  }
+
+  .financing {
+    min-height: 0;
+    padding: 14px 16px;
+    border-radius: 23px;
+    font-size: 14px;
+  }
+
+  .financingAmount b {
+    font-size: 20px;
+  }
+
+  .total {
+    margin-top: 16px;
+    padding: 18px;
+    border-radius: 28px;
+  }
+
+  .totalValue {
+    font-size: 26px;
+    line-height: 1.2;
+  }
+
+  .totalMeta {
+    font-size: 13px;
+  }
+
+  .cart {
+    margin-top: 14px;
+    min-height: 56px;
+    border-radius: 37px;
+    font-size: 16px;
+  }
+
+  .usps {
+    margin-top: 24px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .usp {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .secure {
+    margin-top: 10px;
+    justify-content: flex-start;
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .trustpilot,
+  .roomfit {
+    margin-top: 12px;
+    padding: 14px 16px;
+  }
+
+  .trustHead,
+  .roomfit {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .trustTile,
+  .roomTile {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .trustTitle,
+  .roomTitle {
+    font-size: 16px;
+  }
+
+  .trustSub,
+  .roomSub {
+    font-size: 13px;
+  }
+
+  .trustFoot {
+    font-size: 13px;
+  }
+
+  .advice {
+    margin-top: 16px;
+    font-size: 13px;
+  }
+}

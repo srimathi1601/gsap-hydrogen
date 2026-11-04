@@ -1,0 +1,39 @@
+@font-face{font-family:Sohne;src:url(../fonts/intertight.ttf) format('truetype');font-weight:100 900;font-display:swap;ascent-override:92%;descent-override:23%;line-gap-override:0%}
+*{box-sizing:border-box;margin:0;padding:0}html,body{background:#fff;overflow-x:clip}body{font-family:Sohne,Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#1f1f1f}
+img{display:block;max-width:100%}button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}a{color:inherit}
+.pin{position:relative}.pinbox{position:sticky;top:0;width:100%;overflow:hidden}.dstat .pinbox{position:relative}
+.stage{position:absolute;top:0;transform-origin:0 0}.n{position:absolute;white-space:pre-wrap}.il{position:absolute;inset:0;background-position:center;background-repeat:no-repeat}
+.cf{position:absolute;perspective:1200px;transform-style:preserve-3d}.card{position:absolute;inset:0;border:0;background:#eee center/cover;cursor:pointer;will-change:transform;box-shadow:0 24px 60px rgba(0,0,0,.18);background-size:cover;background-position:center;backface-visibility:hidden;outline:1px solid transparent}
+.hov{cursor:pointer;transition:transform .25s cubic-bezier(.2,.7,.2,1),filter .25s,box-shadow .25s}.hov:hover{transform:translateY(-2px);filter:brightness(1.04)}
+.hovc{transition:box-shadow .3s,transform .3s}.hovc:hover{box-shadow:0 18px 40px -18px rgba(0,0,0,.25)!important;transform:translateY(-3px)}
+.hl:hover{text-decoration:underline;cursor:pointer}
+.thz{position:absolute;cursor:pointer;border-radius:15px}.thz:hover{background:rgba(255,255,255,.18)}
+#gbar{position:fixed;left:0;right:0;bottom:0;height:0;z-index:50;pointer-events:none}#gbar .stage{pointer-events:auto}
+#gbar{transform:translateY(220px);transition:transform .5s cubic-bezier(.16,1,.3,1)}#gbar.show{transform:none}
+.mob{display:none}@media(max-width:767px){.desk{display:none!important}.mob{display:block}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+.tx{overflow:visible}
+.hs3d{position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:#1b2336;box-shadow:0 0 0 4px rgba(255,255,255,.95),0 4px 14px rgba(0,0,0,.25);opacity:0;transition:opacity .35s ease;will-change:transform}
+.hs3d.on{opacity:1}
+.v3d{position:fixed;inset:0;z-index:200;background:rgba(20,20,22,.55);display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.v3d.on{display:flex}
+.v3d-box{position:relative;width:min(1200px,92vw);height:min(760px,86vh);border-radius:24px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.v3d-box canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.v3d-x{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:50%;background:#fff;color:#1f1f1f;font-size:18px;box-shadow:0 4px 14px rgba(0,0,0,.15);cursor:pointer;border:0}
+.v3d-r{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);height:44px;padding:0 20px;border-radius:22px;background:#1f1f1f;color:#fff;font:500 15px Sohne,sans-serif;cursor:pointer;border:0}
+.v3d-hint{position:absolute;z-index:2;pointer-events:none;padding:6px 12px;border-radius:16px;background:rgba(255,255,255,.82);top:16px;left:18px;font:500 14px Sohne,sans-serif;color:#6b6b6b}
+.v3d-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 16px Sohne,sans-serif;color:#6b6b6b}
+/* 3D text column: Figma flow (heading top fixed, 16px gaps) */
+.s3col{height:auto!important}
+.s3col>.s3f{position:relative!important;left:0!important;top:auto!important;margin-bottom:16px}.s3col>.s3f.tx{height:auto!important}
+.s3col>.s3f:last-child{margin-bottom:0}
+@media(max-width:767px){.v3d-box{width:100vw;height:100svh;border-radius:0}.v3d-hint{top:24px;left:16px;font-size:13px}}
+@media(max-width:767px){.hs3d{width:16px;height:16px;box-shadow:0 0 0 3px rgba(255,255,255,.95),0 3px 10px rgba(0,0,0,.25)}}
+#gbar{transition:transform .55s cubic-bezier(.16,1,.3,1),opacity .4s ease;opacity:0}#gbar.show{opacity:1}
+.pill-ic,.pill-ic *{opacity:1!important}.pill-ic svg{overflow:visible}
+[data-k="/Prev/expand_circle_right"] svg{transform:rotate(180deg)}
+
+/* Key Features title pill */
+.kf-pill-host{display:flex!important;justify-content:center;align-items:center;overflow:visible!important;white-space:nowrap}
+.kf-pill{display:inline-flex;align-items:center;gap:.45em;background:#000;color:#fff;border-radius:999px;padding:.45em 1.1em;font-weight:600;line-height:1.15;transform-origin:center;position:relative;top:-.32em}
+.kf-pill svg{width:1em;height:1em;flex:none;display:block}

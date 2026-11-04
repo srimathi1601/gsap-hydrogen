@@ -1,0 +1,31 @@
+/**
+ * Footer
+ *
+ * Source: prototype/index.html — <section class="static"> with
+ *   img/footer.jpg (1920×1331)
+ * Asset: public/images/footer/footer.jpg
+ *
+ * No animation — the prototype gives this slab no `.rv` class.
+ *
+ * TODO: build as real markup later — flat screenshot, no selectable text.
+ */
+
+import styles from './Footer.module.css';
+
+export function Footer() {
+  return (
+    <section className={styles.section} id="footer">
+      <img
+        className={styles.image}
+        src="/images/footer/footer.jpg"
+        alt="Footer"
+        width="1920"
+        height="1331"
+        loading="lazy"
+        decoding="async"
+      />
+    </section>
+  );
+}
+
+export default Footer;

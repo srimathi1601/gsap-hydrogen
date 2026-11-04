@@ -1,9 +1,11 @@
-import {Await, useLoaderData, Link} from 'react-router';
+import {Link} from 'react-router';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
 import {ProductItem} from '~/components/ProductItem';
-import {MockShopNotice} from '~/components/MockShopNotice';
-
+import {ScrollShowcase} from '~/components/ScrollShowcase';
+// The home route now renders prototype/index.html verbatim.
+// The hand-written sections are still in app/sections/ but unmounted.
+import {PrototypePage} from '~/sections/PrototypePage';
 /**
  * @type {Route.MetaFunction}
  */
@@ -62,16 +64,9 @@ function loadDeferredData({context}) {
 }
 
 export default function Homepage() {
-  /** @type {LoaderReturnData} */
-  const data = useLoaderData();
-  return (
-    <div className="home">
-      {data.isShopLinked ? null : <MockShopNotice />}
-      <FeaturedCollection collection={data.featuredCollection} />
-      <RecommendedProducts products={data.recommendedProducts} />
-    </div>
-  );
+  return <PrototypePage />;
 }
+
 
 /**
  * @param {{
@@ -107,26 +102,28 @@ function FeaturedCollection({collection}) {
  */
 function RecommendedProducts({products}) {
   return (
-    <section
-      className="recommended-products"
-      aria-labelledby="recommended-products"
-    >
-      <h2 id="recommended-products">Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => (
-                    <ProductItem key={product.id} product={product} />
-                  ))
-                : null}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </section>
+      <ScrollShowcase />
+
+    // <section
+    //   className="recommended-products"
+    //   aria-labelledby="recommended-products"
+    // >
+    //   <h2 id="recommended-products">Recommended Products</h2>
+    //   <Suspense fallback={<div>Loading...</div>}>
+    //     <Await resolve={products}>
+    //       {(response) => (
+    //         <div className="recommended-products-grid">
+    //           {response
+    //             ? response.products.nodes.map((product) => (
+    //                 <ProductItem key={product.id} product={product} />
+    //               ))
+    //             : null}
+    //         </div>
+    //       )}
+    //     </Await>
+    //   </Suspense>
+    //   <br />
+    // </section>
   );
 }
 

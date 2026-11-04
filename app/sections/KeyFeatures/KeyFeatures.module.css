@@ -1,0 +1,380 @@
+/**
+ * KeyFeatures.module.css
+ *
+ * Source: prototype/js/sections.js     -> SECTIONS.dkf (1920x1126, 5 kf)
+ *                                         SECTIONS.mkf (390x844,  5 kf)
+ *         prototype/js/app.js:7-27     -> the cover-flow IIFE
+ *         prototype/js/engine.js:42-45 -> fit() / host height
+ *         prototype/css/site.css:6     -> .cf / .card primitives
+ *
+ * MODEL (approved Q1a - animated sections mirror absolute coords on a
+ * scaled stage). The stage is a fixed 1920x1126 / 390x844 canvas scaled by
+ * 100vw / W, reproducing prototype/js/app.js:10 exactly:
+ *
+ *     const s = innerWidth / sec.W;         // width-fit, never contain
+ *     K.st.style.transform = scale(s);
+ *     const h = sec.H * s;
+ *     box.style.height  = h;
+ *     box.style.top     = Math.min(0, innerHeight - h);
+ *     host.style.height = h + 4 * STEP();   // STEP = innerHeight * 0.7
+ *
+ * Every coordinate below is lifted verbatim from the node data; nothing is
+ * interpreted. ONE responsive tree (approved Q2) - the mobile block swaps
+ * the canvas size and the coordinates, it does not duplicate markup.
+ */
+
+.section {
+  /* Palette - from the node data, not guessed */
+  --kf-bg: rgba(255, 255, 255, 1);
+  --kf-ink: rgba(31, 31, 31, 1);
+  --kf-ink-muted: rgba(74, 74, 74, 1);
+  --kf-badge-ink: rgba(107, 107, 107, 1);
+  --kf-badge-bg: rgba(107, 107, 107, 0.1);
+  --kf-badge-ring: rgba(107, 107, 107, 0.12);
+  --kf-prev: rgba(195, 193, 193, 1);
+  --kf-next: rgba(99, 98, 98, 1);
+  --kf-dot: rgba(31, 31, 31, 0.2);
+  --kf-dot-on: rgba(31, 31, 31, 1);
+
+  /* Type - TODO: swap to Söhne */
+  --kf-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  /* Canvas + fit - prototype/js/app.js:10 */
+  --kf-canvas-w: 1920px;
+  --kf-canvas-h: 1126px;
+  --kf-fit: calc(100vw / 1920);
+  --kf-h: calc(var(--kf-canvas-h) * var(--kf-fit));
+
+  /* Travel = 4 steps x STEP, STEP = innerHeight * 0.7 - app.js:9,10 */
+  --kf-travel: 280svh;
+
+  /* Card corner - app.js:13 -> cards['Card 1'][4] + 2 */
+  --kf-card-radius: 26px;
+
+  position: relative;
+  display: block;
+  width: 100%;
+  height: calc(var(--kf-h) + var(--kf-travel));
+  /* Explicit: the scaffold's reset.css:85 pads every <section> by 2rem,
+     which would shrink the scrub travel and open a white gap. The pinned
+     box must be exactly 100svh + travel. */
+  padding: 0;
+  background: var(--kf-bg);
+  font-family: var(--kf-font); /* TODO: swap to Söhne */
+  color: var(--kf-ink);
+}
+
+/* box.style.top = Math.min(0, innerHeight - h) - app.js:10.
+   Flush to the top while the stage fits, pulled up so its bottom meets the
+   viewport bottom once it is taller. CSS sticky accepts a negative top. */
+.pin {
+  position: sticky;
+  top: min(0px, calc(100svh - var(--kf-h)));
+  height: var(--kf-h);
+  width: 100%;
+  overflow: hidden;
+}
+
+.stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--kf-canvas-w);
+  height: var(--kf-canvas-h);
+  transform: scale(var(--kf-fit));
+  transform-origin: 0 0;
+}
+
+/* Badge - dkf /Frame 6/Frame 5 at [841.5, 46, 237, 29] */
+.badge {
+  position: absolute;
+  left: 841.5px;
+  top: 46px;
+  width: 237px;
+  height: 29px;
+  border-radius: 20px;
+  background: var(--kf-badge-bg);
+  box-shadow: inset 0 0 0 1px var(--kf-badge-ring);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14.1px;
+  font-weight: 500;
+  line-height: 17.96px;
+  letter-spacing: 1.97px;
+  color: var(--kf-badge-ink);
+  white-space: nowrap;
+}
+
+/* Section title - dkf /Frame 6/... at [662, 86, 596, 62] */
+.title {
+  position: absolute;
+  left: 662px;
+  top: 86px;
+  width: 596px;
+  margin: 0;
+  font-size: 50.6px;
+  font-weight: 500;
+  line-height: 62px;
+  letter-spacing: 0;
+  text-align: center;
+  color: var(--kf-ink);
+}
+
+/* Control row
+   dkf /Prev [265,191,48,48] opacity .5 - /Next [1606,191,48,48]
+   /Frame 19 [x,201,w,28] - x + w/2 is 960 in every keyframe, so the label is
+   simply centred and the per-keyframe x/width tween is redundant. */
+.nav {
+  position: absolute;
+  top: 191px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navPrev {
+  left: 265px;
+  color: var(--kf-prev);
+  opacity: 0.5; /* verbatim from the node data */
+}
+
+.navNext {
+  left: 1606px;
+  color: var(--kf-next);
+}
+
+.navIcon {
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
+/* The prototype ships /Prev with the SAME right-pointing
+   expand_circle_right glyph as /Next - a Figma capture artefact (both
+   arrows cannot point right). Mirrored here so the control reads correctly. */
+.navPrev .navIcon {
+  transform: scaleX(-1);
+}
+
+.nav:focus-visible {
+  outline: 3px solid var(--kf-ink);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.name {
+  position: absolute;
+  left: 660px;
+  top: 201px;
+  width: 600px;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 28.03px;
+  text-align: center;
+  color: var(--kf-ink);
+  white-space: nowrap;
+}
+
+/* Deck - dkf cards['Card 1'] = [635, 290, 651, 572, r24]
+   .cf primitive from prototype/css/site.css:6 */
+.deck {
+  position: absolute;
+  left: 635px;
+  top: 290px;
+  width: 651px;
+  height: 572px;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+/* .card primitive from prototype/css/site.css:6 */
+.card {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  border-radius: var(--kf-card-radius);
+  background: #eee center / cover no-repeat;
+  cursor: pointer;
+  will-change: transform;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  backface-visibility: hidden;
+  outline: 1px solid transparent;
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--kf-ink);
+  outline-offset: 4px;
+}
+
+/* Copy block - dkf /Frame 18 at [611, 923, 698, ...]
+   Height grows 76 -> 105 on keyframes 4/5 as the description wraps to two
+   lines. The block is top-anchored, so it extends downward; no height tween
+   is needed. */
+.copy {
+  position: absolute;
+  left: 611px;
+  top: 923px;
+  width: 698px;
+  text-align: center;
+}
+
+.featTitle {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 40.77px;
+  color: var(--kf-ink);
+}
+
+.featDesc {
+  margin: 6px 0 0; /* 47 - 41 */
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 29px;
+  color: var(--kf-ink-muted);
+}
+
+/* Counter + dots - mkf only, hidden on desktop */
+.counter,
+.dots {
+  display: none;
+}
+
+.dot {
+  position: absolute;
+  top: 720px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--kf-dot);
+}
+
+.dotOn {
+  background: var(--kf-dot-on);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE < 768 - SECTIONS.mkf (390 x 844)
+   Same markup, re-coordinated. prototype/js/app.js:10 uses the same
+   width-fit formula with sec.W = 390.
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .section {
+    --kf-canvas-w: 390px;
+    --kf-canvas-h: 844px;
+    --kf-fit: calc(100vw / 390);
+    --kf-card-radius: 20px; /* cards['Card 1'][4] = 18, +2 */
+    --kf-badge-bg: rgba(31, 31, 31, 0.071);
+  }
+
+  .badge {
+    left: 97px;
+    top: 40px;
+    width: 196px;
+    height: 28px;
+    border-radius: 14px;
+    box-shadow: none;
+    font-size: 13px;
+    line-height: 16.56px;
+    letter-spacing: 0;
+  }
+
+  .title {
+    left: 20px;
+    top: 82px;
+    width: 350px;
+    font-size: 28px;
+    line-height: 35.67px;
+  }
+
+  .nav {
+    top: 148px;
+    width: 44px;
+    height: 44px;
+    opacity: 1;
+    color: var(--kf-ink);
+  }
+
+  .navPrev {
+    left: 16px;
+  }
+
+  .navNext {
+    left: 330px;
+  }
+
+  .name {
+    left: 64px;
+    top: 159px;
+    width: 262px;
+    font-size: 17px;
+    line-height: 21.66px;
+  }
+
+  .deck {
+    left: 45px;
+    top: 224px;
+    width: 300px;
+    height: 264px;
+  }
+
+  .card {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  }
+
+  .copy {
+    left: 24px;
+    top: 516px;
+    width: 342px;
+  }
+
+  .featTitle {
+    font-size: 22px;
+    line-height: 28.03px;
+  }
+
+  .featDesc {
+    margin-top: 6px; /* 550 - 516 - 28 */
+    font-size: 15px;
+    line-height: 21.75px;
+  }
+
+  .counter {
+    display: block;
+    position: absolute;
+    left: 24px;
+    top: 690px;
+    width: 342px;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16.56px;
+    text-align: center;
+    color: var(--kf-ink);
+  }
+
+  .dots {
+    display: block;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   REDUCED MOTION
+   prototype/js/app.js:10 - host.style.height = RM ? h : h + 4*STEP()
+   and app.js:18 - no ScrollTrigger is created at all. The deck stays on
+   card 1 and is driven only by the buttons, dots and keyboard.
+   ────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .section {
+    --kf-travel: 0svh;
+  }
+}

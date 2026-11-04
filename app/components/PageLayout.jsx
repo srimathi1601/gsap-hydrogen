@@ -1,8 +1,9 @@
 import {Await, Link} from 'react-router';
 import {Suspense, useId} from 'react';
 import {Aside} from '~/components/Aside';
-import {Footer} from '~/components/Footer';
-import {Header, HeaderMenu} from '~/components/Header';
+import {SiteFooter} from '~/sections/Footer';
+import {HeaderMenu} from '~/components/Header';
+import {SiteHeader} from '~/components/SiteHeader';
 import {CartMain} from '~/components/CartMain';
 import {
   SEARCH_ENDPOINT,
@@ -16,9 +17,9 @@ import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 export function PageLayout({
   cart,
   children = null,
-  footer,
+  // `footer` is still passed by root.jsx but unused since <SiteFooter />
+  // replaced the Shopify-menu-driven footer — see the note below.
   header,
-  isLoggedIn,
   publicStoreDomain,
 }) {
   return (
@@ -26,20 +27,19 @@ export function PageLayout({
       <CartAside cart={cart} />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
-      {header && (
-        <Header
-          header={header}
-          cart={cart}
-          isLoggedIn={isLoggedIn}
-          publicStoreDomain={publicStoreDomain}
-        />
-      )}
+      {/* Replaces SportstechHeader (approved Q6) — rebuilt from
+          prototype/js/sections.js SECTIONS.dtop /Header – main nav.
+          See app/components/SiteHeader/. */}
+      <SiteHeader />
       <main>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
+      {/* Replaces the Hydrogen scaffold <Footer> — rebuilt from
+          prototype/js/sections.js SECTIONS.dfoot. It is site chrome, not
+          page content: the prototype shows the same footer everywhere, so
+          it belongs in the layout next to <SiteHeader /> rather than in a
+          single route. The old component is still at
+          app/components/Footer.jsx with its `footer` / `header` props if
+          the Shopify-menu-driven version is wanted back. */}
+      <SiteFooter />
     </Aside.Provider>
   );
 }

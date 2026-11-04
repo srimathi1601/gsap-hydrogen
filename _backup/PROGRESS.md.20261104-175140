@@ -1,0 +1,1011 @@
+# PROGRESS — gsap-hydrogen PDP
+
+Figma file: `OI4fY2NSIR5YSdxxSIG6jY` — sTread Pro Animation website
+Section board: `35:721` ("Section 1")
+
+---
+
+## Section 1: StreadPro3D — "STREAD PRO IN 3D" pinned 5-step showcase
+
+Status: ✅ done (HTML prototype skipped by request — built direct to React)
+
+HTML Prototype: ⬜ skipped — approved on 2026-11-03
+React Component: `app/sections/StreadPro3D/index.jsx` ✅
+Styles: `app/sections/StreadPro3D/StreadPro3D.module.css` ✅
+Mounted: `app/routes/($locale)._index.jsx` ✅ (ScrollShowcase import untouched)
+Backup: `_backup/($locale)._index.jsx.20261103-181002` ✅
+
+Figma nodes used:
+
+- Desktop steps 01–05: `34:2` / `34:54` / `34:106` / `34:159` / `34:211` (1920×1471)
+- Mobile steps 01–05: `34:308` / `34:353` / `34:398` / `34:444` / `34:489` (390×~1038)
+- Dev notes: `34:579` (desktop) / `34:587` (mobile) — identical text
+- Figma variables: none defined (`get_variable_defs` → `{}`), all literals tokenised in CSS
+
+Assets:
+
+- ✅ `step-01.png` … `step-05.png` → `public/images/stread-pro-3d/` (1768×1116 source,
+  ~2.5× the 695×538 desktop slot; mobile reuses the identical files — verified by md5)
+- ✅ 7 icons → `app/assets/icons/stread-pro-3d-*.svg` (saved verbatim from Figma,
+  inlined in the component with `currentColor` so the active tab flips to white)
+- ⬜ PNG not converted to WebP — no `sharp` / `cwebp` / `magick` on this machine
+- ⬜ Transition clips unused — crossfade stands in (approved Q2, option a)
+
+Animations (all SOURCE: Figma dev note — none assumed):
+
+- ✅ Section pin — **CSS `position:sticky`**, `start:"top top"` `end:"bottom bottom"`
+  `scrub:0.6`, travel `500svh` desktop / `400svh` mobile via `--sp3d-travel`,
+  `ignoreMobileResize:true` on mobile — dev note `34:581` / `34:585`
+  (retuned 2026-11-04 from `pin:true` — see "Retune" below)
+- ✅ Step switch — image crossfade + `scale 1.04→1` + `y 40→0`; title/body/tags
+  `y 24→0` + fade, `stagger 0.06`, `0.6s power2.inOut`, never hard-swapped — note `34:582`
+- ✅ Active pill slide — `translateX = index × 180px`, `0.6s power2.inOut`;
+  inner bar fills `0→100%` with within-step scroll progress — note `34:583`
+- ✅ Mobile active dot stretch `10→40px` (CSS transition, same easing) — note `34:583`
+- ✅ `prefers-reduced-motion` → fade only (no scale, no y, no stagger) — note `34:586`
+- ✅ Forward + backward: scrub-driven, step index recomputed from the smoothed
+  timeline playhead so reversing re-crossfades symmetrically
+
+Interaction (dev note `34:583` / `34:586`):
+
+- ✅ Tab / dot click → `scrollTo` that step's start
+- ✅ `‹ ›` prev/next buttons (48px desktop, 44px mobile)
+- ✅ `←` `→` keys on the tabs
+- ✅ `role="tablist"` / `role="tab"` / `aria-selected` / `aria-controls` / roving `tabIndex`
+- ✅ `aria-live="polite"` on the "Schritt X von 5" count
+- ❌ Auto-advance 1800ms deliberately NOT built — prototype-only (approved Q4)
+- ❌ Drag-to-rotate NOT built — no GLB, 5 static renders only (approved Q3)
+
+Decisions applied (answers of 2026-11-03):
+
+- Inter placeholder for Söhne; `/* TODO: swap to Söhne */` on every `font-family`
+  declaration. Weights mapped Leicht 300 / Buch 400 / Kräftig 500 / Halbfett 700.
+- Type sizes kept verbatim, incl. 50.6px / 20.6px.
+- Desktop step title 300 (Leicht), mobile step title 500 (Kräftig) — intentional.
+- Mobile typo `Lauffäche` corrected to `Lauffläche`.
+- Step 05 copy block stays top-anchored; two-line title grows downward.
+- Swap points marked: `/* SWAP: replace crossfade with MP4/canvas sequence … */`
+  and `/* TODO: swap to GLB when 3D model is ready */`.
+
+Retune (2026-11-04) — reconciled against `prototype/`:
+
+- `pin: true` → CSS `position: sticky`. The prototype holds the stage with
+  `.pinbox{position:sticky;top:0}` (`prototype/index.html`) and never calls
+  ScrollTrigger's `pin` (`prototype/js/engine.js` → `mountPinned`).
+  ScrollTrigger now only drives the timeline.
+- Canvas height `1471px` (Figma frame `34:2`) → `1182px` (`SECTIONS.d3d.H`),
+  exposed as `--sp3d-canvas-h` and used as the fit-scale reference.
+- Fit breakpoints recomputed against 1182: `0.88 / 0.77 / 0.67 / 0.60` at
+  `≤1181 / ≤1039 / ≤919 / ≤799` viewport height. Each factor keeps
+  `1182 × factor` under the band minimum, so the composition always clears.
+- Scroll length unchanged (500svh / 400svh) — kept per "all other Figma values".
+- Removed the now-unused `pinRef`.
+
+Verification:
+
+- ✅ `npx eslint app/sections/StreadPro3D` → clean (after retune)
+- ✅ `npm run build` → client + server bundles built (after retune)
+- ⬜ Not yet opened in a browser — scroll feel, sticky behaviour and pixel diff
+  unverified
+
+Open Points:
+
+- **Söhne licence** — metrics differ from Inter, so line lengths/wraps will shift
+  once the real face lands. Re-check the 467px body column and the fixed-width tags.
+- **WebP** — step PNGs are 589–897 KB each (~3.4 MB total). Needs conversion
+  before this goes anywhere near production.
+- **Short-viewport fit** — the desktop composition is ~1156px tall; it is scaled
+  to fit the pin via height media queries (0.88 / 0.78 / 0.68 at 1179 / 999 /
+  879px). Proportions are preserved exactly; confirm the look on a real laptop.
+- **Tablet 768–1439** — dev note only says "2-col stage scales down, stats 4→2";
+  no Figma frame exists for this range, so the reflow is an interpretation of
+  that note and needs a design review.
+- `gsap.matchMedia()` used rather than the deprecated `ScrollTrigger.matchMedia()`
+  shim; `mm.add(query, fn)` is identical in GSAP 3.15.
+
+Next: Section 2 — not yet identified. The board also holds `35:722` ("Frame 3",
+1920×3424) which is the full existing PDP, read for context only, not built.
+
+---
+
+# Prototype conversion (2026-11-04)
+
+Source: `prototype/` — a generated, data-driven prototype. `js/sections.js`
+(236 KB) is a Figma-derived keyframe graph; `js/engine.js` interprets it.
+All sections below were **hand-written as semantic React** (option b), using
+the keyframe data as the spec rather than porting the engine.
+
+## Global setup
+
+- `public/fonts/intertight.ttf` + `intertight.woff2` (580 KB → 239 KB via
+  `npx ttf2woff2`). `app/styles/fonts.css` declares `'Inter Tight'`, linked +
+  preloaded from `app/root.jsx`. TODO comments for Söhne kept everywhere.
+- `@studio-freight/lenis@1.0.42` installed. `app/components/SmoothScroll.jsx`
+  initialises it (`lerp: 0.1`), wires `gsap.ticker` + `ScrollTrigger.update`,
+  and is mounted once in `app/root.jsx`. Disabled under reduced motion.
+  Dynamically imported so it stays out of the SSR/worker bundle.
+- `app/lib/useRevealOnScroll.js` — the shared `.rv` reveal for static slabs.
+- Backups: `_backup/root.jsx.20261104-101331`,
+  `_backup/($locale)._index.jsx.20261104-102455`.
+
+## Sections
+
+| # | Section | Type | Source |
+|---|---------|------|--------|
+| 1 | `ProductGalleryBuybox` | static slab | `img/s_top.jpg` 1920×3424 |
+| 2 | `StreadPro3D` | sticky scroll, 5 kf | done earlier, retuned |
+| 3 | `KeyFeatures` | interactive cover-flow | `dkf`/`mkf` + `img/kf1–5.jpg` |
+| 4 | `SportstechLive` | sticky scroll, 9 kf | `dlive`/`mlive` + 6 `fig/*.webp` |
+| 5 | `VideoShowcase` | sticky scroll, 4 kf | `dvid`/`mvid` + 2 `fig/*.webp` |
+| 6 | `Reviews` | static slab + `.rv` | `img/s_reviews.jpg` |
+| 7 | `FAQ` | static slab + `.rv` | `img/s_faq.jpg` |
+| 8 | `TechnicalData` | static slab + `.rv` | `img/s_tech.jpg` |
+| 9 | `ServiceDelivery` | static slab + `.rv` | `img/s_service.jpg` |
+| 10 | `Footer` | static slab | `img/s_footer.jpg` |
+
+All ten mounted in `app/routes/($locale)._index.jsx` in page order.
+`ScrollShowcase` import untouched.
+
+## #11 SiteHeader — NOT built, deliberately
+
+The prototype has no navbar: `index.html` opens straight into
+`<section class="static" id="top">`. A header already exists —
+`app/components/SportstechHeader.jsx` (pixel clone of the Sportstech
+storefront header, with a sticky product bar in
+`app/styles/sportstech-header.css`) — and it is **already rendered for every
+page** at `app/components/PageLayout.jsx:29`. Adding `app/components/SiteHeader/`
+would put two headers on the page. Left alone pending a decision.
+
+## Verification
+
+- ✅ `npx eslint app/sections app/components/SmoothScroll.jsx app/lib/useRevealOnScroll.js` → clean
+- ✅ `npm run build` → client + server bundles built
+- ✅ Every `/images/**` and `/fonts/**` reference resolves on disk
+- ✅ All four CSS Modules bundled into `(_locale)-*.css`; Lenis code-split
+- ⬜ **Not opened in a browser.** No section has been visually verified.
+
+## Open points
+
+- **Dead assets skipped** (as agreed): `img/live_*.jpg`, `img/step1–5.jpg`,
+  `img/poster.jpg`, `img/thumb.jpg` — the prototype never references them.
+  `poster.jpg` was superseded by `fig/84d3f45f8f6b.webp`, which is the fill the
+  Poster node actually renders.
+- **Fit scaling** is stepped media queries, not the prototype's continuous
+  `min(vw/W, vh/H)` JS resize listener. Ratios are exact; the steps are not.
+- **`SportstechLive` heading** uses one string whose width + font-size animate,
+  rather than the prototype's swap between two literal strings differing only
+  by a newline. Same visual result, no duplicated copy.
+- **`VideoShowcase` play/pause are presentational** (`aria-hidden`, not
+  buttons) because there is no video to control. Promote them when the MP4 lands.
+- **Six flat JPEG slabs** (~3.2 MB) carry no selectable or indexable text.
+
+---
+
+# Prototype rebuild — round 2 (2026-11-04)
+
+The `prototype/` folder was replaced wholesale. It is no longer a shell:
+`css/` now holds `site.css` + `mobile.css`, `index.html` is a 101 KB
+dual-DOM page, and six former flat-JPEG slabs became real keyframe graphs
+(`dtop`, `drev`, `dfaq`, `dtech`, `dsvc`, `dfoot` — 822 nodes, 255 text,
+236 inline SVG). The slab JPEGs `img/s_*.jpg` no longer exist.
+
+## Decisions applied (answers of 2026-11-04)
+
+| # | Decision |
+|---|----------|
+| Q1 | Hybrid. Animated sections (`#s3d` `#kf` `#live` `#vid`) mirror absolute coords on a scaled stage; static sections are hand-written semantic responsive React with the node coordinates as spec only. |
+| Q2 | ONE responsive tree per section. No dual DOM, no `innerWidth` branching at load — CSS media queries plus `gsap.matchMedia()`. Fixes the resize bug at `prototype/js/app.js:2`. |
+| Q3 | Prototype wins over the Figma dev note: StreadPro3D travel is **400vh** on both breakpoints. |
+| Q4 | Genuine CSS `position: sticky` for the gallery column and the sub-nav. The scaled-stage `translateY` hack at `app.js:59-66` is NOT reproduced. |
+| Q5 | Dropped the clipped sub-nav item (`"Se"`) and the clipped 4th accessory card. `TODO: restore when real copy is available`. |
+| Q6 | `SportstechHeader` replaced by `app/components/SiteHeader/`. Promo bar and sub-nav are PDP-only sections. |
+| Q7 | Promo bar ships static text only — no countdown, no delivery date, no stock count. `TODO: add real delivery dates from Shopify metafields`. |
+| Q8 | Lenis `duration: 1.1` with the expo-out easing from `app.js:3`. `lerp` removed. |
+
+## Retunes
+
+| File | Change |
+|------|--------|
+| `StreadPro3D.module.css` | travel `500svh` → `400svh` (both breakpoints). Height-stepped contain fit → `--sp3d-fit: calc(100vw / 1920)` width-fit, plus `margin-top: min(0px, 100svh − h)` reproducing `engine.js:44`. Removed the 768–1439 reflow block — the prototype scales, it never reflows. |
+| `SmoothScroll.jsx` | `lerp: 0.1` → duration + expo-out easing, verbatim from `app.js:3`. |
+| `VideoShowcase/index.jsx` | Progress fill `width: '35%'` → `481.6px` desktop / `105px` mobile. `app.js:32` targets 35 % of the rail's INITIAL width (1376 / 300), not the grown one — the old value overshot by ~56px. |
+
+## Sections
+
+| # | Section | Files | Status |
+|---|---------|-------|--------|
+| — | `SiteHeader` | `app/components/SiteHeader/` | NEW — replaces `SportstechHeader` |
+| — | `PromoBar` | `app/sections/PromoBar/` | NEW |
+| — | `SubNav` | `app/sections/SubNav/` | NEW, real `position: sticky` |
+| 1 | `ProductGalleryBuybox` | `app/sections/ProductGalleryBuybox/` | REBUILT from the slab |
+| 2 | `StreadPro3D` | — | RETUNED |
+| 3 | `KeyFeatures` | `app/sections/KeyFeatures/` | REBUILT — was click-only, now pinned + scroll-driven + snapping |
+| 4 | `SportstechLive` | — | unchanged, data verified identical |
+| 5 | `VideoShowcase` | — | RETUNED |
+| 6 | `Reviews` | `app/sections/Reviews/` | REBUILT from the slab |
+| 7 | `FAQ` | `app/sections/FAQ/` | REBUILT — real accordion |
+| 8 | `TechnicalData` | `app/sections/TechnicalData/` | REBUILT — real `<table>` |
+| 9 | `ServiceDelivery` | `app/sections/ServiceDelivery/` | REBUILT from the slab |
+| 10 | `Footer` | `app/sections/Footer/` | REBUILT from the slab |
+| 11 | `StickyBuyBar` | `app/sections/StickyBuyBar/` | NEW — the `#gbar` global bar |
+
+Shared: `app/components/icons/PdpIcons.jsx` (19 icons, generated verbatim
+from the node data), `app/components/icons/Stars.jsx`,
+`app/lib/useRevealBatch.js`.
+
+## Animations (all SOURCE: prototype, none assumed)
+
+| Section | Trigger | Start → End | scrub | Pin | Travel |
+|---------|---------|-------------|-------|-----|--------|
+| `StreadPro3D` | section | `top top` → `bottom bottom` | 0.6 | CSS sticky | 400vh |
+| `KeyFeatures` | section | `top min(0, vh−h)` → `+=4×0.7vh` | 0.5 | CSS sticky | 280vh |
+| `SportstechLive` | section | `top top` → `bottom bottom` | 0.6 | CSS sticky | 640vh |
+| `VideoShowcase` | section | `top top` → `bottom bottom` | 0.6 | CSS sticky | 300vh |
+
+- **Reveals** (`Reviews`, `FAQ`, `TechnicalData`, `ServiceDelivery`,
+  `Footer`): `ScrollTrigger.batch`, `start 'top 92%'`, `once: true`,
+  `y 40→0`, `opacity 0→1`, `0.8s power3.out`, `stagger 0.08` — `app.js:87`.
+  Forward only; `once:true` means no reverse, matching the prototype.
+- **Gallery crossfade**: `fromTo({opacity:.3},{opacity:1, duration:.4})` — `app.js:49`.
+- **FAQ accordion**: `0.45s power3.out` height tween + `ScrollTrigger.refresh()` — `app.js:75-78`.
+- **Sticky buy bar**: CSS `transform .5s cubic-bezier(.16,1,.3,1)` — `site.css:12`.
+  Shown by two ScrollTriggers (`#top` leave, `#vid` toggle) — `app.js:83-85`.
+- **KeyFeatures** also: 4-stop `pose()` depth curve, `wrap()`, 160 ms snap,
+  >50px drag paging, arrow keys, card click — `app.js:14-25`.
+
+## Assets
+
+Copied to `public/`:
+
+- `images/gallery/g1–g9.webp` + `images/gallery/thumbs/g1-t–g9-t.webp`
+- `images/key-features/card-01–05.webp` (the `app.js:12` REF hashes)
+- `images/product-gallery-buybox/acc-{live,mat,spulse}.webp`
+- `images/reviews/{review-photos,rv-liam,rv-waldemar,rv-niklas,rv-timoteo,rv-joris,rv-lennox}.webp`
+- `images/technical-data/spec-image.webp`
+- `images/footer/{pay-row,social-row}.webp`
+
+Deleted (sources gone): the six `s_*.jpg` slab renders and five stale
+`key-features/feature-0N.jpg`.
+
+Skipped as dead, per the analysis:
+
+- `img/g1.webp` — `app.js:49` restores `fig/ca93da750e60` at index 0
+- `img/kf1–kf5.jpg` — 1.2 MB, zero references
+- 10 orphan `fig/*.webp` — unreferenced by `sections.js`, `app.js`, `index.html`
+
+## Fixes made on top of the prototype
+
+- **`aria-hidden` over a focusable control.** `index.html:45` marks `#gbar`
+  `aria-hidden="true"` and `app.js:82/93` then injects a real button into
+  it. `StickyBuyBar` uses `inert` instead, so the CTA leaves the tab order
+  and the a11y tree together.
+- **Nine gallery thumbs, not eight.** `app.js:50` built only eight hit
+  zones for nine images and `app.js:49` clamped the active ring with
+  `gi < 8`, so image 9 never highlighted.
+- **FAQ keyboard + roles.** The prototype's desktop rows are bare divs with
+  an `onclick` and no roles (`app.js:79`). Real `<button>` +
+  `aria-expanded` / `aria-controls` / `role="region"` here.
+- **Prev arrow mirrored** in `KeyFeatures` — the node data ships the same
+  right-pointing `expand_circle_right` glyph for both controls.
+- **Speed units.** `dtech` reads "1 km" / "20 km"; `index.html:38` has the
+  correct "1 km/h" / "20 km/h". Mobile wins.
+- **Desktop sub-nav anchors.** Inert divs in the prototype; real `<a>` here.
+
+## Verification
+
+- `npx eslint` clean across `app/sections`, `app/components/SiteHeader`,
+  `app/components/icons`, `app/components/PageLayout.jsx`, `app/lib`,
+  `app/root.jsx`
+- `npm run build` → client + server bundles built
+- All CSS Modules bundled — section tokens in `(_locale)-*.css`,
+  header + footer tokens in `root-*.css`; Lenis still code-split
+- Every `/images/**` and `/fonts/**` reference resolves on disk
+- **SSR smoke test** on `npm run dev` → HTTP 200, 137 KB.
+  All nine section ids present; 1 `<h1>`, 1 `<footer>`, 1 `<table>`,
+  2 radiogroups, 5 `aria-expanded` + 5 `role="region"`;
+  `inert=""` renders; zero `aria-hidden` wrappers around a focusable;
+  no countdown or delivery date leaked; no SSR errors.
+- **Still not reviewed in a browser.** Scroll feel, snap behaviour, the
+  width-fit stages and the pixel diff are unverified.
+
+## Open points
+
+- **Söhne licence.** Inter Tight stands in, declared as `Sohne` in the
+  prototype with `ascent-override:92% / descent-override:23%`. Those metric
+  overrides are NOT replicated in `app/styles/fonts.css`; line lengths will
+  shift when the real face lands.
+- **`engine.js:53 fitTexts()` not ported** — deliberately. It squeezes
+  `letter-spacing` by up to 5 % at runtime to stop generated text
+  overflowing. Hand-written markup should not need it; if text overflows,
+  the type spec is wrong.
+- **Inert controls kept visible, every one marked `TODO`:** gallery zoom,
+  "3D ansehen" (anchored to `#s3d` rather than left dead), Highlights link,
+  review filters / search / sort / "Mehr Bewertungen laden",
+  "Alle 19 Fragen anzeigen", "Alle technischen Daten", newsletter, all
+  footer links, both cart CTAs. None is wired in the prototype either.
+- **Total price does not react** to the accessory checkboxes or the
+  delivery option — neither does the prototype.
+- **Room-fit card is static** — the Figma frame has no inputs and the
+  mobile `<details>` opens onto an empty body.
+- **`PageLayout` scaffold `<Footer>` replaced** by `~/sections/Footer`.
+  It is site chrome, shown identically on every prototype page, so it sits
+  next to `<SiteHeader />` rather than in one route. The Shopify-menu-driven
+  `app/components/Footer.jsx` is untouched if that version is wanted back;
+  the `footer` prop is still passed by `root.jsx` but no longer consumed.
+- **StreadPro3D assets are still PNG** (~3.4 MB). No `sharp` / `cwebp` /
+  `magick` on this machine.
+- **Pre-existing lint errors left alone** in `($locale)._index.jsx` (6,
+  all from the commented-out scaffold code) and in three untouched
+  scaffold components. Verified identical before and after this work.
+
+## Backups
+
+`_backup/` — `SportstechHeader.jsx`, `sportstech-header.css`,
+`PageLayout.jsx`, `SmoothScroll.jsx`, `StreadPro3D.module.css`,
+`VideoShowcase/index.jsx`, `($locale)._index.jsx` (×2), `PROGRESS.md`,
+and the previous `index.jsx` + `.module.css` of all six rebuilt sections.
+
+---
+
+# Layout break fix (2026-11-04, after first browser review)
+
+Reported: promo bar not full width and clipped, main area showing only a
+dark navy block, no sections visible below the header.
+
+**Not a mount problem.** SSR already emitted every section in the right
+order. Four Hydrogen-scaffold base rules were colliding with the full-bleed
+PDP tree.
+
+| Scaffold rule | Where | Effect |
+|---|---|---|
+| `aside { position:fixed; height:100vh; width:min(400px,100vw); right:-400px; box-shadow:... }` | `app/styles/app.css:87` | **The cause of the navy block.** `PromoBar` rendered as `<aside>`, so it inherited the off-canvas-drawer geometry: a 400px × 100vh navy column pushed 400px right, with a drop shadow. Its own `.bar` class only overrode `position`, `background` and `color` — not the size or offset. |
+| `body > main { margin: 0 1rem 1rem 1rem }` | `app/styles/reset.css:81` | Every section inset 1rem; nothing could reach the viewport edge. |
+| `section { padding: 1rem 0 → 2rem 0 }` | `app/styles/reset.css:85` | 2rem on every `<section>`; white gaps, and the pinned sections' `height: calc(100svh + travel)` no longer matched the sticky child's travel. |
+| `li { margin-bottom: .5rem }` · `img { border-radius: 4px }` | `reset.css:126` · `app.css:11` | Gallery slides/thumbs, USP/spec/footer lists. |
+
+## Changes
+
+1. **`PromoBar/index.jsx`** — `<aside>` → `<div role="note" aria-label="Aktion">`.
+   A promo banner is not a complementary landmark, and the bare `aside`
+   element selector is spoken for by the scaffold.
+2. **`app/styles/pdp-base.css`** (new) — linked from `root.jsx` *after*
+   `reset.css` and `app.css`, so it wins the element-level ties:
+   - `body > main:has(> .home) { margin: 0 }` — (0,1,2) beats `body > main`
+     (0,0,2); scoped with `:has()` so other scaffold routes keep their gutter.
+   - `:where(.home) section|li|img|h1–h4|p|a { … }` — `:where()` contributes
+     0, so each rule stays at plain element specificity (0,0,1). It ties
+     with the scaffold rule it cancels and **loses to every CSS Module
+     class** (0,1,0), so no section's intentional spacing can be clobbered.
+   - `html/body:has(… .home) { overflow-x: clip }` — the prototype's own
+     guard (`prototype/css/site.css:2`). The pinned stages are laid out
+     1920px wide and scaled by transform, so their layout width stays 1920.
+     `clip`, not `hidden`, because `clip` does not create a scroll container
+     and `position: sticky` keeps working.
+   - `.overlay { z-index: 200 }` — the scaffold's cart/search/menu drawers
+     are `z-index: 10` (`app.css:168`), below this page's sticky chrome.
+     Without this an open drawer sat *under* the sub-nav and buy bar.
+3. **Explicit `padding: 0`** on the four pinned `.section` rules
+   (`StreadPro3D`, `KeyFeatures`, `SportstechLive`, `VideoShowcase`) and
+   `padding: 0 0 96px` on `ProductGalleryBuybox` — so the scrub-travel box
+   model never depends on stylesheet load order.
+4. **Local list/image resets** where the scaffold defaults leaked into
+   elements the modules had not sized: `.slide`, `.slide img`, `.usp`,
+   `Reviews .bar`, `TechnicalData .spec`, `Footer .columnList li`.
+5. **`StickyBuyBar` z-index 50 → 100** (as specified; still below the
+   raised `.overlay`).
+
+## Verification
+
+- `npm run build` ✓ (client + server)
+- Built `pdp-base-*.css` contains exactly the ten intended rules, with
+  `:has()` and `:where()` preserved through Lightning CSS
+- Cascade spot-check against the built route CSS:
+  pinned sections → `padding:0`; `Reviews` → `71px 0 114px`;
+  `FAQ` → `120px 0 124px`; `TechnicalData` → `42px 0 46px`;
+  `ServiceDelivery` → `75px 0 84px`; `ProductGalleryBuybox` → `0 0 96px`
+  — i.e. the overrides cancel the scaffold without touching module intent
+- Live page: HTTP 200, `pdp-base.css` linked last, PromoBar no longer an
+  `<aside>` (only the 3 scaffold drawers remain), all nine section ids present
+- `npx eslint` clean
+
+## Still unverified
+
+No headless browser is installed in this project, so the cascade was
+checked by reading the built CSS rather than by measuring rendered boxes.
+The page needs a human look: scroll feel, the KeyFeatures snap, the
+width-fit stages and the pixel diff against `prototype/index.html`.
+
+---
+
+# Pivot: render prototype/index.html verbatim (2026-11-04)
+
+The hand-written React sections are **unmounted, not deleted**. Everything
+under `app/sections/` (ProductGalleryBuybox, KeyFeatures, Reviews, FAQ,
+TechnicalData, ServiceDelivery, Footer, PromoBar, SubNav, StickyBuyBar,
+StreadPro3D, SportstechLive, VideoShowcase) plus `app/components/SiteHeader`,
+`app/components/icons`, `app/lib/useRevealBatch.js` is still on disk and
+still builds. Only `($locale)._index.jsx` changed.
+
+The prototype had also grown a three.js viewer since the last read:
+`js/three3d.js`, `js/three/**` (2.3 MB), `models/stread-pro.glb` (7.5 MB),
+an importmap, and new `site.css` rules (`.v3d`, `.hs3d`, `.kf-pill`,
+`.s3col`).
+
+## What was done
+
+| Step | Detail |
+|------|--------|
+| Assets | `prototype/{img,fig,fonts,js,models}` → `public/` keeping names. 21 MB total. |
+| Path rewrites in `public/js/` | `app.js` `fig/`→`/fig/`, `img/`→`/img/` · `engine.js` `fig/`→`/fig/` · `three3d.js` `js/three/draco/`→`/js/three/draco/`, `models/`→`/models/` |
+| Importmap removed | `three3d.js` and the six three addons imported the bare specifier `'three'`, which needs an `<script type="importmap">` in the document head *before* any module runs — unreliable to inject at runtime. Rewritten to relative URLs (`./three/three.module.js`, `../../three.module.js`) so no importmap is needed at all. |
+| `body.html` | `prototype/index.html`'s `<body>`, scripts stripped (9), 31 relative asset paths made absolute. Generated into `app/sections/PrototypePage/body.html`, imported with `?raw`. |
+| `faq.js` | The inline `window.FAQ` block extracted to `public/js/faq.js` — an inline `<script>` inside `dangerouslySetInnerHTML` never executes. |
+| CSS | `prototype/css/site.css` + `mobile.css` appended verbatim to `app/styles/app.css`; only edit is `@font-face` url `../fonts/` → `/fonts/`. |
+| `PrototypePage` | Injects `body.html`, then loads scripts in a sequential promise chain. |
+| Route | `($locale)._index.jsx` → `return <PrototypePage />;` |
+| `pdp-base.css` | Rewritten for the prototype tree: full-bleed `<main>`, hides PageLayout's `<SiteHeader>`/`<SiteFooter>` (the prototype has its own), `overflow-x: clip`, cancels the scaffold's `section`/`li`/`img`/`h1-h4`/`p`/`a` base rules at zero added specificity, raises `.overlay` above `#gbar`. |
+
+## Script order
+
+`gsap → ScrollTrigger → lenis → sections → faq → engine → app`, then
+`three3d.js` as a module.
+
+Two scripts were added ahead of the order given in the request: `gsap` and
+`ScrollTrigger`. `app.js:1` calls `gsap.registerPlugin(ScrollTrigger)`
+immediately, so without them the chain throws before anything mounts —
+this is `prototype/index.html`'s own order.
+
+## Verification
+
+- `npm run build` ✓
+- `npx eslint` clean on `PrototypePage`, `pdp-base.css`, the route (the 5
+  remaining route errors are pre-existing scaffold dead code, unchanged)
+- Dev server HTTP 200. Injected markup present: `.proto-root`, `m-promo`,
+  `m-head`, `#top`, `#s3d`, `#kf`, `#live`, `#vid`, `#rev-d`, `#faq-d`,
+  `#tech-d`, `#svc-d`, `#foot-d`, `#gbar`, `.dstat`, `.pinbox`
+- Zero `<script>` inside the injected markup; zero relative `src`/`href`
+- All 8 scripts + `three.module.js` + `GLTFLoader.js` +
+  `draco_decoder.wasm` + `stread-pro.glb` serve HTTP 200
+- `dist/client/` contains every copied asset
+
+## BLOCKED — needs your approval
+
+**The 3D viewer will fail at runtime under the current CSP.**
+`models/stread-pro.glb` uses `KHR_draco_mesh_compression`. three's
+`DRACOLoader` decodes it in a Worker built from a `blob:` URL, and the
+decoder is WebAssembly. The policy from `app/entry.server.jsx` is
+`default-src 'self' … 'nonce-…'` with no `script-src`, `worker-src` or
+`child-src`, so:
+
+- the `blob:` Worker is refused (`worker-src` falls back to `default-src`)
+- `WebAssembly.instantiate` is refused (needs `'wasm-unsafe-eval'`)
+
+The fix is three lines in `createContentSecurityPolicy`:
+
+```js
+scriptSrc: ["'self'", "'wasm-unsafe-eval'", 'blob:'],
+workerSrc: ["'self'", 'blob:'],
+childSrc:  ["'self'", 'blob:'],
+```
+
+I attempted it and the edit was refused as a security-weakening change, so
+`app/entry.server.jsx` is **unmodified**. Everything else on the page works:
+the other scripts load from `'self'`, which the existing policy allows.
+
+Decide whether to loosen the CSP, serve an uncompressed GLB instead
+(no Draco, no worker, no wasm — larger file), or leave the 3D viewer off.
+
+## Other open points
+
+- `app/styles/app.css` now ends with the prototype's global rules (`*`,
+  `html`, `body`, `img`, `button`, `a`). They load after the scaffold's own,
+  so they also restyle the other Hydrogen routes. Scope them under a
+  wrapper class if those pages need their old look.
+- The prototype scripts are global and not idempotent — no teardown for
+  their ScrollTriggers, Lenis instance or window listeners. `PrototypePage`
+  runs them once per full page load and guards against React 18
+  StrictMode's double effect. Client-side navigating away and back returns
+  the markup but not the behaviour; reload instead.
+- `public/` is now 21 MB, 7.2 MB of which is the GLB.
+
+---
+
+# White-screen fix (2026-11-04)
+
+## Diagnosis
+
+The three things the report suspected were all fine:
+
+| Check | Result |
+|---|---|
+| `body.html` empty? | No — 97,876 bytes, and in sync with the current `prototype/index.html` (promo copy matches: "KOSTENLOSER VERSAND · 30 TAGE TESTEN · 2 JAHRE GARANTIE") |
+| `PrototypePage` rendered? | Yes — `($locale)._index.jsx:67` `return <PrototypePage />;` |
+| `public/js` `img` `fig` present? | Yes — 18 / 23 / 44 files |
+| Server response | HTTP 200, 125 KB |
+
+The actual cause is that **on desktop the prototype page is empty until its
+JS runs**. `prototype/css/site.css:13` hides `.mob`, and every desktop host
+is a bare shell — `<section class="desk dstat" id="top" data-sec="dtop">
+<div class="pinbox"></div></section>`. All desktop content is produced at
+runtime by `buildStage`/`mountPinned`. So "white screen" meant the script
+chain never finished.
+
+**It never finished because of a StrictMode interaction in my own effect.**
+`app/entry.client.jsx:13` wraps the app in `<StrictMode>`, which runs an
+effect, tears it down, then runs it again. The effect held a `cancelled`
+flag set by its cleanup:
+
+```
+run 1   -> booted = true, chain starts with cancelled = false
+cleanup -> cancelled = true
+run 2   -> booted is already true, returns immediately
+chain   -> every remaining .then() sees cancelled and short-circuits
+```
+
+Net effect: only `/js/gsap.min.js` ever loaded. `sections.js`, `engine.js`
+and `app.js` never ran, so nothing was ever built into the `.pinbox` hosts.
+
+## Fix
+
+`app/sections/PrototypePage/index.jsx` — removed the cancellation flag.
+Booting the prototype is a one-shot global side effect on the document,
+not component-scoped work, so there is nothing to cancel on unmount. The
+`booted` module flag still guarantees a single boot, and `loadScript` is
+independently idempotent via its `data-proto` attribute, so an HMR module
+re-evaluation cannot double-load either.
+
+## Hydrogen compatibility checklist
+
+| # | Item | Status |
+|---|------|--------|
+| 7 | imports use `react-router` | ✓ 0 occurrences of `react-router-dom` in `app/` |
+| 8 | no `window`/`document` during SSR | ✓ the only three references are inside `loadScript`, called only from `useEffect`; no module-scope DOM access |
+| 9 | `dangerouslySetInnerHTML` client-only | **Kept server-rendered, deliberately** — see below |
+| 10 | `suppressHydrationWarning` on the wrapper | ✓ added |
+| 11 | scripts load after hydration | ✓ `useEffect`, client-only by definition |
+| 12 | asset paths start with `/` | ✓ 0 relative `src`/`href` in `body.html`; 17 `/img/` + 14 `/fig/`. `/fonts/` is referenced from the `@font-face` in `app.css`, `/models/` and `/js/three/draco/` from `three3d.js` — all absolute. |
+| 13 | `npm run build` | ✓ client + server, no SSR errors |
+| 14 | looks identical in the browser | **unverified — needs a human look** |
+
+### On item 9
+
+Rendering the markup client-only was not the cause and would make things
+slightly worse: it adds a frame where the page is genuinely empty, and it
+delays the DOM that `app.js` needs. Server-rendering it is also safe — React
+does not diff the children of a `dangerouslySetInnerHTML` node during
+hydration, so no mismatch is possible there. `suppressHydrationWarning` is
+still correct and now set, because `app.js` rewrites that subtree
+immediately after mount.
+
+## Still unverified
+
+No headless browser is installed in this project, so the chain fix was
+verified by reading the code and confirming every script serves HTTP 200,
+not by observing the page render. The browser check is still outstanding,
+and the Draco/CSP item below remains open.
+
+---
+
+# Six reported issues — investigation + fixes (2026-11-04)
+
+The page renders `prototype/index.html`'s own markup and runs the
+prototype's own JS unmodified apart from asset paths, so each report was
+first checked against the prototype sources to see whether the behaviour
+originates there or in the wrapper.
+
+## New: tools/sync-prototype.mjs
+
+`prototype/` has changed four times during this work, and the port now
+needs five distinct patch rules. Those were being applied by hand. They are
+now a single idempotent script:
+
+```
+node tools/sync-prototype.mjs
+```
+
+It copies `prototype/{img,fig,fonts,js,models}` into `public/`, applies
+every patch (each annotated with why it exists), regenerates
+`body.html` and `public/js/faq.js`, and re-appends the prototype CSS to
+`app/styles/app.css` between markers. `prototype/` is never written to.
+`public/fonts` is merged rather than replaced, because it also holds the
+`intertight.woff2` generated with `npx ttf2woff2`.
+
+## FIX 1 — gallery GLB viewer · BLOCKED (CSP)
+
+The premise does not match the prototype: the gallery's first slot is a
+static image (`fig/ca93da750e60.webp`), not a model viewer. The GLB appears
+in two places — the full-screen overlay opened by the **"3D ansehen"
+button** (`three3d.js:73-93`), and the pinned 3D section (FIX 4).
+
+The overlay opens but never finishes loading, because
+`three3d.js:10` loads a Draco-compressed GLB:
+
+```js
+const d = new DRACOLoader(); d.setDecoderPath('/js/three/draco/');
+gltfP = l.loadAsync('/models/stread-pro.glb');
+```
+
+`models/stread-pro.glb` declares `KHR_draco_mesh_compression`. three's
+`DRACOLoader` decodes it in a Worker built from a `blob:` URL, and the
+decoder is WebAssembly. The policy from `app/entry.server.jsx` is
+`default-src 'self' … 'nonce-…'` with no `script-src`, `worker-src` or
+`child-src`, so the blob Worker and `WebAssembly.instantiate` are both
+refused.
+
+## FIX 2 — gallery video · NOTHING TO FIX
+
+There is no video anywhere in the prototype: no `<video>` element, no
+`.mp4`/`.webm`/`.mov` file, and no video reference in `app.js`,
+`engine.js`, `three3d.js`, the CSS or `index.html`. The 18 nodes whose
+names contain "Video" all belong to `SECTIONS.dvid` / `mvid` — the
+"Lerne das sTread Pro kennen!" section, which is a **poster image with a
+non-functional play/pause badge and a progress bar that fills on scroll**
+(`app.js:46`). That is a separate section from the gallery. The gallery is
+nine images: `fig/ca93da750e60.webp` plus `img/g2–g9.webp`.
+
+## FIX 3 — gallery click behaviour · FIXED
+
+Confirmed a real bug, in the prototype itself. `three3d.js:73` finds the 3D
+button through the *text* node's parent:
+
+```js
+[...document.querySelectorAll('.tx')]
+  .find(e => e.textContent.trim() === '3D ansehen')?.parentElement
+```
+
+In `SECTIONS.dtop` that text node's parent is
+`/PDP – gallery + buy box/Frame 3` — the whole **924 x 1257 gallery frame**.
+The button is a *sibling* frame, `…/Frame 3/Button / 3D ansehen`, at
+`[729, 1056, 178, 53]`. So the click listener covered the entire gallery:
+clicking a thumbnail ran `show(i)` **and** bubbled up to open the 3D
+overlay — exactly the reported "click grid image -> popup appears -> next
+image shows in popup".
+
+Patched in `tools/sync-prototype.mjs` to bind the real button frame, with
+the original expression kept as a fallback:
+
+```js
+[...document.querySelectorAll('[data-k]')]
+  .find(e => e.dataset.k.endsWith('/Button / 3D ansehen'))
+  || <original>
+```
+
+The rest of the behaviour was already correct and is untouched: the eight
+`.thz` thumbnail hit zones call `show(i)` (`app.js:67`) and the gallery
+arrows call `show(gi ± 1)` (`app.js:68`) — both change only the main
+preview.
+
+NOTE: `prototype/js/three3d.js` still has the bug; the fix lives in the
+sync script. Worth applying upstream.
+
+## FIX 4 — 3D section shows static images · BLOCKED (same CSP cause as FIX 1)
+
+The pinned section is *supposed* to overlay a live animated GLB canvas on
+the step image — `three3d.js:38-39` builds a `.g3d` wrapper and appends it
+to `/Stage/Step image`, then drives the model's animation from the
+section's scroll progress (`tAt`, `CAM`, hotspots).
+
+`three3d.js:43` is explicit about the failure mode:
+
+```js
+try { g = await loadGLB() }
+catch (e) { console.warn('3D model failed, keeping poster', e); return }
+```
+
+"Static images only" IS that documented fallback firing. Same root cause as
+FIX 1; one CSP change fixes both.
+
+## FIX 5 — mobile excess spacing · FIXED (probable cause)
+
+Not a `mobile.css` value — a wrapper bug. `prototype/js/app.js` ends with:
+
+```js
+document.fonts.ready.then(() => { fitTexts(); … ScrollTrigger.refresh() });
+addEventListener('load', () => ScrollTrigger.refresh());
+```
+
+In the prototype those scripts run during initial parse, so the `load`
+listener is registered before the event. Loaded from a React effect they
+run much later and `window.load` has usually already fired, so that
+listener never runs. Every pinned ScrollTrigger then keeps the start/end it
+measured at `create()` time — before images and fonts settled — which shows
+up as pins engaging at the wrong offset and stretches of empty space, worst
+on mobile where `.m-sec` heights depend most on reflow.
+
+`PrototypePage` now replays the missed hook after the chain completes:
+
+```js
+function replayMissedLifecycleHooks() {
+  const refresh = () => window.ScrollTrigger?.refresh();
+  if (document.readyState === 'complete') refresh();
+  else window.addEventListener('load', refresh, {once: true});
+  document.fonts?.ready?.then(refresh);
+}
+```
+
+Flagged as *probable*: it is a real defect with a clear mechanism, but
+whether it accounts for all of the reported space needs a browser check.
+If space remains, the section name or a screenshot would pin it down.
+
+## FIX 6 — Zubehör carousel prev/next · NOT WIRED IN THE PROTOTYPE
+
+The accessory carousel's controls exist as artwork in `SECTIONS.dtop` —
+`Frame 4/Circle` + `Icon / left` at `[517, 889, 38, 38]`, `Frame 4/Circle#2`
++ `Icon / right#3` at `[573, 889, 38, 38]`, and a `1/2` counter — but
+`prototype/js/app.js` never binds a handler to any of them. The only
+`show()`/arrow wiring in the file is `app.js:67-68`, scoped to
+`G = '/PDP – gallery + buy box/Frame 3'`, i.e. the image gallery.
+
+So the buttons do nothing in the prototype either. There is no behaviour to
+port, and `guides/skills/pdp-builder.md` §12 forbids inventing one without
+a source. Needs either a prototype implementation to copy or an explicit
+spec (how many pages, what slides, what easing).
+
+## Verification
+
+- `node tools/sync-prototype.mjs` -> sync OK, all patches applied
+- `npx eslint` clean (2 `no-console` warnings in the sync script, which is
+  a CLI tool and prints progress by design)
+- `npm run build` ✓ client + server
+- Dev server HTTP 200; `three3d.js`, `app.js`, the GLB, both fonts and the
+  gallery images all serve 200
+- FIX 3's selector target verified present:
+  `/PDP – gallery + buy box/Frame 3/Button / 3D ansehen` at
+  `[729, 1056, 178, 53]`
+
+## Open
+
+1. **CSP** — blocks FIX 1 and FIX 4. Needs three lines in
+   `app/entry.server.jsx`; my edit was refused as a security-weakening
+   change, so the file is unmodified and the decision is the user's.
+2. **FIX 6** — needs a spec or a prototype implementation.
+3. Browser verification of FIX 3 and FIX 5.
+
+---
+
+# CSP opened for three.js + Draco (2026-11-04) — approved by the user
+
+## The change
+
+`app/entry.server.jsx`, backed up to
+`_backup/entry.server.jsx.20261104-163757`:
+
+```js
+scriptSrc: ["'self'", "'wasm-unsafe-eval'", 'blob:'],
+workerSrc: ["'self'", 'blob:'],
+childSrc:  ["'self'", 'blob:'],
+```
+
+Why each is needed, traced to the code:
+
+| Directive | Needed by |
+|---|---|
+| `worker-src blob:` | `DRACOLoader.js` builds its decode Worker with `URL.createObjectURL(new Blob([...]))`. `worker-src` otherwise falls back to `default-src`, which has no `blob:`. |
+| `script-src 'wasm-unsafe-eval'` | `js/three/draco/draco_wasm_wrapper.js` instantiates `draco_decoder.wasm`. WebAssembly compilation is gated on this token. |
+| `child-src blob:` | Legacy fallback for `worker-src` in older engines. |
+
+Scope: `blob:` is same-origin by construction — it permits only blobs this
+document itself created, not any external origin. `'wasm-unsafe-eval'`
+permits WebAssembly compilation only; it does not re-enable `eval()`.
+
+### Verified: Hydrogen still injects its nonce
+
+Adding an explicit `scriptSrc` could have dropped the nonce that
+Hydrogen's own inline scripts rely on. It does not — the emitted header is:
+
+```
+script-src 'self' 'wasm-unsafe-eval' blob: 'nonce-<per-request>'
+worker-src 'self' blob:
+child-src  'self' blob:
+```
+
+`'self'` and the nonce coexist (no `'strict-dynamic'`), so both the
+dynamically appended `/js/*.js` scripts and Hydrogen's nonce'd inline
+scripts are allowed.
+
+## Import map
+
+Added to the server-rendered `<head>` in `app/root.jsx`, carrying the
+nonce (`script-src` has one, and `'self'` does not cover inline scripts):
+
+```html
+<script type="importmap" nonce="…">
+{"imports":{"three":"/js/three/three.module.js","three/addons/":"/js/three/addons/"}}
+</script>
+```
+
+It is in the document rather than injected at runtime because an import
+map must precede any module load, and browsers other than Chrome accept
+only one. Verified in the served HTML: byte offset 509, inside `<head>`,
+against the first `type="module"` at byte 116110.
+
+`tools/sync-prototype.mjs` also rewrites `three3d.js` and the six three
+addons to relative specifiers, so the map is a safety net rather than
+load-bearing — it keeps a bare `three` import working if a future
+prototype update reintroduces one.
+
+## Already in place before this request
+
+Items 2-5 of the request were already done by `tools/sync-prototype.mjs`:
+
+- `prototype/js/three/` -> `public/js/three/` (10 files incl. `draco/`)
+- `setDecoderPath('/js/three/draco/')`
+- `loadAsync('/models/stread-pro.glb')`
+- `three3d.js` loads after `app.js`
+
+One deviation from the requested chain: `three3d.js` is loaded with
+`type="module"`, not as a classic script. It uses `import` statements, so
+a classic `<script>` would be a syntax error. The ORDER is exactly as
+requested — it is the eighth and last script.
+
+## Verification
+
+- `npm run build` ✓ client + server
+- `npx eslint` clean on `entry.server.jsx`, `root.jsx`, `PrototypePage`
+- `node tools/sync-prototype.mjs` re-run -> `sync OK`, `app.css` marker
+  count still 1 (idempotent)
+- Emitted CSP contains all three new directives plus the nonce
+- Import map present in `<head>`, before any module script
+- All ten 3D assets serve HTTP 200: `three3d.js`, `three.module.js`,
+  `three.core.js`, `GLTFLoader`, `DRACOLoader`, `OrbitControls`,
+  `RoomEnvironment`, `draco_decoder.wasm`, `draco_wasm_wrapper.js`,
+  `stread-pro.glb`
+- `dist/client/` carries the full payload (GLB 7,482,320 bytes)
+
+## Not verified
+
+The model actually rendering. There is no headless browser in this
+project, so this was verified by tracing the CSP against the loader code
+and confirming every asset is reachable — not by watching it draw. Needs a
+hard reload of localhost:3000.
+
+If it still fails, the console message to look for is
+`3D model failed, keeping poster` from `three3d.js:43`, which prints the
+underlying error.
+
+---
+
+# White model · dead 3D button · mobile spacing (2026-11-04)
+
+## 1 — Model rendered white/grey · FIXED (CSP, second gap)
+
+Not a lighting or colour-space problem. `prototype/js/three3d.js` already
+does all of it correctly:
+
+```js
+r.toneMapping         = T.ACESFilmicToneMapping;   // :11
+r.toneMappingExposure = 1.05;
+r.outputColorSpace    = T.SRGBColorSpace;
+scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture;  // :12
+```
+
+Inspecting the GLB's JSON chunk shows it is fully self-contained:
+
+```
+generator          Khronos glTF Blender I/O v5.0.21
+extensionsRequired KHR_draco_mesh_compression, KHR_texture_transform
+meshes 30 · materials 10 · textures 19 · images 8 · animations 1
+images             all 8 embedded as JPEG bufferViews — no external uri
+buffers            1, 7,431,000 bytes, embedded in the GLB chunk
+```
+
+Geometry rendering at all proves Draco now decodes, i.e. the first CSP fix
+worked. The textures were the second gap.
+`public/js/three/addons/loaders/GLTFLoader.js:3444`:
+
+```js
+const blob = new Blob([bufferView], {type: sourceDef.mimeType});
+sourceURI = URL.createObjectURL(blob);
+```
+
+and then `ImageBitmapLoader` where `createImageBitmap` exists (a `fetch`,
+so **connect-src**) or `TextureLoader` otherwise (an `<img>`, so
+**img-src**). Neither directive was declared, both fell back to
+`default-src`, and `default-src` has no `blob:` — so all 19 textures were
+refused while the untextured geometry drew fine. Classic white model.
+
+Added to `app/entry.server.jsx`:
+
+```js
+imgSrc: ["'self'", 'blob:', 'data:',
+         'https://cdn.shopify.com', 'https://shopify.com', 'http://localhost:*'],
+connectSrc: ["'self'", 'blob:'],
+```
+
+**Trap found and avoided:** Hydrogen merges its defaults into `connectSrc`
+but **not** into `imgSrc`. The first attempt emitted a bare
+`img-src 'self' blob: data:`, which would have blocked every
+`cdn.shopify.com` product image on the other routes. The Shopify hosts are
+repeated explicitly. Emitted header now:
+
+```
+img-src     'self' blob: data: https://cdn.shopify.com https://shopify.com http://localhost:*
+connect-src 'self' blob: 'self' https://cdn.shopify.com/ https://monorail-edge.shopifysvc.com
+            http://localhost:* ws://localhost:* ws://127.0.0.1:* ws://*.tryhydrogen.dev:*
+```
+
+## 2 — "3D ansehen" overlay did not open · FIXED
+
+Last round's fix retargeted the click from the whole gallery frame to the
+button frame. Necessary, but it created a dead zone, because the engine
+renders these as **siblings** of one another (all appended to `Frame 3`),
+in this order:
+
+| idx | node | box |
+|-----|------|-----|
+| 89 | `Button / 3D ansehen` FRAME | `[729, 1056, 178, 53]` |
+| 90 | `Icon / cube` FRAME | `[748.5, 1072.5, 19, 19]` |
+| 93 | `3D ansehen` TEXT | `[776, 1071, 96, 23]` |
+
+`engine.js:18` appends in array order, so the icon and the label paint
+*after* the button and sit *inside* its box. They received every click on
+the visible pill and, having no handler and being siblings rather than
+children, nothing bubbled to the button. Only the thin margin around the
+label still worked.
+
+The patch in `tools/sync-prototype.mjs` now also sets
+`pointer-events: none` on the label and the cube icon, so the whole pill
+surface hits the frame underneath. Falls back to the original expression if
+the button node is ever missing.
+
+## 3 — Mobile excess spacing · ONE LEAK CLOSED, ROOT CAUSE NOT CONFIRMED
+
+The page uses `prototype/css/mobile.css` verbatim, so this was checked as a
+leak from the scaffold rather than a value to tune. Verified first that the
+prototype CSS survives the append to `app/styles/app.css` intact:
+
+```
+.m-sec{padding:48px 16px}      OK      @media(max-width:767px)   OK
+.m-buy{padding:8px 16px 24px}  OK      .mob{display:block}       OK
+.m-foot{background:#000        OK      .desk{display:none!important} OK
+appended 16,933 bytes · braces 224 { vs 224 }  BALANCED · served 28,992 bytes
+```
+
+So mobile.css is applying. Enumerating every scaffold rule that adds box
+space to a bare element selector left exactly one that reaches the
+prototype's mobile DOM and is not already cancelled:
+
+```
+reset.css:106   input { margin-bottom: .5rem; margin-top: .25rem }
+```
+
+`.m-search input` (mobile.css:47) sets padding/border/radius but no margin,
+so this leaked 12px into the reviews filter. Closed in `pdp-base.css`,
+along with `fieldset`, `dl`, `h5`, `h6` for the same class of leak.
+
+12px is not "too much height between sections", so **this probably is not
+the whole story**. Two things worth checking before I change any prototype
+spacing value — doing that unasked would make the page differ from the
+prototype, which is the opposite of the goal:
+
+1. **Device emulation needs a reload.** `app.js:2` captures
+   `const MOB = innerWidth < 768` once, at script-execution time. Switching
+   DevTools to a phone without reloading leaves the desktop branch running:
+   `.dstat` stages get built at desktop coordinates, `#s3d`/`#kf`/`#live`/
+   `#vid` get mounted with `d3d`/`dkf`/`dlive`/`dvid` (W = 1920) while the
+   viewport is 390, and `.desk{display:none}` then hides the built
+   sections — leaving their mobile hosts sized from desktop measurements.
+   The prototype behaves identically; it is not a port artifact.
+2. **The pinned sections are intentionally tall on mobile.** Scroll travel
+   is `h + (N-1) x vh x per`: `#s3d` ~4459px, `#kf` ~3207px, `#live`
+   ~6246px, `#vid` ~3376px on an 844px viewport — about 20 viewport heights
+   in total, by design. Until this round the 3D canvas failed to load, so
+   `#s3d` was 4459px of static poster, which reads as dead space. With
+   textures working it should read as intended.
+
+If space remains after a hard reload, the section name or a screenshot
+would pin it down immediately.
+
+## Verification
+
+- `npx eslint` clean (2 `no-console` warnings in the sync CLI, by design)
+- `node tools/sync-prototype.mjs` -> `sync OK`, FIX 3 patch applied
+- `public/js/three3d.js` parses as valid JS after patching
+- Emitted CSP carries `script-src`/`worker-src`/`child-src`/`img-src`/
+  `connect-src` with `blob:`, the per-request nonce, and Shopify's CDN
+
+## Not verified
+
+The model drawing with textures, and the overlay opening. No headless
+browser here — both were established by tracing the CSP and the DOM
+stacking against the loader and engine source. Needs a hard reload.

@@ -1,0 +1,143 @@
+/**
+ * PromoBar.module.css
+ *
+ * Source: prototype/js/sections.js -> SECTIONS.dtop
+ *           /Promo bar – OKTOBER-FIT DAYS (21 nodes, 1920 x 47)
+ *         prototype/index.html:5     -> div.m-promo (mobile)
+ *         prototype/css/mobile.css:4-5
+ *
+ * Measurements from the node data:
+ *   bar          1920 x 47, background rgba(18,31,63,1)
+ *   headline     16.9px / 600 / ls 0.68 / #ffffff
+ *   separator    16.9px / 400 / rgba(174,183,204,1)
+ *   subline      16.9px / 500 / ls 0.68 / rgba(213,219,232,1)
+ *   code pill    144 x 32, radius 16, inset ring rgba(74,90,128,1),
+ *                15.9px / 600 / #ffffff
+ *
+ * The countdown chips (/Countdown T|STD|MIN|SEK, rgba(42,55,88,1), radius 9)
+ * are NOT built - approved Q7, and prototype/js/app.js:38-39 strips them at
+ * runtime under the same rule. Without them the remaining content centres.
+ */
+
+.bar {
+  --pb-bg: rgba(18, 31, 63, 1);
+  --pb-ink: rgba(255, 255, 255, 1);
+  --pb-ink-dim: rgba(213, 219, 232, 1);
+  --pb-sep: rgba(174, 183, 204, 1);
+  --pb-ring: rgba(74, 90, 128, 1);
+
+  /* TODO: swap to Söhne */
+  --pb-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  position: relative;
+  z-index: 31;
+  background: var(--pb-bg);
+  color: var(--pb-ink);
+  font-family: var(--pb-font); /* TODO: swap to Söhne */
+}
+
+.inner {
+  max-width: 1620px;
+  margin: 0 auto;
+  padding: 0 24px;
+  min-height: 47px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.message {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 16.9px;
+  line-height: 21.53px;
+  white-space: nowrap;
+}
+
+.headline {
+  font-weight: 600;
+  letter-spacing: 0.68px;
+  color: var(--pb-ink);
+}
+
+.separator {
+  font-weight: 400;
+  color: var(--pb-sep);
+}
+
+.subline {
+  font-weight: 500;
+  letter-spacing: 0.68px;
+  color: var(--pb-ink-dim);
+}
+
+/* Button / OKTOBER5 - [911, 8, 144, 32] */
+.code {
+  flex: none;
+  min-width: 144px;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px var(--pb-ring);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15.9px;
+  font-weight: 600;
+  line-height: 20.26px;
+  color: var(--pb-ink);
+}
+
+/* /Icon / arrow at [1760.5, 13.5, 19, 19].
+   Decorative: the prototype never wires a handler to it and there is only
+   one promo message, so rendering it as a button would be a dead control. */
+.arrow {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 19px;
+  height: 19px;
+  display: block;
+  color: var(--pb-ink);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE < 768 - prototype/css/mobile.css:4-5
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .inner {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 16px;
+    text-align: center;
+  }
+
+  .message {
+    font-size: 13px;
+    line-height: 1.45;
+    white-space: normal;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .code {
+    min-width: 0;
+    height: auto;
+    padding: 4px 10px;
+    border-radius: 16px;
+    box-shadow: none;
+    border: 1px dashed var(--pb-ink);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .arrow {
+    display: none;
+  }
+}

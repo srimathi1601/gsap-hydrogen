@@ -1,0 +1,436 @@
+/**
+ * Footer.module.css
+ *
+ * Source: prototype/js/sections.js -> SECTIONS.dfoot (59 nodes, 1920 x 1331,
+ *                                     background rgba(0,0,0,1))
+ *         prototype/index.html:42-44 -> footer.m-foot
+ *         prototype/css/mobile.css:61-64
+ *
+ * Desktop layout from the node data: newsletter block at x 150 (headline
+ * 60/400 over three lines, underlined CTA 641px wide), a contact + Trustpilot
+ * rail at x 1176, then a four-column link grid at x 150 / 561 / 969 / 1380,
+ * the payment + social rows, and the legal line.
+ */
+
+.footer {
+  --ft-bg: rgba(0, 0, 0, 1);
+  --ft-ink: rgba(255, 255, 255, 1);
+  --ft-dim: rgba(240, 240, 240, 1);
+  --ft-rule: rgba(255, 255, 255, 1);
+
+  /* TODO: swap to Söhne */
+  --ft-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  display: block;
+  background: var(--ft-bg);
+  color: var(--ft-ink);
+  font-family: var(--ft-font); /* TODO: swap to Söhne */
+  padding: 135px 0 111px;
+}
+
+.inner {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: minmax(0, 791fr) minmax(0, 573fr);
+  gap: 64px;
+  align-items: start;
+}
+
+.bigline {
+  margin: 0;
+  font-size: 60px;
+  font-weight: 400;
+  line-height: 73px;
+  color: var(--ft-ink);
+}
+
+/* Zum Newsletter anmelden + /Underline — a 641px rule under the CTA */
+.newsletter {
+  margin: 34px 0 0;
+  max-width: 641px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 56px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ft-rule);
+  font-size: 20.6px;
+  font-weight: 500;
+  line-height: 26.24px;
+  color: var(--ft-ink);
+  text-decoration: none;
+}
+
+.newsletter span {
+  font-weight: 400;
+}
+
+.label {
+  margin: 0;
+  font-size: 14.1px;
+  font-weight: 500;
+  line-height: 17.96px;
+  letter-spacing: 0.4px;
+  color: var(--ft-dim);
+  text-transform: uppercase;
+}
+
+.phone {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  margin: 8px 0 0;
+  font-size: 37.5px;
+  font-weight: 300;
+  line-height: 48px;
+  color: var(--ft-ink);
+  text-decoration: none;
+}
+
+.contactNote {
+  margin: 9px 0 0;
+  font-size: 16.9px;
+  font-weight: 400;
+  line-height: 22px;
+  color: var(--ft-dim);
+}
+
+.trust {
+  margin: 45px 0 0;
+}
+
+.trustTitle {
+  margin: 0;
+  font-size: 19.7px;
+  font-weight: 600;
+  line-height: 25.1px;
+  color: var(--ft-ink);
+}
+
+.trustStars {
+  display: block;
+  height: 23px;
+  width: auto;
+  margin: 6px 0 0;
+  color: var(--ft-ink);
+}
+
+.trustMeta {
+  margin: 14px 0 0;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--ft-dim);
+}
+
+.trustBrand {
+  margin: 10px 0 0;
+  font-size: 16.9px;
+  font-weight: 600;
+  line-height: 22px;
+  color: var(--ft-ink);
+}
+
+/* Link grid — columns at x 150 / 561 / 969 / 1380 */
+.columns {
+  margin: 34px 0 0;
+  padding-top: 34px;
+  border-top: 1px solid var(--ft-rule);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.columnWide {
+  grid-column: span 2;
+}
+
+.columnTitle {
+  margin: 0 0 15px;
+  font-size: 16.9px;
+  font-weight: 400;
+  line-height: 22px;
+  color: var(--ft-dim);
+}
+
+/* Desktop: the columns are always open, so the <summary> is hidden and
+   .columnTitle carries the label. Below 768px this inverts — the summary
+   becomes the accordion header, matching .m-fcol (css/mobile.css:63). */
+.columnSummary {
+  display: none;
+}
+
+.column::-webkit-details-marker {
+  display: none;
+}
+
+.columnList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  columns: 1;
+}
+
+.columnListSplit {
+  columns: 2;
+  column-gap: 32px;
+}
+
+.columnList li {
+  margin: 0; /* reset.css:126 */
+}
+
+.columnList a {
+  display: block;
+  padding: 10px 0;
+  font-size: 17.8px;
+  font-weight: 400;
+  line-height: 23px;
+  color: var(--ft-ink);
+  text-decoration: none;
+}
+
+.columnList a:hover {
+  text-decoration: underline;
+}
+
+.rows {
+  margin: 34px 0 0;
+  padding-top: 34px;
+  border-top: 1px solid var(--ft-rule);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.payRow img {
+  margin-top: 12px;
+  height: 50px;
+  width: auto;
+  display: block;
+}
+
+.socialRow img {
+  margin-top: 12px;
+  height: 60px;
+  width: auto;
+  display: block;
+}
+
+.legal {
+  margin: 34px 0 0;
+  padding-top: 37px;
+  border-top: 1px solid var(--ft-rule);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 30px;
+  font-size: 15.9px;
+  line-height: 20.26px;
+}
+
+.legal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ft-ink);
+  text-decoration: none;
+}
+
+.legal a:hover {
+  text-decoration: underline;
+}
+
+.copyright {
+  margin: 0;
+  margin-right: auto;
+  font-size: 15.9px;
+  line-height: 20.26px;
+  color: var(--ft-ink);
+}
+
+.newsletter:focus-visible,
+.phone:focus-visible,
+.columnList a:focus-visible,
+.legal a:focus-visible {
+  outline: 3px solid var(--ft-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE / TABLET — prototype/index.html:42-44, css/mobile.css:61-64
+   The link columns become <details> accordions.
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .top {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .columnWide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 767px) {
+  .footer {
+    padding: 48px 0 110px;
+  }
+
+  .inner {
+    padding: 0 16px;
+  }
+
+  .bigline {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.15;
+  }
+
+  .newsletter {
+    margin: 16px 0 24px;
+    max-width: none;
+    min-height: 56px;
+    padding-bottom: 0;
+    border-bottom: 1px solid rgba(68, 68, 68, 1);
+    font-size: 17px;
+    font-weight: 400;
+  }
+
+  .label {
+    margin-top: 20px;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: rgba(170, 170, 170, 1);
+  }
+
+  .phone {
+    margin-top: 6px;
+    min-height: 44px;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .contactNote {
+    font-size: 14px;
+  }
+
+  .trust {
+    margin-top: 20px;
+  }
+
+  .trustTitle {
+    font-size: 15px;
+  }
+
+  .trustStars {
+    height: 16px;
+  }
+
+  .trustMeta,
+  .trustBrand {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+
+  .columns {
+    margin-top: 20px;
+    padding-top: 0;
+    border-top: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .columnWide {
+    grid-column: auto;
+  }
+
+  .column {
+    border-bottom: 1px solid rgba(51, 51, 51, 1);
+  }
+
+  .columnTitle {
+    display: none;
+  }
+
+  .columnSummary {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .columnSummary::-webkit-details-marker {
+    display: none;
+  }
+
+  .columnList {
+    columns: 1;
+    padding-bottom: 10px;
+  }
+
+  .columnListSplit {
+    columns: 1;
+  }
+
+  .columnList a {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    padding: 0;
+    font-size: 15px;
+    color: rgba(221, 221, 221, 1);
+  }
+
+  .rows {
+    margin-top: 20px;
+    padding-top: 0;
+    border-top: 0;
+    display: block;
+  }
+
+  .payRow img,
+  .socialRow img {
+    margin: 6px 0;
+    height: auto;
+    max-width: 100%;
+    border-radius: 6px;
+  }
+
+  .legal {
+    margin-top: 10px;
+    padding-top: 0;
+    border-top: 0;
+    gap: 0 14px;
+    font-size: 13px;
+  }
+
+  .legal a {
+    font-size: 13px;
+    color: rgba(204, 204, 204, 1);
+  }
+
+  .copyright {
+    width: 100%;
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgba(136, 136, 136, 1);
+  }
+}

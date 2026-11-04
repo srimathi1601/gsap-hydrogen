@@ -1,0 +1,238 @@
+/**
+ * TechnicalData.module.css
+ *
+ * Source: prototype/js/sections.js -> SECTIONS.dtech (46 nodes, 1920 x 1230)
+ *         prototype/index.html:38 -> section.m-sec#tech
+ *         prototype/css/mobile.css:55-56
+ *
+ * Desktop layout from the node data: six 523x139 spec cards in a 3-column
+ * grid starting at x 150, then a two-column block - the product image at
+ * [180, 486, 711, 596] on the left and an eight-row table at x 982 width
+ * 719 on the right - and a centred CTA at y 1128.
+ */
+
+.section {
+  --td-bg: rgba(255, 255, 255, 1);
+  --td-ink: rgba(31, 31, 31, 1);
+  --td-label: rgba(74, 74, 74, 1);
+  --td-muted: rgba(107, 107, 107, 1);
+  --td-card: rgba(244, 244, 244, 1);
+  --td-card-ring: rgba(185, 185, 185, 1);
+  --td-divider: rgba(226, 221, 210, 1);
+
+  /* TODO: swap to Söhne */
+  --td-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  display: block;
+  background: var(--td-bg);
+  font-family: var(--td-font); /* TODO: swap to Söhne */
+  color: var(--td-ink);
+  padding: 42px 0 46px;
+}
+
+.inner {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heading {
+  margin: 0;
+  font-size: 60px;
+  font-weight: 400;
+  line-height: 76.44px;
+  color: var(--td-ink);
+}
+
+/* Spec card — 523 x 139, radius 26, bg #f4f4f4, 1px ring */
+.specs {
+  margin: 29px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.spec {
+  margin: 0; /* reset.css:126 */
+  min-height: 139px;
+  border-radius: 26px;
+  background: var(--td-card);
+  box-shadow: inset 0 0 0 1px var(--td-card-ring);
+  padding: 34px 30px 30px;
+}
+
+.specValue {
+  display: block;
+  font-size: 26.3px;
+  font-weight: 600;
+  line-height: 33.51px;
+  color: var(--td-ink);
+}
+
+.specLabel {
+  display: block;
+  margin-top: 14px;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--td-muted);
+}
+
+.detail {
+  margin: 46px 0 0;
+  display: grid;
+  grid-template-columns: minmax(0, 711fr) minmax(0, 719fr);
+  gap: 91px;
+  align-items: start;
+}
+
+/* IMG:gallery-main — [180, 486, 711, 596] */
+.image {
+  width: 100%;
+  border-radius: 26px;
+  object-fit: contain;
+  display: block;
+  background: var(--td-card);
+}
+
+/* The eight-row table at x 982 */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17.8px;
+  line-height: 22.68px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--td-divider);
+  vertical-align: top;
+}
+
+.table th {
+  font-weight: 400;
+  color: var(--td-label);
+  width: 58%; /* 1396 - 982 of 719 */
+}
+
+.table td {
+  font-weight: 500;
+  color: var(--td-ink);
+}
+
+.table tr:first-child th,
+.table tr:first-child td {
+  padding-top: 0;
+}
+
+/* Button / Alle technischen Daten — 259 x 56, radius 28, 1px ink ring */
+.cta {
+  margin: 88px auto 0;
+  display: block;
+  min-height: 56px;
+  padding: 0 34px;
+  border: 0;
+  border-radius: 28px;
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--td-ink);
+  font-family: inherit;
+  font-size: 16.9px;
+  font-weight: 600;
+  line-height: 21.53px;
+  color: var(--td-ink);
+  cursor: pointer;
+}
+
+.cta:focus-visible {
+  outline: 3px solid var(--td-ink);
+  outline-offset: 3px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE / TABLET — prototype/index.html:38, css/mobile.css:55-56
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .specs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+}
+
+@media (max-width: 767px) {
+  .section {
+    padding: 48px 0;
+  }
+
+  .inner {
+    padding: 0 16px;
+  }
+
+  .heading {
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .specs {
+    margin-top: 20px;
+    gap: 10px;
+  }
+
+  .spec {
+    min-height: 0;
+    border-radius: 26px;
+    box-shadow: none;
+    padding: 16px;
+  }
+
+  .specValue {
+    font-size: 20px;
+  }
+
+  .specLabel {
+    margin-top: 2px;
+    font-size: 13px;
+    color: rgba(85, 85, 85, 1);
+  }
+
+  .detail {
+    margin-top: 16px;
+    gap: 16px;
+  }
+
+  .image {
+    border-radius: 26px;
+  }
+
+  .table {
+    font-size: 14px;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(224, 224, 224, 1);
+  }
+
+  .table th {
+    width: 45%;
+    color: rgba(85, 85, 85, 1);
+  }
+
+  .cta {
+    margin-top: 20px;
+    width: 100%;
+    min-height: 56px;
+    border-radius: 28px;
+    font-size: 16px;
+  }
+}

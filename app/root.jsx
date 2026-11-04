@@ -13,7 +13,10 @@ import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
+// Must be linked AFTER reset.css + app.css — see the file header.
+import pdpBaseStyles from '~/styles/pdp-base.css?url';
 import tailwindCss from './styles/tailwind.css?url';
+import fontStyles from '~/styles/fonts.css?url';
 import {PageLayout} from './components/PageLayout';
 
 /**
@@ -54,6 +57,16 @@ export function links() {
     {
       rel: 'preconnect',
       href: 'https://shop.app',
+    },
+    {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+    {
+      rel: 'preconnect',
+      href: 'https://fonts.gstatic.com',
+      crossOrigin: 'anonymous',
+    },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap',
     },
     {rel: 'icon', type: 'image/svg+xml', href: favicon},
   ];
@@ -151,9 +164,45 @@ export function Layout({children}) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <link rel="stylesheet" href={fontStyles}></link>
+        {/* Preload removed: the prototype declares its own @font-face
+            (Sohne -> /fonts/intertight.ttf, app.css). Nothing on this page
+            uses Inter Tight, so the preload forced an unused 239 KB
+            download on every load. app/styles/fonts.css is still linked
+            for the React sections, and costs nothing while unused. */}
         <link rel="stylesheet" href={tailwindCss}></link>
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
+        <link rel="stylesheet" href={pdpBaseStyles}></link>
+        {/*
+          Import map for the prototype's 3D viewer (public/js/three3d.js).
+
+          It lives here, in the server-rendered <head>, rather than being
+          injected at runtime: an import map must be in the document before
+          any module script loads, and browsers other than Chrome accept
+          only one. Injecting it from an effect would be a race at best and
+          a console error at worst.
+
+          tools/sync-prototype.mjs also rewrites three3d.js and the three
+          addons to relative specifiers, so this map is a safety net rather
+          than load-bearing — it keeps a bare `three` import working if a
+          future prototype update reintroduces one.
+
+          Needs the nonce: script-src carries one, and 'self' does not
+          cover inline scripts.
+        */}
+        <script
+          type="importmap"
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              imports: {
+                three: '/js/three/three.module.js',
+                'three/addons/': '/js/three/addons/',
+              },
+            }),
+          }}
+        />
         <Meta />
         <Links />
       </head>
@@ -180,6 +229,27 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
+      {/* <SmoothScroll /> is NOT rendered.
+
+          It is a leftover from the hand-written React build and it fights
+          the prototype for control of the page:
+
+            SmoothScroll          public/js/app.js:3
+            ------------          -------------------
+            new Lenis(...)   #1   new Lenis(...)   #2
+            window.lenis = #1     window.lenis = #2   (overwrites)
+            import('gsap')        /js/gsap.min.js
+              -> npm gsap 3.15      -> vendored gsap
+            gsap.ticker.add  #1   gsap.ticker.add  #2
+
+          Two Lenis instances both hijack wheel events and animate
+          scrollTop every frame, and the two GSAP copies keep separate
+          tickers and separate ScrollTrigger registries — so every pin is
+          measured by one engine and scrolled by the other. That is the
+          scroll lag.
+
+          The component is still in app/components/SmoothScroll.jsx for the
+          React sections; it must not be mounted while PrototypePage is. */}
       <PageLayout {...data}>
         <Outlet />
       </PageLayout>

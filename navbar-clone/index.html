@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sportstech Header</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+
+  <!-- ===== Row 1: announcement bar ===== -->
+  <div class="announce">
+    <div class="announce__inner">
+      <span class="announce__title">Oktober-Fit Days</span>
+      <span class="announce__dot" aria-hidden="true">&middot;</span>
+      <span class="announce__text">5 % sparen mit Code</span>
+      <span class="announce__code">Oktober5</span>
+
+      <ul class="countdown" id="countdown">
+        <li class="cd"><span class="cd__num" data-cd="d">05</span><span class="cd__unit">T</span></li>
+        <li class="cd"><span class="cd__num" data-cd="h">13</span><span class="cd__unit">Std</span></li>
+        <li class="cd"><span class="cd__num" data-cd="m">13</span><span class="cd__unit">Min</span></li>
+        <li class="cd"><span class="cd__num" data-cd="s">52</span><span class="cd__unit">Sek</span></li>
+      </ul>
+    </div>
+
+    <a class="announce__arrow" href="#" aria-label="Zum Angebot">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 12h16.5"/><path d="m13 5 7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- ===== Row 2: main header ===== -->
+  <div class="mainbar">
+    <div class="container mainbar__inner">
+
+      <a class="logo" href="#" aria-label="Sportstech">
+        <img class="logo__img" src="logo.png" alt="Sportstech" width="257" height="42"
+             onload="this.closest('.logo').classList.add('logo--has-img')">
+        <!-- fallback mark, shown only when logo.png is missing -->
+        <svg class="logo__svg" viewBox="0 0 257 42" width="257" height="42" aria-hidden="true">
+          <g fill="#0b0b0b">
+            <rect x="0.25" y="6.75" width="33.5" height="11.5" rx="5.75" transform="rotate(-30 17 12.5)"/>
+            <rect x="1" y="25.75" width="25" height="12.5" rx="6.25" transform="rotate(-32 13.5 32)"/>
+          </g>
+          <text x="39" y="29.5" textLength="217" lengthAdjust="spacingAndGlyphs"
+                font-family="Inter, system-ui, sans-serif" font-size="25" font-weight="800"
+                font-style="italic" fill="#0b0b0b">SPORTSTECH</text>
+        </svg>
+      </a>
+
+      <nav class="nav" aria-label="Hauptnavigation">
+        <a class="nav__link" href="#">Geräte<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a>
+        <a class="nav__link" href="#">Nach Ziel<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a>
+        <a class="nav__link" href="#">Sportstech Live</a>
+        <a class="nav__link" href="#">Deals</a>
+        <a class="nav__link" href="#">Ratgeber</a>
+      </nav>
+
+      <div class="actions">
+        <button class="lang" type="button" aria-label="Sprache wählen: Deutsch">
+          <svg class="flag" viewBox="0 0 22 22" aria-hidden="true">
+            <defs><clipPath id="flagClip"><circle cx="11" cy="11" r="11"/></clipPath></defs>
+            <g clip-path="url(#flagClip)">
+              <rect width="22" height="7.34" y="0" fill="#000"/>
+              <rect width="22" height="7.34" y="7.33" fill="#dd0000"/>
+              <rect width="22" height="7.34" y="14.66" fill="#ffce00"/>
+            </g>
+          </svg>
+          <span class="lang__code">DE</span>
+          <svg class="chev chev--lang" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+
+        <button class="iconbtn" type="button" aria-label="Suche">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7.5"/><path d="m16.8 16.8 4.7 4.7"/>
+          </svg>
+        </button>
+
+        <button class="iconbtn" type="button" aria-label="Konto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="8" r="4.5"/><path d="M4.5 22.5a7.5 7.5 0 0 1 15 0"/>
+          </svg>
+        </button>
+
+        <button class="iconbtn" type="button" aria-label="Warenkorb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5.5 7.5h13v14h-13z" rx="1"/><path d="M8.5 7.5V5a3.5 3.5 0 0 1 7 0v2.5"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</header>
+
+<!-- ===== Row 3: product sticky bar =====
+     Sits outside <header> on purpose: position:sticky is bounded by its parent,
+     so inside the 206px header it would unstick after ~141px of scroll. -->
+<div class="productbar">
+  <div class="container productbar__inner">
+    <span class="pb__title">sTread Pro Laufband</span>
+
+    <div class="pb__linkswrap">
+      <nav class="pb__links" aria-label="Produktabschnitte">
+        <a href="#">Features</a>
+        <a href="#">Sportstech Live</a>
+        <a href="#">Bewertungen</a>
+        <a href="#">FAQ</a>
+        <a href="#">Technische Daten</a>
+        <a href="#">Service</a>
+      </nav>
+    </div>
+
+    <div class="pb__right">
+      <span class="pb__old">2.758,80&nbsp;&euro;</span>
+      <span class="pb__new">2.179&nbsp;&euro;</span>
+      <span class="pb__save">579,80&nbsp;&euro; gespart</span>
+      <button class="pb__cta" type="button">In den Warenkorb</button>
+    </div>
+  </div>
+</div>
+
+<main class="demo"><p>Scrollen &ndash; die Produktleiste bleibt oben kleben.</p></main>
+
+<script src="script.js"></script>
+</body>
+</html>

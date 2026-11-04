@@ -1,0 +1,180 @@
+# PROGRESS — gsap-hydrogen PDP
+
+Figma file: `OI4fY2NSIR5YSdxxSIG6jY` — sTread Pro Animation website
+Section board: `35:721` ("Section 1")
+
+---
+
+## Section 1: StreadPro3D — "STREAD PRO IN 3D" pinned 5-step showcase
+
+Status: ✅ done (HTML prototype skipped by request — built direct to React)
+
+HTML Prototype: ⬜ skipped — approved on 2026-11-03
+React Component: `app/sections/StreadPro3D/index.jsx` ✅
+Styles: `app/sections/StreadPro3D/StreadPro3D.module.css` ✅
+Mounted: `app/routes/($locale)._index.jsx` ✅ (ScrollShowcase import untouched)
+Backup: `_backup/($locale)._index.jsx.20261103-181002` ✅
+
+Figma nodes used:
+
+- Desktop steps 01–05: `34:2` / `34:54` / `34:106` / `34:159` / `34:211` (1920×1471)
+- Mobile steps 01–05: `34:308` / `34:353` / `34:398` / `34:444` / `34:489` (390×~1038)
+- Dev notes: `34:579` (desktop) / `34:587` (mobile) — identical text
+- Figma variables: none defined (`get_variable_defs` → `{}`), all literals tokenised in CSS
+
+Assets:
+
+- ✅ `step-01.png` … `step-05.png` → `public/images/stread-pro-3d/` (1768×1116 source,
+  ~2.5× the 695×538 desktop slot; mobile reuses the identical files — verified by md5)
+- ✅ 7 icons → `app/assets/icons/stread-pro-3d-*.svg` (saved verbatim from Figma,
+  inlined in the component with `currentColor` so the active tab flips to white)
+- ⬜ PNG not converted to WebP — no `sharp` / `cwebp` / `magick` on this machine
+- ⬜ Transition clips unused — crossfade stands in (approved Q2, option a)
+
+Animations (all SOURCE: Figma dev note — none assumed):
+
+- ✅ Section pin — **CSS `position:sticky`**, `start:"top top"` `end:"bottom bottom"`
+  `scrub:0.6`, travel `500svh` desktop / `400svh` mobile via `--sp3d-travel`,
+  `ignoreMobileResize:true` on mobile — dev note `34:581` / `34:585`
+  (retuned 2026-11-04 from `pin:true` — see "Retune" below)
+- ✅ Step switch — image crossfade + `scale 1.04→1` + `y 40→0`; title/body/tags
+  `y 24→0` + fade, `stagger 0.06`, `0.6s power2.inOut`, never hard-swapped — note `34:582`
+- ✅ Active pill slide — `translateX = index × 180px`, `0.6s power2.inOut`;
+  inner bar fills `0→100%` with within-step scroll progress — note `34:583`
+- ✅ Mobile active dot stretch `10→40px` (CSS transition, same easing) — note `34:583`
+- ✅ `prefers-reduced-motion` → fade only (no scale, no y, no stagger) — note `34:586`
+- ✅ Forward + backward: scrub-driven, step index recomputed from the smoothed
+  timeline playhead so reversing re-crossfades symmetrically
+
+Interaction (dev note `34:583` / `34:586`):
+
+- ✅ Tab / dot click → `scrollTo` that step's start
+- ✅ `‹ ›` prev/next buttons (48px desktop, 44px mobile)
+- ✅ `←` `→` keys on the tabs
+- ✅ `role="tablist"` / `role="tab"` / `aria-selected` / `aria-controls` / roving `tabIndex`
+- ✅ `aria-live="polite"` on the "Schritt X von 5" count
+- ❌ Auto-advance 1800ms deliberately NOT built — prototype-only (approved Q4)
+- ❌ Drag-to-rotate NOT built — no GLB, 5 static renders only (approved Q3)
+
+Decisions applied (answers of 2026-11-03):
+
+- Inter placeholder for Söhne; `/* TODO: swap to Söhne */` on every `font-family`
+  declaration. Weights mapped Leicht 300 / Buch 400 / Kräftig 500 / Halbfett 700.
+- Type sizes kept verbatim, incl. 50.6px / 20.6px.
+- Desktop step title 300 (Leicht), mobile step title 500 (Kräftig) — intentional.
+- Mobile typo `Lauffäche` corrected to `Lauffläche`.
+- Step 05 copy block stays top-anchored; two-line title grows downward.
+- Swap points marked: `/* SWAP: replace crossfade with MP4/canvas sequence … */`
+  and `/* TODO: swap to GLB when 3D model is ready */`.
+
+Retune (2026-11-04) — reconciled against `prototype/`:
+
+- `pin: true` → CSS `position: sticky`. The prototype holds the stage with
+  `.pinbox{position:sticky;top:0}` (`prototype/index.html`) and never calls
+  ScrollTrigger's `pin` (`prototype/js/engine.js` → `mountPinned`).
+  ScrollTrigger now only drives the timeline.
+- Canvas height `1471px` (Figma frame `34:2`) → `1182px` (`SECTIONS.d3d.H`),
+  exposed as `--sp3d-canvas-h` and used as the fit-scale reference.
+- Fit breakpoints recomputed against 1182: `0.88 / 0.77 / 0.67 / 0.60` at
+  `≤1181 / ≤1039 / ≤919 / ≤799` viewport height. Each factor keeps
+  `1182 × factor` under the band minimum, so the composition always clears.
+- Scroll length unchanged (500svh / 400svh) — kept per "all other Figma values".
+- Removed the now-unused `pinRef`.
+
+Verification:
+
+- ✅ `npx eslint app/sections/StreadPro3D` → clean (after retune)
+- ✅ `npm run build` → client + server bundles built (after retune)
+- ⬜ Not yet opened in a browser — scroll feel, sticky behaviour and pixel diff
+  unverified
+
+Open Points:
+
+- **Söhne licence** — metrics differ from Inter, so line lengths/wraps will shift
+  once the real face lands. Re-check the 467px body column and the fixed-width tags.
+- **WebP** — step PNGs are 589–897 KB each (~3.4 MB total). Needs conversion
+  before this goes anywhere near production.
+- **Short-viewport fit** — the desktop composition is ~1156px tall; it is scaled
+  to fit the pin via height media queries (0.88 / 0.78 / 0.68 at 1179 / 999 /
+  879px). Proportions are preserved exactly; confirm the look on a real laptop.
+- **Tablet 768–1439** — dev note only says "2-col stage scales down, stats 4→2";
+  no Figma frame exists for this range, so the reflow is an interpretation of
+  that note and needs a design review.
+- `gsap.matchMedia()` used rather than the deprecated `ScrollTrigger.matchMedia()`
+  shim; `mm.add(query, fn)` is identical in GSAP 3.15.
+
+Next: Section 2 — not yet identified. The board also holds `35:722` ("Frame 3",
+1920×3424) which is the full existing PDP, read for context only, not built.
+
+---
+
+# Prototype conversion (2026-11-04)
+
+Source: `prototype/` — a generated, data-driven prototype. `js/sections.js`
+(236 KB) is a Figma-derived keyframe graph; `js/engine.js` interprets it.
+All sections below were **hand-written as semantic React** (option b), using
+the keyframe data as the spec rather than porting the engine.
+
+## Global setup
+
+- `public/fonts/intertight.ttf` + `intertight.woff2` (580 KB → 239 KB via
+  `npx ttf2woff2`). `app/styles/fonts.css` declares `'Inter Tight'`, linked +
+  preloaded from `app/root.jsx`. TODO comments for Söhne kept everywhere.
+- `@studio-freight/lenis@1.0.42` installed. `app/components/SmoothScroll.jsx`
+  initialises it (`lerp: 0.1`), wires `gsap.ticker` + `ScrollTrigger.update`,
+  and is mounted once in `app/root.jsx`. Disabled under reduced motion.
+  Dynamically imported so it stays out of the SSR/worker bundle.
+- `app/lib/useRevealOnScroll.js` — the shared `.rv` reveal for static slabs.
+- Backups: `_backup/root.jsx.20261104-101331`,
+  `_backup/($locale)._index.jsx.20261104-102455`.
+
+## Sections
+
+| # | Section | Type | Source |
+|---|---------|------|--------|
+| 1 | `ProductGalleryBuybox` | static slab | `img/s_top.jpg` 1920×3424 |
+| 2 | `StreadPro3D` | sticky scroll, 5 kf | done earlier, retuned |
+| 3 | `KeyFeatures` | interactive cover-flow | `dkf`/`mkf` + `img/kf1–5.jpg` |
+| 4 | `SportstechLive` | sticky scroll, 9 kf | `dlive`/`mlive` + 6 `fig/*.webp` |
+| 5 | `VideoShowcase` | sticky scroll, 4 kf | `dvid`/`mvid` + 2 `fig/*.webp` |
+| 6 | `Reviews` | static slab + `.rv` | `img/s_reviews.jpg` |
+| 7 | `FAQ` | static slab + `.rv` | `img/s_faq.jpg` |
+| 8 | `TechnicalData` | static slab + `.rv` | `img/s_tech.jpg` |
+| 9 | `ServiceDelivery` | static slab + `.rv` | `img/s_service.jpg` |
+| 10 | `Footer` | static slab | `img/s_footer.jpg` |
+
+All ten mounted in `app/routes/($locale)._index.jsx` in page order.
+`ScrollShowcase` import untouched.
+
+## #11 SiteHeader — NOT built, deliberately
+
+The prototype has no navbar: `index.html` opens straight into
+`<section class="static" id="top">`. A header already exists —
+`app/components/SportstechHeader.jsx` (pixel clone of the Sportstech
+storefront header, with a sticky product bar in
+`app/styles/sportstech-header.css`) — and it is **already rendered for every
+page** at `app/components/PageLayout.jsx:29`. Adding `app/components/SiteHeader/`
+would put two headers on the page. Left alone pending a decision.
+
+## Verification
+
+- ✅ `npx eslint app/sections app/components/SmoothScroll.jsx app/lib/useRevealOnScroll.js` → clean
+- ✅ `npm run build` → client + server bundles built
+- ✅ Every `/images/**` and `/fonts/**` reference resolves on disk
+- ✅ All four CSS Modules bundled into `(_locale)-*.css`; Lenis code-split
+- ⬜ **Not opened in a browser.** No section has been visually verified.
+
+## Open points
+
+- **Dead assets skipped** (as agreed): `img/live_*.jpg`, `img/step1–5.jpg`,
+  `img/poster.jpg`, `img/thumb.jpg` — the prototype never references them.
+  `poster.jpg` was superseded by `fig/84d3f45f8f6b.webp`, which is the fill the
+  Poster node actually renders.
+- **Fit scaling** is stepped media queries, not the prototype's continuous
+  `min(vw/W, vh/H)` JS resize listener. Ratios are exact; the steps are not.
+- **`SportstechLive` heading** uses one string whose width + font-size animate,
+  rather than the prototype's swap between two literal strings differing only
+  by a newline. Same visual result, no duplicated copy.
+- **`VideoShowcase` play/pause are presentational** (`aria-hidden`, not
+  buttons) because there is no video to control. Promote them when the MP4 lands.
+- **Six flat JPEG slabs** (~3.2 MB) carry no selectable or indexable text.

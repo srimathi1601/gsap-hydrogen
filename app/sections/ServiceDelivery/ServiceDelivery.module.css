@@ -1,0 +1,324 @@
+/**
+ * ServiceDelivery.module.css
+ *
+ * Source: prototype/js/sections.js -> SECTIONS.dsvc (55 nodes, 1920 x 1125)
+ *         prototype/index.html:39-41 -> section.m-sec#svc
+ *         prototype/css/mobile.css:57-60
+ *
+ * Desktop layout from the node data: two cards, each 30px-rounded on
+ * rgba(243,243,243,1) with a 1px rgba(226,221,210,1) ring, carrying a pill
+ * badge that straddles the top edge. Items are a 53px circular tile plus a
+ * title / body column, two per row.
+ */
+
+.section {
+  --sv-bg: rgba(255, 255, 255, 1);
+  --sv-ink: rgba(31, 31, 31, 1);
+  --sv-body: rgba(74, 74, 74, 1);
+  --sv-muted: rgba(107, 107, 107, 1);
+  --sv-card: rgba(243, 243, 243, 1);
+  --sv-card-ring: rgba(226, 221, 210, 1);
+  --sv-tile: rgba(219, 219, 219, 1);
+  --sv-badge-bg: rgba(107, 107, 107, 0.1);
+  --sv-badge-ring: rgba(107, 107, 107, 0.12);
+  --sv-badge-ink: rgba(53, 53, 53, 1);
+  --sv-inner-ring: rgba(217, 217, 217, 1);
+
+  /* TODO: swap to Söhne */
+  --sv-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  display: block;
+  background: var(--sv-bg);
+  font-family: var(--sv-font); /* TODO: swap to Söhne */
+  color: var(--sv-ink);
+  padding: 75px 0 84px;
+}
+
+.inner {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.heading {
+  margin: 0;
+  font-size: 60px;
+  font-weight: 400;
+  line-height: 76.44px;
+  color: var(--sv-ink);
+}
+
+.lede {
+  margin: 0;
+  font-size: 18.8px;
+  font-weight: 400;
+  line-height: 23.95px;
+  color: var(--sv-muted);
+}
+
+/* Card – INKLUSIVE / Card – SERVICE NACH DEM KAUF */
+.card {
+  position: relative;
+  margin-top: 93px;
+  border-radius: 30px;
+  background: var(--sv-card);
+  box-shadow: inset 0 0 0 1px var(--sv-card-ring);
+  padding: 48px 39px 42px;
+}
+
+/* Frame 20 / Frame 21 — the badge straddles the card's top edge */
+.badge {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -50%);
+  min-height: 38px;
+  padding: 0 22px;
+  border-radius: 20px;
+  background: var(--sv-card);
+  box-shadow:
+    inset 0 0 0 1px var(--sv-badge-ring),
+    0 0 0 6px var(--sv-bg);
+  display: inline-flex;
+  align-items: center;
+  font-size: 14.1px;
+  font-weight: 500;
+  line-height: 17.96px;
+  letter-spacing: 0.4px;
+  color: var(--sv-badge-ink);
+  white-space: nowrap;
+}
+
+.badgeTinted {
+  background: var(--sv-badge-bg);
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 48px 72px;
+}
+
+.itemsDivided > .item:nth-child(-n + 2) {
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--sv-inner-ring);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 53px minmax(0, 1fr);
+  gap: 21px;
+  align-items: start;
+}
+
+.tile {
+  width: 53px;
+  height: 53px;
+  border-radius: 50%;
+  background: var(--sv-tile);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sv-ink);
+}
+
+.tile svg {
+  width: 23px;
+  height: 23px;
+  display: block;
+}
+
+.itemTitle {
+  margin: 0;
+  font-size: 20.6px;
+  font-weight: 600;
+  line-height: 26.24px;
+  color: var(--sv-ink);
+}
+
+.itemBody {
+  margin: 8px 0 0;
+  font-size: 16.9px;
+  font-weight: 400;
+  line-height: 27px;
+  color: var(--sv-body);
+}
+
+.itemLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 6px;
+  margin-right: 24px;
+  font-size: 16.9px;
+  font-weight: 500;
+  line-height: 21.53px;
+  color: var(--sv-ink);
+}
+
+.itemLink:focus-visible {
+  outline: 3px solid var(--sv-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Optional box — [263, 416, 624, 124], radius 19, white, 1px ring */
+.optional {
+  margin-top: 17px;
+  border-radius: 19px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--sv-inner-ring);
+  padding: 21px 22px;
+}
+
+.optionalLabel {
+  margin: 0;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--sv-muted);
+}
+
+.optionalRow {
+  margin: 10px 0 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 18.8px;
+  font-weight: 600;
+  line-height: 23.95px;
+  color: var(--sv-ink);
+}
+
+.optionalNote {
+  margin: 8px 0 0;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--sv-muted);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE / TABLET — prototype/index.html:39-41, css/mobile.css:57-60
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .items {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .itemsDivided > .item:nth-child(-n + 2) {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .section {
+    padding: 48px 0;
+  }
+
+  .inner {
+    padding: 0 16px;
+  }
+
+  .head {
+    display: block;
+  }
+
+  .heading {
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .lede {
+    margin-top: 10px;
+    font-size: 15px;
+    line-height: 1.45;
+    color: rgba(68, 68, 68, 1);
+  }
+
+  .card {
+    margin-top: 38px;
+    border-radius: 30px;
+    box-shadow: none;
+    padding: 28px 16px 20px;
+  }
+
+  .badge {
+    position: static;
+    transform: none;
+    margin-bottom: 10px;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: none;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .badgeTinted {
+    background: #ffffff;
+  }
+
+  .items {
+    gap: 0;
+  }
+
+  .item {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .tile {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(219, 219, 219, 1);
+  }
+
+  .itemTitle {
+    font-size: 16px;
+  }
+
+  .itemBody {
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(68, 68, 68, 1);
+  }
+
+  .itemLink {
+    font-size: 14px;
+    margin-right: 12px;
+  }
+
+  .optional {
+    margin-top: 8px;
+    border-radius: 16px;
+    box-shadow: none;
+    padding: 10px 12px;
+  }
+
+  .optionalLabel,
+  .optionalNote {
+    font-size: 13px;
+  }
+
+  .optionalRow {
+    font-size: 14px;
+  }
+}

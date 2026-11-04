@@ -1,0 +1,38 @@
+/**
+ * ServiceDelivery
+ *
+ * Source: prototype/index.html — <section class="static rv"> with
+ *   img/service-delivery.jpg (1920×1125)
+ * Asset: public/images/service-delivery/service-delivery.jpg
+ *
+ * Animation: shared `.rv` reveal — y 60 → 0, opacity 0 → 1, 1s power3.out,
+ *   ScrollTrigger start "top 88%". No scrub and no toggleActions, so it
+ *   plays once and does not reverse. SOURCE: prototype/js/app.js
+ *
+ * TODO: build as real markup later — flat screenshot, no selectable text.
+ */
+
+import {useRef} from 'react';
+import {useRevealOnScroll} from '~/lib/useRevealOnScroll';
+import styles from './ServiceDelivery.module.css';
+
+export function ServiceDelivery() {
+  const ref = useRef(null);
+  useRevealOnScroll(ref);
+
+  return (
+    <section ref={ref} className={styles.section} id="service">
+      <img
+        className={styles.image}
+        src="/images/service-delivery/service-delivery.jpg"
+        alt="Lieferung, Garantie &amp; Service"
+        width="1920"
+        height="1125"
+        loading="lazy"
+        decoding="async"
+      />
+    </section>
+  );
+}
+
+export default ServiceDelivery;

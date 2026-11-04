@@ -1,0 +1,25 @@
+/**
+ * TechnicalData.module.css
+ *
+ * Source: prototype/index.html — `.static` slab.
+ * Base rules ported from the prototype's inline <style>:
+ *   img{display:block;width:100%;height:auto}
+ *   .static img{max-width:1920px;margin:0 auto}
+ *
+ * TODO: build as real markup later — this is a flat screenshot of the
+ * whole section, so none of its text is selectable, translatable or
+ * indexable, and it cannot reflow on small screens.
+ */
+.section {
+  display: block;
+  width: 100%;
+  background: #ffffff;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 1920px;
+  margin: 0 auto;
+}

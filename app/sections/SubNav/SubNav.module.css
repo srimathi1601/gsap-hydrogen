@@ -1,0 +1,188 @@
+/**
+ * SubNav.module.css
+ *
+ * Source: prototype/js/sections.js -> SECTIONS.dtop
+ *           /Sub-nav – sticky product bar (17 nodes, 1920 x 71 at y 145)
+ *         prototype/index.html:8  -> nav.m-sub (mobile)
+ *         prototype/css/mobile.css:9
+ *
+ * STICKY (approved Q4): genuine `position: sticky; top: 0`. The prototype
+ * fakes it with a per-scroll-frame translateY inside a transformed stage
+ * (prototype/js/app.js:60-66) because native sticky cannot work there; that
+ * hack is deliberately NOT reproduced.
+ *
+ * Measurements from the node data:
+ *   bar          1920 x 71, #ffffff, 1px bottom divider rgba(226,221,210,1)
+ *   product      22.5px / 400 / rgba(31,31,31,1)
+ *   nav link     17.8px / 400 / rgba(74,74,74,1)
+ *   was-price    17.8px / 400 / rgba(107,107,107,1), struck through
+ *   price        21.6px / 600 / rgba(31,31,31,1)
+ *   saving pill  161 x 32, r16, bg rgba(220,231,253,1),
+ *                15.9px / 600 / rgba(30,95,216,1)
+ *   CTA          203 x 45, r23, bg rgba(30,107,245,1),
+ *                18.8px / 600 / #ffffff
+ */
+
+.bar {
+  --sn-bg: rgba(255, 255, 255, 1);
+  --sn-ink: rgba(31, 31, 31, 1);
+  --sn-link: rgba(74, 74, 74, 1);
+  --sn-was: rgba(107, 107, 107, 1);
+  --sn-save-bg: rgba(220, 231, 253, 1);
+  --sn-save-ink: rgba(30, 95, 216, 1);
+  --sn-cta: rgba(30, 107, 245, 1);
+  --sn-divider: rgba(226, 221, 210, 1);
+
+  /* TODO: swap to Söhne */
+  --sn-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--sn-bg);
+  border-bottom: 1px solid var(--sn-divider);
+  font-family: var(--sn-font); /* TODO: swap to Söhne */
+  color: var(--sn-ink);
+}
+
+.inner {
+  max-width: 1620px;
+  margin: 0 auto;
+  padding: 0 24px;
+  min-height: 71px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.product {
+  flex: none;
+  margin: 0;
+  font-size: 22.5px;
+  font-weight: 400;
+  line-height: 28.67px;
+  white-space: nowrap;
+}
+
+.links {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  min-width: 0;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 17.8px;
+  font-weight: 400;
+  line-height: 22.68px;
+  color: var(--sn-link);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.link:hover {
+  color: var(--sn-ink);
+  text-decoration: underline;
+}
+
+.prices {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.was {
+  font-size: 17.8px;
+  font-weight: 400;
+  line-height: 22.68px;
+  color: var(--sn-was);
+}
+
+.now {
+  font-size: 21.6px;
+  font-weight: 600;
+  line-height: 27.52px;
+  color: var(--sn-ink);
+}
+
+.saving {
+  min-width: 161px;
+  height: 32px;
+  padding: 0 19px;
+  border-radius: 16px;
+  background: var(--sn-save-bg);
+  color: var(--sn-save-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15.9px;
+  font-weight: 600;
+  line-height: 20.26px;
+  white-space: nowrap;
+}
+
+.cta {
+  flex: none;
+  min-width: 203px;
+  height: 45px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 23px;
+  background: var(--sn-cta);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 18.8px;
+  font-weight: 600;
+  line-height: 23.95px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.link:focus-visible,
+.cta:focus-visible {
+  outline: 3px solid var(--sn-ink);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE < 768 - prototype/index.html:8 + css/mobile.css:9
+   The bar collapses to the scrolling anchor list only; the product name,
+   price block and CTA move into the buy box and the global sticky bar.
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .inner {
+    min-height: 0;
+    padding: 0 6px;
+    gap: 4px;
+  }
+
+  .product,
+  .prices,
+  .cta {
+    display: none;
+  }
+
+  .links {
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .link {
+    flex: none;
+    padding: 0 10px;
+    font-size: 14px;
+    line-height: 18px;
+  }
+}

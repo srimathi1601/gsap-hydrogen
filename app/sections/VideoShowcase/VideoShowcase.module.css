@@ -1,0 +1,411 @@
+/**
+ * VideoShowcase.module.css
+ *
+ * Source: prototype/js/sections.js → SECTIONS.dvid (1920×1080) /
+ *         SECTIONS.mvid (390×844), 4 keyframes each
+ *         prototype/js/app.js — mountPinned(..., {fit:!MOB, per:1, snap:false})
+ *
+ * The card's children (poster, buttons, progress rail) keep constant insets
+ * across every keyframe — right 32 / bottom 44 for the buttons, left+right 32
+ * / bottom 16 for the rail — so only the card itself is animated and the
+ * children ride along. Verified against both dvid and mvid node data.
+ */
+
+.section {
+  --vid-bg: #ffffff;
+  --vid-ink: rgba(24, 26, 29, 1);
+  --vid-ink-muted: rgba(74, 79, 87, 1);
+  --vid-card-bg: rgba(0, 0, 0, 1);
+  --vid-control-bg: rgba(26, 26, 26, 0.85);
+  --vid-rail: rgba(255, 255, 255, 0.3);
+  --vid-rail-fill: rgba(255, 255, 255, 1);
+  --vid-bar-bg: rgba(46, 45, 41, 1);
+  --vid-bar-price: rgba(189, 185, 176, 1);
+  --vid-cta: rgba(30, 107, 245, 1);
+
+  /* Type — TODO: swap to Söhne */
+  --vid-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+
+  --vid-canvas-w: 1920px;
+  --vid-canvas-h: 1080px;
+  --vid-fit: 1;
+  --vid-travel: 300svh; /* (4 keyframes − 1) × 100vh × per 1 */
+
+  position: relative;
+  display: block;
+  width: 100%;
+  height: calc(100svh + var(--vid-travel));
+  /* Explicit: the scaffold's reset.css:85 pads every <section> by 2rem,
+     which would shrink the scrub travel and open a white gap. The pinned
+     box must be exactly 100svh + travel. */
+  padding: 0;
+  background: var(--vid-bg);
+  font-family: var(--vid-font); /* TODO: swap to Söhne */
+  color: var(--vid-ink);
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--vid-bg);
+}
+
+.canvas {
+  position: relative;
+  width: var(--vid-canvas-w);
+  height: var(--vid-canvas-h);
+  transform: scale(var(--vid-fit));
+  transform-origin: center center;
+  flex-shrink: 0;
+}
+
+/* ── Heading — dvid /Heading block (x410 y390.5 → y270.5, fades out) ── */
+.headingBlock {
+  position: absolute;
+  left: 410px;
+  top: 390.5px;
+  width: 1100px;
+  text-align: center;
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--vid-font); /* TODO: swap to Söhne */
+  font-size: 72px;
+  font-weight: 400;
+  line-height: 82.8px;
+  color: var(--vid-ink);
+}
+
+.subtext {
+  margin: 24px 0 0;
+  font-family: var(--vid-font); /* TODO: swap to Söhne */
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 36px;
+  color: var(--vid-ink-muted);
+}
+
+/* ── Video card — dvid /Video card (rises and grows 1440→1600) ── */
+.card {
+  position: absolute;
+  left: 240px;
+  top: 1120px;
+  width: 1440px;
+  height: 808px;
+  border-radius: 48px;
+  overflow: hidden;
+  background: var(--vid-card-bg);
+  opacity: 0;
+}
+
+.poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Play / pause are presentational. There is no <video> in the prototype and
+   no MP4 yet, so these are NOT buttons — wiring click handlers to nothing
+   would be a trap for keyboard and screen-reader users.
+   TODO: swap poster.jpg with real MP4 — then promote these to real controls
+   with aria-pressed and a bound <video> element. */
+.control {
+  position: absolute;
+  right: 32px;
+  bottom: 44px;
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background: var(--vid-control-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.playIcon {
+  width: 20.48px;
+  height: 23.04px;
+  display: block;
+}
+
+.pauseBars {
+  display: flex;
+  align-items: center;
+  gap: 5.12px; /* 34.56 − (23.68 + 5.76) */
+}
+
+.pauseBar {
+  width: 5.76px;
+  height: 20.48px;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.progressTrack {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  bottom: 16px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--vid-rail);
+  opacity: 0;
+}
+
+.progressFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: var(--vid-rail-fill);
+}
+
+/* ── Sticky buy bar — dvid /Sticky buy bar (static across all keyframes) ── */
+.buyBar {
+  position: absolute;
+  left: 160.5px;
+  top: 966px;
+  width: 1599px;
+  height: 90px;
+  border-radius: 45px;
+  background: var(--vid-bar-bg);
+  box-shadow: 0 15px 45px 0 rgba(0, 0, 0, 0.12);
+}
+
+.buyThumbRing {
+  position: absolute;
+  left: 21px;
+  top: 15px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.buyThumb {
+  position: absolute;
+  left: 26px;
+  top: 21px;
+  width: 49px;
+  height: 49px;
+  border-radius: 24px;
+  object-fit: cover;
+  display: block;
+}
+
+.buyTitle {
+  position: absolute;
+  left: 99px;
+  top: 17px;
+  margin: 0;
+  font-family: var(--vid-font); /* TODO: swap to Söhne */
+  font-size: 19.7px;
+  font-weight: 600;
+  line-height: 25.1px;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.buyPrice {
+  position: absolute;
+  left: 99px;
+  top: 49px;
+  margin: 0;
+  font-family: var(--vid-font); /* TODO: swap to Söhne */
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--vid-bar-price);
+  white-space: nowrap;
+}
+
+.buyCta {
+  position: absolute;
+  left: 1324px;
+  top: 15px;
+  width: 261px;
+  height: 60px;
+  border: 0;
+  border-radius: 30px;
+  background: var(--vid-cta);
+  font-family: var(--vid-font); /* TODO: swap to Söhne */
+  font-size: 19.7px;
+  font-weight: 600;
+  line-height: 25.1px;
+  color: #ffffff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.buyCta:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   FIT — scale the 1920×1080 canvas, preserving every ratio
+   ────────────────────────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1919px) {
+  .section {
+    --vid-fit: 0.9;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1599px) {
+  .section {
+    --vid-fit: 0.75;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1365px) {
+  .section {
+    --vid-fit: 0.62;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 1000px) {
+  .section {
+    --vid-fit: 0.82;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 860px) {
+  .section {
+    --vid-fit: 0.72;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 760px) {
+  .section {
+    --vid-fit: 0.63;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE < 768 — SECTIONS.mvid (390×844)
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .section {
+    --vid-canvas-w: 100%;
+    --vid-canvas-h: 844px;
+    --vid-fit: 1;
+  }
+
+  .headingBlock {
+    left: 24px;
+    top: 250px;
+    width: 342px;
+  }
+
+  .heading {
+    font-size: 34px;
+    line-height: 39.1px;
+  }
+
+  .subtext {
+    margin-top: 16px;
+    font-size: 17px;
+    line-height: 25.5px;
+  }
+
+  .card {
+    left: 34px;
+    top: 884px;
+    width: 322px;
+    height: 181px;
+    border-radius: 32px;
+  }
+
+  .control {
+    right: 12px;
+    bottom: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+  }
+
+  .playIcon {
+    width: 12.8px;
+    height: 14.4px;
+  }
+
+  .pauseBars {
+    gap: 3.2px;
+  }
+
+  .pauseBar {
+    width: 3.6px;
+    height: 12.8px;
+  }
+
+  .progressTrack {
+    left: 12px;
+    right: 12px;
+    bottom: 6px;
+  }
+
+  .buyBar {
+    left: 16px;
+    top: 764px;
+    width: 358px;
+    height: 64px;
+    border-radius: 32px;
+  }
+
+  .buyThumbRing {
+    left: 10px;
+    top: 10px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .buyThumb {
+    left: 14px;
+    top: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+  }
+
+  .buyTitle {
+    left: 62px;
+    top: 14px;
+    width: 150px;
+    font-size: 12px;
+    line-height: 15.29px;
+    white-space: normal;
+  }
+
+  .buyPrice {
+    left: 62px;
+    top: 34px;
+    width: 150px;
+    font-size: 11px;
+    line-height: 14.01px;
+    white-space: normal;
+  }
+
+  .buyCta {
+    left: 218px;
+    top: 10px;
+    width: 130px;
+    height: 44px;
+    border-radius: 22px;
+    font-size: 13px;
+    line-height: 16.56px;
+  }
+}

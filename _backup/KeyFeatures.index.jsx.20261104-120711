@@ -1,0 +1,333 @@
+/**
+ * KeyFeatures — "sTread Pro - Key Features" cover-flow carousel
+ *
+ * Source: prototype/js/sections.js → SECTIONS.dkf (1920×1126) / SECTIONS.mkf (390×844)
+ *         prototype/js/app.js — the cover-flow IIFE
+ *         prototype/img/kf1–kf5.jpg → public/images/key-features/feature-01..05.jpg
+ *
+ * ⚠️ NO SCROLL ANIMATION. app.js builds this with buildStage() rather than
+ * mountPinned(), never creates a ScrollTrigger, and gives the host a fixed
+ * height. Every movement is interaction-driven.
+ *
+ * Animations:
+ *   Card positions — SOURCE: prototype/js/app.js `pos()` + `go()`
+ *     offset 0  : x 0,      z 0,    rotationY 0,    scale 1,   opacity 1,    z-index 3
+ *     offset ±1 : x ±570,   z -200, rotationY ∓55°, scale .7,  opacity .55,  z-index 2
+ *     offset ±2 : x ±836,   z -320, rotationY ∓62°, scale .55, opacity .35,  z-index 1
+ *     mobile x offsets: 0 / ±210 / ±360
+ *     duration 0.7s, ease power3.inOut, perspective 1200px
+ *     wrap: ((i - active + 7) % 5) - 2  → nearest-way-round, always 5 visible
+ *
+ *   Copy swap — SOURCE: prototype/js/engine.js text-change branch
+ *     out { opacity 0, y -14 } 0.35s power2.in
+ *     in  { opacity 1, y 0 } from y 16, 0.4s power2.out
+ *
+ * Interaction (prototype/js/app.js): card click, ‹ › buttons, ← → keys,
+ *   pointer drag with a 50px threshold. Carousel wraps in both directions.
+ *
+ * Reduced motion: all tweens collapse to duration 0 (the prototype's
+ *   `inst||RM?0:.7` / `inst||RM?0:.7` guards).
+ *
+ * Mobile: same carousel, smaller card box (300×264, r18), plus the counter
+ *   and 5 dots from the mkf frame.
+ */
+
+import {useRef, useState, useCallback} from 'react';
+import {useGSAP} from '@gsap/react';
+import gsap from 'gsap';
+import styles from './KeyFeatures.module.css';
+
+/** SOURCE: SECTIONS.dkf — /Frame 18 and /Frame 19 text per keyframe */
+const FEATURES = [
+  {
+    id: 'display',
+    name: '21,5" Display',
+    description:
+      'Mit dem 360 Grad schwenkbaren Touch-Display sind deine Workouts so flexibel wie nie!',
+    image: '/images/key-features/feature-01.jpg',
+  },
+  {
+    id: 'led',
+    name: 'LED Lichter',
+    description:
+      'Die LED-Lichter passen sich deiner Leistung an und geben dir motivierendes Feedback.',
+    image: '/images/key-features/feature-02.jpg',
+  },
+  {
+    id: 'speed-knob',
+    name: 'Speed Knob',
+    description:
+      'Passe dein Tempo in Sekunden an – mit nur einer Drehbewegung.',
+    image: '/images/key-features/feature-03.jpg',
+  },
+  {
+    id: 'steigung',
+    name: '15 Steigungsstufen',
+    description:
+      'Mit 15 Steigungsstufen passt du dein Training individuell an und forderst dich immer wieder neu heraus.',
+    image: '/images/key-features/feature-04.jpg',
+  },
+  {
+    id: 'klappen',
+    name: 'Einfach klappen',
+    description:
+      'Dank Klappfunktion und Transportrollen lässt sich das Laufband schnell verstauen – ideal für dein Homegym mit wenig Platz.',
+    image: '/images/key-features/feature-05.jpg',
+  },
+];
+
+const COUNT = FEATURES.length;
+const X_DESKTOP = [0, 570, 836];
+const X_MOBILE = [0, 210, 360];
+const DRAG_THRESHOLD = 50; // prototype/js/app.js
+
+/** Material "expand_circle_right", lifted verbatim from SECTIONS.dkf /Next. */
+function IconExpandCircleRight(props) {
+  return (
+    <svg
+      viewBox="0 0 36 36"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+      {...props}
+    >
+      <path
+        d="M20.773 18L15.2925 23.481C15.1052 23.6617 15.0115 23.8875 15.0115 24.1585C15.0115 24.4298 15.1052 24.6628 15.2925 24.8575C15.4872 25.0782 15.725 25.182 16.006 25.169C16.2867 25.1563 16.5243 25.0525 16.719 24.8575L22.446 19.131C22.7693 18.8077 22.931 18.4307 22.931 18C22.931 17.5693 22.7693 17.1923 22.446 16.869L16.7075 11.131C16.5128 10.936 16.277 10.834 16 10.825C15.723 10.816 15.4872 10.9218 15.2925 11.1425C15.1052 11.3372 15.016 11.573 15.025 11.85C15.034 12.127 15.136 12.3628 15.331 12.5575L20.773 18ZM18.0065 36C15.5175 36 13.1773 35.5277 10.986 34.583C8.795 33.6383 6.889 32.3563 5.268 30.737C3.647 29.1177 2.36383 27.2133 1.4185 25.024C0.472833 22.835 0 20.4958 0 18.0065C0 15.5175 0.472333 13.1773 1.417 10.986C2.36167 8.795 3.64367 6.889 5.263 5.268C6.88233 3.647 8.78667 2.36383 10.976 1.4185C13.165 0.472833 15.5042 0 17.9935 0C20.4825 0 22.8227 0.472335 25.014 1.417C27.205 2.36167 29.111 3.64367 30.732 5.263C32.353 6.88233 33.6362 8.78667 34.5815 10.976C35.5272 13.165 36 15.5042 36 17.9935C36 20.4825 35.5277 22.8227 34.583 25.014C33.6383 27.205 32.3563 29.111 30.737 30.732C29.1177 32.353 27.2133 33.6362 25.024 34.5815C22.835 35.5272 20.4958 36 18.0065 36Z"
+        fill="currentColor"
+        fillRule="nonzero"
+      />
+    </svg>
+  );
+}
+
+export function KeyFeatures() {
+  const rootRef = useRef(null);
+  const cardRefs = useRef([]);
+  const labelRef = useRef(null);
+  const copyRef = useRef(null);
+  const swapTlRef = useRef(null);
+  const dragStartRef = useRef(null);
+  const firstRunRef = useRef(true);
+
+  // `active` drives the cards and dots at once; `copyIndex` lags to the
+  // midpoint of the text crossfade, mirroring the prototype's engine.
+  const [active, setActive] = useState(0);
+  const [copyIndex, setCopyIndex] = useState(0);
+
+  /** Nearest-way-round offset, ((d + 7) % 5) - 2 — prototype/js/app.js */
+  const wrapOffset = (d) => ((d + 7) % COUNT) - 2;
+
+  /** Depth slot for a wrapped offset — prototype/js/app.js `pos()` */
+  const slotFor = (offset, xs) => {
+    const sign = Math.sign(offset);
+    const mag = Math.abs(offset);
+    if (mag === 0) {
+      return {x: 0, z: 0, rotationY: 0, scale: 1, opacity: 1, zIndex: 3};
+    }
+    if (mag === 1) {
+      return {
+        x: sign * xs[1],
+        z: -200,
+        rotationY: -sign * 55,
+        scale: 0.7,
+        opacity: 0.55,
+        zIndex: 2,
+      };
+    }
+    return {
+      x: sign * xs[2],
+      z: -320,
+      rotationY: -sign * 62,
+      scale: 0.55,
+      opacity: 0.35,
+      zIndex: 1,
+    };
+  };
+
+  const goTo = useCallback((next) => {
+    setActive(((next % COUNT) + COUNT) % COUNT);
+  }, []);
+
+  // ── Card layout + copy crossfade, re-run whenever `active` changes ──
+  useGSAP(
+    () => {
+      const reduced = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
+      const xs = isMobile ? X_MOBILE : X_DESKTOP;
+
+      const instant = firstRunRef.current || reduced;
+      const duration = instant ? 0 : 0.7;
+
+      cardRefs.current.forEach((card, i) => {
+        if (!card) return;
+        const slot = slotFor(wrapOffset(i - active), xs);
+        gsap.to(card, {...slot, duration, ease: 'power3.inOut'});
+      });
+
+      // Text swap — only after the first paint, and only when it changed.
+      if (!firstRunRef.current && copyIndex !== active) {
+        const targets = [labelRef.current, copyRef.current].filter(Boolean);
+        swapTlRef.current?.kill();
+
+        if (reduced) {
+          setCopyIndex(active);
+          gsap.set(targets, {opacity: 1, y: 0});
+        } else {
+          swapTlRef.current = gsap
+            .timeline()
+            .to(targets, {
+              opacity: 0,
+              y: -14,
+              duration: 0.35,
+              ease: 'power2.in',
+            })
+            .call(() => setCopyIndex(active))
+            .fromTo(
+              targets,
+              {opacity: 0, y: 16},
+              {opacity: 1, y: 0, duration: 0.4, ease: 'power2.out'},
+            );
+        }
+      }
+
+      firstRunRef.current = false;
+    },
+    {dependencies: [active], scope: rootRef},
+  );
+
+  // ── Keyboard: ← → — prototype/js/app.js host keydown ──
+  const handleKeyDown = useCallback(
+    (event) => {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        goTo(active + 1);
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        goTo(active - 1);
+      }
+    },
+    [active, goTo],
+  );
+
+  // ── Pointer drag, 50px threshold — prototype/js/app.js ──
+  const handlePointerDown = useCallback((event) => {
+    dragStartRef.current = event.clientX;
+  }, []);
+
+  const handlePointerUp = useCallback(
+    (event) => {
+      const start = dragStartRef.current;
+      dragStartRef.current = null;
+      if (start === null) return;
+      const delta = event.clientX - start;
+      if (Math.abs(delta) > DRAG_THRESHOLD) {
+        goTo(active + (delta < 0 ? 1 : -1));
+      }
+    },
+    [active, goTo],
+  );
+
+  const shown = FEATURES[copyIndex];
+
+  return (
+    <section
+      ref={rootRef}
+      className={styles.section}
+      id="kf"
+      aria-roledescription="carousel"
+      aria-label="sTread Pro Key Features"
+    >
+      <div className={styles.inner}>
+        <span className={styles.badge}>ENTDECKE EINIGE DER</span>
+
+        <h2 className={styles.title}>sTread Pro - Key Features</h2>
+
+        <div className={styles.navRow}>
+          <button
+            type="button"
+            className={`${styles.navButton} ${styles.navButtonPrev}`}
+            onClick={() => goTo(active - 1)}
+            aria-label="Vorheriges Feature"
+          >
+            <IconExpandCircleRight className={styles.navIcon} />
+          </button>
+
+          <span ref={labelRef} className={styles.featureName} aria-live="polite">
+            {shown.name}
+          </span>
+
+          <button
+            type="button"
+            className={styles.navButton}
+            onClick={() => goTo(active + 1)}
+            aria-label="Nächstes Feature"
+          >
+            <IconExpandCircleRight className={styles.navIcon} />
+          </button>
+        </div>
+
+        <div className={styles.stageWrap}>
+          <div className={styles.stageScale}>
+            <div
+              className={styles.coverflow}
+              onPointerDown={handlePointerDown}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={() => {
+                dragStartRef.current = null;
+              }}
+            >
+              {FEATURES.map((feature, i) => (
+                <button
+                  key={feature.id}
+                  type="button"
+                  ref={(el) => {
+                    cardRefs.current[i] = el;
+                  }}
+                  className={styles.card}
+                  style={{backgroundImage: `url(${feature.image})`}}
+                  onClick={() => goTo(i)}
+                  onKeyDown={handleKeyDown}
+                  aria-label={feature.name}
+                  aria-current={i === active}
+                  tabIndex={i === active ? 0 : -1}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div ref={copyRef} className={styles.copy}>
+          <h3 className={styles.featureTitle}>{shown.name}</h3>
+          <p className={styles.featureDescription}>{shown.description}</p>
+        </div>
+
+        <p className={styles.counter}>
+          {String(active + 1).padStart(2, '0')} / {String(COUNT).padStart(2, '0')}
+        </p>
+
+        <div className={styles.dots}>
+          {FEATURES.map((feature, i) => (
+            <button
+              key={feature.id}
+              type="button"
+              className={styles.dotHit}
+              onClick={() => goTo(i)}
+              aria-label={`Feature ${i + 1}: ${feature.name}`}
+              aria-current={i === active}
+            >
+              <span
+                className={`${styles.dot} ${
+                  i === active ? styles.dotActive : ''
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default KeyFeatures;

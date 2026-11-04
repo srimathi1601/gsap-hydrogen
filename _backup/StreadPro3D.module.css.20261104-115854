@@ -1,0 +1,849 @@
+/**
+ * StreadPro3D.module.css
+ *
+ * Figma: OI4fY2NSIR5YSdxxSIG6jY
+ *   Desktop steps 01-05 : 34:2 / 34:54 / 34:106 / 34:159 / 34:211  (1920 x 1471)
+ *   Mobile  steps 01-05 : 34:308 / 34:353 / 34:398 / 34:444 / 34:489 (390 x ~1038)
+ *   Dev notes           : 34:579 (desktop) / 34:587 (mobile)
+ *
+ * No Figma variables exist in this file (get_variable_defs -> {}), so every
+ * literal below is lifted straight off the frame and parked in a token here.
+ */
+
+/* ──────────────────────────────────────────────────────────────
+   DESIGN TOKENS — exact Figma values
+   ────────────────────────────────────────────────────────────── */
+.section {
+  /* Colors */
+  --sp3d-bg: #ffffff;
+  --sp3d-stage-bg: #f9f9f9;
+  --sp3d-text-primary: #1f1f1f;
+  --sp3d-text-secondary: #3a3a3a;
+  --sp3d-text-muted: #6b6b6b;
+  --sp3d-pill-bg: rgba(107, 107, 107, 0.1);
+  --sp3d-pill-border: rgba(107, 107, 107, 0.12);
+  --sp3d-tag-bg-desktop: rgba(201, 201, 201, 0.1);
+  --sp3d-tag-bg-mobile: rgba(107, 107, 107, 0.1);
+  --sp3d-tab-bg: #f4f4f4;
+  --sp3d-tab-border: #e2e2e2;
+  --sp3d-tab-active-bg: #1f1f1f;
+  --sp3d-tab-active-text: #ffffff;
+  --sp3d-progress-bar: rgba(255, 255, 255, 0.67);
+  --sp3d-nav-border: #d9d9d9;
+  --sp3d-dot-inactive: #cfcfcf;
+  --sp3d-dot-active: #1f1f1f;
+
+  /* Type — TODO: swap to Söhne. Inter is a placeholder stand-in.
+     Söhne Leicht 300 / Buch 400 / Kräftig 500 / Halbfett 700 */
+  --sp3d-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+  --sp3d-weight-leicht: 300;
+  --sp3d-weight-buch: 400;
+  --sp3d-weight-kraeftig: 500;
+  --sp3d-weight-halbfett: 700;
+
+  /* Geometry */
+  --sp3d-container: 1440px;
+  --sp3d-stage-h: 596px;
+  /* Canvas height — retuned 1471px (Figma frame) -> 1182px to match the
+     prototype stage (prototype/js/sections.js, SECTIONS.d3d.H). Drives the
+     fit scale below. Figma spacing inside the canvas is unchanged. */
+  --sp3d-canvas-h: 1182px;
+  /* Sticky travel — 5 x 100vh desktop, 4 x 100svh mobile. Dev note 34:581/34:585 */
+  --sp3d-travel: 500svh;
+  --sp3d-tab-w: 172px;
+  --sp3d-tab-stride: 180px; /* 172 tab + 8 gap */
+  --sp3d-radius-stage: 12px;
+  --sp3d-radius-image: 26px;
+  --sp3d-radius-pill: 20px;
+
+  /* Motion — SOURCE: Figma dev note 34:582 */
+  --sp3d-dur: 0.6s;
+  --sp3d-ease: cubic-bezier(0.645, 0.045, 0.355, 1); /* ≈ gsap power2.inOut */
+
+  /* Vertical fit factor for the pinned composition (see FIT section) */
+  --sp3d-fit: 1;
+
+  position: relative;
+  background: var(--sp3d-bg);
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  color: var(--sp3d-text-primary);
+
+  /* Scroll host. The sticky child is one viewport tall, so the usable scrub
+     distance is (height - 100svh) = --sp3d-travel. */
+  height: calc(100svh + var(--sp3d-travel));
+}
+
+/* ──────────────────────────────────────────────────────────────
+   STICKY SHELL
+   Retuned from ScrollTrigger pin:true -> CSS position:sticky, matching the
+   prototype (prototype/index.html .pinbox + prototype/js/engine.js
+   mountPinned, which never calls ScrollTrigger's pin). ScrollTrigger now
+   only drives the timeline.
+   SOURCE: Figma dev note 34:581 — "section pins at top:0 for 5 x 100vh"
+   ────────────────────────────────────────────────────────────── */
+.pin {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.composition {
+  width: var(--sp3d-container);
+  max-width: 100%;
+  transform: scale(var(--sp3d-fit));
+  transform-origin: center center;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   HEADER — Figma 34:5 (w 1157, top 46, gap 11)
+   ────────────────────────────────────────────────────────────── */
+.header {
+  width: 1157px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding-top: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  text-align: center;
+}
+
+.eyebrow {
+  width: 203px;
+  height: 29px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: var(--sp3d-radius-pill);
+  background: var(--sp3d-pill-bg);
+  border: 1px solid var(--sp3d-pill-border);
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-kraeftig);
+  font-size: 15px;
+  letter-spacing: 2.1px;
+  color: var(--sp3d-text-muted);
+  white-space: nowrap;
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-kraeftig);
+  font-size: 50.6px; /* exact Figma — scaled frame, kept verbatim */
+  line-height: 62px;
+  color: var(--sp3d-text-primary);
+}
+
+.sub {
+  margin: 0;
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-buch);
+  font-size: 20.6px; /* exact Figma — scaled frame, kept verbatim */
+  line-height: 33px;
+  color: var(--sp3d-text-secondary);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   STATS — Figma 34:10 (top 224, gap 90, cards 250 x 120)
+   ────────────────────────────────────────────────────────────── */
+.stats {
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 90px;
+}
+
+.stat {
+  width: 250px;
+  height: 120px;
+  padding: 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--sp3d-radius-pill);
+  background: var(--sp3d-pill-bg);
+  border: 1px solid var(--sp3d-pill-border);
+  overflow: hidden;
+}
+
+.statValue {
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-buch);
+  font-size: 32px;
+  color: var(--sp3d-text-primary);
+  white-space: nowrap;
+}
+
+.statLabel {
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-buch);
+  font-size: 18px;
+  color: var(--sp3d-text-muted);
+  white-space: nowrap;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   STAGE — Figma 34:27 (1440 x 596, r12, bg #F9F9F9)
+   All five panels stack absolutely so they can crossfade.
+   SOURCE: Figma dev note 34:582 — "Never hard-swap images."
+   ────────────────────────────────────────────────────────────── */
+.stage {
+  position: relative;
+  margin: 53px auto 0;
+  width: var(--sp3d-container);
+  max-width: 100%;
+  height: var(--sp3d-stage-h);
+  border-radius: var(--sp3d-radius-stage);
+  background: var(--sp3d-stage-bg);
+  overflow: hidden;
+}
+
+.panel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* First panel is the SSR/no-JS visible state; GSAP takes over on mount. */
+.panel:first-child {
+  opacity: 1;
+  visibility: visible;
+}
+
+.panelMedia {
+  position: absolute;
+  left: 25px;
+  top: 22px;
+  width: 695px;
+  height: 538px;
+  border-radius: var(--sp3d-radius-image);
+  overflow: hidden;
+}
+
+.panelMedia img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* SWAP: replace crossfade with MP4/canvas sequence when clip is ready */
+  /* TODO: swap to GLB when 3D model is ready */
+}
+
+.panelCounter {
+  position: absolute;
+  left: 763px;
+  top: 35px;
+  margin: 0;
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-halbfett);
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  color: var(--sp3d-text-primary);
+  white-space: nowrap;
+}
+
+/* Top-anchored so step 05's two-line title grows downward (approved Q8). */
+.panelCopy {
+  position: absolute;
+  left: 763px;
+  top: 375px;
+  width: 534px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.panelTitle {
+  margin: 0;
+  width: 100%;
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-leicht); /* Söhne Leicht — desktop */
+  font-size: 42px;
+  line-height: 50px;
+  color: var(--sp3d-text-primary);
+}
+
+.panelBody {
+  margin: 0;
+  width: 467px;
+  max-width: 100%;
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-buch);
+  font-size: 18px;
+  line-height: 26px;
+  color: var(--sp3d-text-secondary);
+}
+
+.tags {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tag {
+  height: 41px;
+  padding: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sp3d-radius-pill);
+  background: var(--sp3d-tag-bg-desktop);
+  border: 1px solid var(--sp3d-pill-border);
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-kraeftig);
+  font-size: 14px;
+  color: var(--sp3d-text-primary);
+  white-space: nowrap;
+}
+
+.tag:nth-child(1) {
+  width: 191px;
+}
+
+.tag:nth-child(2) {
+  width: 178px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   NAVIGATOR — DESKTOP — Figma 36:2 (top 1030, centered)
+   SOURCE: Figma dev note 34:583
+   ────────────────────────────────────────────────────────────── */
+.navDesktop {
+  margin: 37px auto 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.stepCount {
+  margin: 0;
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-buch);
+  font-size: 14px;
+  color: var(--sp3d-text-muted);
+  white-space: nowrap;
+}
+
+.navRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.navButton {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid var(--sp3d-nav-border);
+  color: var(--sp3d-text-primary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.navButton:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tabs {
+  position: relative;
+  width: 892px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+/* The dark pill slides under the tabs — translateX only.
+   SOURCE: Figma dev note 34:583 */
+.activePill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--sp3d-tab-w);
+  height: 48px;
+  border-radius: 24px;
+  background: var(--sp3d-tab-active-bg);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.activeProgress {
+  position: absolute;
+  left: 0;
+  top: 45px;
+  height: 3px;
+  width: 0;
+  background: var(--sp3d-progress-bar);
+}
+
+.tab {
+  position: absolute;
+  top: 0;
+  width: var(--sp3d-tab-w);
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 24px;
+  background: var(--sp3d-tab-bg);
+  border: 1px solid var(--sp3d-tab-border);
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-kraeftig);
+  font-size: 15px;
+  color: var(--sp3d-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 0;
+  transition: color var(--sp3d-dur) var(--sp3d-ease);
+}
+
+/* Active tab sits on top of the sliding pill: transparent chrome, white ink. */
+.tabActive {
+  background: transparent;
+  border-color: transparent;
+  color: var(--sp3d-tab-active-text);
+}
+
+.tabIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   NAVIGATOR — MOBILE — Figma 36:36
+   ────────────────────────────────────────────────────────────── */
+.navMobile {
+  display: none;
+  width: 350px;
+  max-width: 100%;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navMobileRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.navButtonMobile {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+}
+
+.navCurrent {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.navCurrentLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sp3d-font); /* TODO: swap to Söhne */
+  font-weight: var(--sp3d-weight-kraeftig);
+  font-size: 16px;
+  color: var(--sp3d-text-primary);
+  white-space: nowrap;
+}
+
+.stepCountMobile {
+  font-size: 13px;
+}
+
+.dots {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.dotHit {
+  width: 66px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.dot {
+  width: 10px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sp3d-dot-inactive);
+  transition:
+    width var(--sp3d-dur) var(--sp3d-ease),
+    background-color var(--sp3d-dur) var(--sp3d-ease);
+}
+
+/* Active dot stretches 10 -> 40px. SOURCE: Figma dev note 34:583 */
+.dotActive {
+  width: 40px;
+  background: var(--sp3d-dot-active);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   FIT — keep the sticky composition inside the viewport.
+   Mirrors the prototype's scale = min(vw/W, vh/H) with H = 1182, but as
+   static breakpoints instead of a JS resize listener. Each factor is chosen
+   so 1182 * factor <= the band's minimum viewport height, so the composition
+   always clears. Scaling preserves every Figma ratio exactly.
+   ────────────────────────────────────────────────────────────── */
+@media (min-width: 1440px) {
+  .composition {
+    height: var(--sp3d-canvas-h);
+  }
+}
+
+/* 1182 * 0.88 = 1040 */
+@media (min-width: 1440px) and (max-height: 1181px) {
+  .section {
+    --sp3d-fit: 0.88;
+  }
+}
+
+/* 1182 * 0.77 = 910 */
+@media (min-width: 1440px) and (max-height: 1039px) {
+  .section {
+    --sp3d-fit: 0.77;
+  }
+}
+
+/* 1182 * 0.67 = 792 */
+@media (min-width: 1440px) and (max-height: 919px) {
+  .section {
+    --sp3d-fit: 0.67;
+  }
+}
+
+/* 1182 * 0.6 = 709 */
+@media (min-width: 1440px) and (max-height: 799px) {
+  .section {
+    --sp3d-fit: 0.6;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   TABLET 768-1439 — fluid 2-col stage, stats 4 -> 2 cols
+   SOURCE: Figma dev note 34:585
+   ────────────────────────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1439px) {
+  .section {
+    --sp3d-container: 100%;
+    --sp3d-stage-h: auto;
+  }
+
+  .composition {
+    padding-inline: 32px;
+  }
+
+  .header {
+    padding-top: 32px;
+  }
+
+  .heading {
+    font-size: 40px;
+    line-height: 48px;
+  }
+
+  .sub {
+    font-size: 18px;
+    line-height: 28px;
+  }
+
+  .stats {
+    flex-wrap: wrap;
+    gap: 16px;
+    max-width: 620px;
+    margin-inline: auto;
+  }
+
+  .stat {
+    width: calc(50% - 8px);
+  }
+
+  .stage {
+    height: auto;
+    min-height: 460px;
+  }
+
+  .panel {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 48% 52%;
+    align-items: center;
+    gap: 24px;
+    padding: 22px;
+  }
+
+  .panelMedia {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    height: 100%;
+    min-height: 380px;
+  }
+
+  .panelCounter {
+    left: auto;
+    right: 22px;
+    top: 22px;
+  }
+
+  .panelCopy {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+  }
+
+  .panelTitle {
+    font-size: 34px;
+    line-height: 42px;
+  }
+
+  .panelBody {
+    width: 100%;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .tabs {
+    width: 100%;
+    max-width: 892px;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE < 768 — Figma 34:308 (390 wide, stacked, stats 2x2)
+   SOURCE: Figma dev note 34:585
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .section {
+    --sp3d-container: 100%;
+    --sp3d-stage-h: auto;
+    --sp3d-fit: 1;
+    /* Pin shorter on mobile — dev note 34:585 */
+    --sp3d-travel: 400svh;
+  }
+
+  .pin {
+    height: 100svh;
+    align-items: flex-start;
+  }
+
+  .composition {
+    width: 100%;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    transform: none;
+  }
+
+  .header {
+    width: 350px;
+    max-width: 100%;
+    padding-top: 0;
+    gap: 20px;
+  }
+
+  .eyebrow {
+    width: auto;
+    height: auto;
+    padding: 5px 14px;
+    font-size: 13px;
+    letter-spacing: normal;
+    color: var(--sp3d-text-primary);
+    border-color: transparent;
+  }
+
+  .heading {
+    font-size: 30px;
+    line-height: normal;
+  }
+
+  .sub {
+    font-size: 15px;
+    line-height: normal;
+    color: var(--sp3d-text-muted);
+  }
+
+  .stats {
+    margin: 0;
+    width: 350px;
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .stat {
+    width: 169px;
+    height: auto;
+    padding: 14px 12px;
+    gap: 4px;
+    border-radius: 16px;
+  }
+
+  .statValue {
+    font-size: 20px;
+    font-weight: var(--sp3d-weight-kraeftig);
+  }
+
+  .statLabel {
+    font-size: 12px;
+  }
+
+  /* Stage becomes a plain stacked block: image, then copy. */
+  .stage {
+    margin: 0;
+    width: 350px;
+    max-width: 100%;
+    height: auto;
+    /* Tallest mobile step (02 / 05) needs ~520px: image 270 + gap 20
+       + counter ~28 + copy 201. 540 leaves headroom for the Inter stand-in. */
+    min-height: 540px;
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .panelMedia {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 350px;
+    max-width: 100%;
+    height: 270px;
+    border-radius: 16px;
+    flex-shrink: 0;
+  }
+
+  .panelCounter {
+    position: relative;
+    left: auto;
+    top: auto;
+    order: 2;
+    font-weight: var(--sp3d-weight-kraeftig);
+    font-size: 14px;
+    letter-spacing: normal;
+  }
+
+  .panelCopy {
+    position: relative;
+    left: auto;
+    top: auto;
+    order: 3;
+    width: 100%;
+    gap: 10px;
+    margin-top: -10px;
+  }
+
+  .panelTitle {
+    font-size: 26px;
+    line-height: normal;
+    font-weight: var(--sp3d-weight-kraeftig); /* Söhne Kräftig — mobile */
+  }
+
+  .panelBody {
+    width: 100%;
+    font-size: 15px;
+    line-height: normal;
+    color: var(--sp3d-text-muted);
+  }
+
+  .tags {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .tag,
+  .tag:nth-child(1),
+  .tag:nth-child(2) {
+    width: auto;
+    height: auto;
+    padding: 9px 14px;
+    background: var(--sp3d-tag-bg-mobile);
+    font-weight: var(--sp3d-weight-buch);
+    font-size: 13px;
+  }
+
+  .navDesktop {
+    display: none;
+  }
+
+  .navMobile {
+    display: flex;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   REDUCED MOTION — fade only.
+   SOURCE: Figma dev note 34:586 — "Respect prefers-reduced-motion (fade only)."
+   ────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .tab {
+    transition: none;
+  }
+}

@@ -1,0 +1,543 @@
+/**
+ * Reviews.module.css
+ *
+ * Source: prototype/js/sections.js -> SECTIONS.drev (319 nodes, 1920 x 2663)
+ *         prototype/index.html:34-36 -> section.m-sec#rev
+ *         prototype/css/mobile.css:41-50
+ *
+ * MODEL: approved Q1b - hand-written semantic responsive flow, node
+ * coordinates as the spec.
+ *
+ * Desktop layout from the node data: a 450px summary rail on the left
+ * (x 120) and the review column on the right (x 626, width 1155).
+ */
+
+.section {
+  --rv-bg: rgba(255, 255, 255, 1);
+  --rv-ink: rgba(31, 31, 31, 1);
+  --rv-body: rgba(58, 58, 58, 1);
+  --rv-mid: rgba(74, 74, 74, 1);
+  --rv-muted: rgba(107, 107, 107, 1);
+  --rv-verified: rgba(31, 122, 85, 1);
+  --rv-card: rgba(244, 244, 244, 1);
+  --rv-card-ring: rgba(185, 185, 185, 1);
+  --rv-bar-track: rgba(234, 234, 234, 1);
+  --rv-bar-fill: rgba(42, 42, 42, 1);
+  --rv-divider: rgba(226, 221, 210, 1);
+  --rv-field-ring: rgba(226, 221, 210, 1);
+
+  /* TODO: swap to Söhne */
+  --rv-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  display: block;
+  background: var(--rv-bg);
+  font-family: var(--rv-font); /* TODO: swap to Söhne */
+  color: var(--rv-ink);
+  padding: 71px 0 114px;
+}
+
+.inner {
+  max-width: 1680px; /* 1781 - 120 + 19 */
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heading {
+  margin: 0;
+  font-size: 60px;
+  font-weight: 400;
+  line-height: 76.44px;
+  color: var(--rv-ink);
+}
+
+.grid {
+  margin-top: 69px;
+  display: grid;
+  grid-template-columns: minmax(0, 450fr) minmax(0, 1155fr);
+  gap: 56px;
+  align-items: start;
+}
+
+/* ── Summary rail — x 120, width 450 ───────────────────────────── */
+.summary {
+  border-top: 1px solid var(--rv-divider);
+  padding-top: 17px;
+  min-width: 0;
+}
+
+.score {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.scoreValue {
+  font-size: 90px;
+  font-weight: 300;
+  line-height: 114.66px;
+  color: var(--rv-ink);
+}
+
+.scoreStars {
+  height: 19px;
+  width: auto;
+  display: block;
+  color: var(--rv-ink);
+}
+
+.scoreCount {
+  display: block;
+  margin-top: 16px;
+  font-size: 16.9px;
+  font-weight: 400;
+  line-height: 21.53px;
+  color: var(--rv-mid);
+}
+
+.bars {
+  margin: 25px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 29px;
+}
+
+.bar {
+  margin: 0; /* reset.css:126 */
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr) 75px;
+  gap: 0;
+  align-items: center;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--rv-body);
+}
+
+.barTrack {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--rv-bar-track);
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--rv-bar-fill);
+}
+
+.barPercent {
+  text-align: right;
+}
+
+.source {
+  margin: 40px 0 0;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--rv-muted);
+}
+
+/* ── Review column — x 626, width 1155 ─────────────────────────── */
+.column {
+  min-width: 0;
+}
+
+.subheading {
+  margin: 0;
+  font-size: 25.3px;
+  font-weight: 400;
+  line-height: 32.23px;
+  color: var(--rv-ink);
+}
+
+/* IMG:review-photos [626, 264, 1144, 180] + its scroll rail */
+.photos {
+  margin: 20px 0 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  border-radius: 16px;
+}
+
+.photos img {
+  height: 180px;
+  width: auto;
+  max-width: none;
+  display: block;
+  border-radius: 16px;
+}
+
+.filters {
+  margin: 52px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11px;
+}
+
+/* Button / N Sterne — 49px tall, radius 24, bg #f4f4f4, 1px ring */
+.chip {
+  min-height: 49px;
+  padding: 0 29px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--rv-card);
+  box-shadow: inset 0 0 0 1px var(--rv-card-ring);
+  font-family: inherit;
+  font-size: 15.9px;
+  font-weight: 500;
+  line-height: 20.26px;
+  color: var(--rv-ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chipOn {
+  background: var(--rv-ink);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--rv-ink);
+}
+
+.tools {
+  margin: 26px 0 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 13px;
+  flex-wrap: wrap;
+}
+
+/* Search field / Sort select — 53px tall, radius 26, white, 1px ring */
+.search,
+.sort {
+  min-height: 53px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 26px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--rv-field-ring);
+  font-family: inherit;
+  font-size: 15.9px;
+  line-height: 20.26px;
+  color: var(--rv-ink);
+}
+
+.search {
+  width: 251px;
+  max-width: 100%;
+  font-weight: 400;
+}
+
+.search::placeholder {
+  color: var(--rv-muted);
+}
+
+.sort {
+  width: 234px;
+  max-width: 100%;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+}
+
+/* Review cards — 568 wide, radius 26, bg #f4f4f4, 1px ring */
+.cards {
+  margin: 45px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 19px 19px;
+  align-items: start;
+}
+
+.card {
+  border-radius: 26px;
+  background: var(--rv-card);
+  box-shadow: inset 0 0 0 1px var(--rv-card-ring);
+  padding: 32px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cardName {
+  margin: 0;
+  font-size: 19.7px;
+  font-weight: 600;
+  line-height: 25.1px;
+  color: var(--rv-ink);
+}
+
+.cardMeta {
+  margin: 20px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.cardStars {
+  height: 17px;
+  width: auto;
+  display: block;
+  color: var(--rv-ink);
+}
+
+.verified {
+  font-size: 15.9px;
+  font-weight: 500;
+  line-height: 20.26px;
+  color: var(--rv-verified);
+}
+
+.cardTitle {
+  margin: 19px 0 0;
+  font-size: 22.5px;
+  font-weight: 500;
+  line-height: 28.67px;
+  color: var(--rv-ink);
+}
+
+.cardBody {
+  margin: 16px 0 0;
+  font-size: 19.7px;
+  font-weight: 400;
+  line-height: 35px;
+  color: var(--rv-body);
+}
+
+.cardPhoto {
+  margin: 22px 0 0;
+  width: 79px;
+  height: 79px;
+  border-radius: 11px;
+  object-fit: cover;
+  display: block;
+}
+
+.more {
+  margin: 45px auto 0;
+  display: block;
+  min-height: 53px;
+  padding: 0 39px;
+  border: 0;
+  border-radius: 26px;
+  background: var(--rv-card);
+  box-shadow: inset 0 0 0 1px var(--rv-card-ring);
+  font-family: inherit;
+  font-size: 17.8px;
+  font-weight: 600;
+  line-height: 22.68px;
+  color: var(--rv-ink);
+  cursor: pointer;
+}
+
+.shown {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 15.9px;
+  font-weight: 400;
+  line-height: 20.26px;
+  color: var(--rv-muted);
+}
+
+.chip:focus-visible,
+.more:focus-visible,
+.search:focus-visible,
+.sort:focus-visible {
+  outline: 3px solid var(--rv-ink);
+  outline-offset: 3px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE / TABLET
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 1199px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .section {
+    padding: 48px 0;
+  }
+
+  .inner {
+    padding: 0 16px;
+  }
+
+  .heading {
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .grid {
+    margin-top: 20px;
+    gap: 28px;
+  }
+
+  .summary {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .score {
+    gap: 14px;
+  }
+
+  .scoreValue {
+    font-size: 56px;
+    line-height: 1;
+  }
+
+  .scoreStars {
+    height: 16px;
+  }
+
+  .scoreCount {
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  .bars {
+    margin-top: 14px;
+    gap: 6px;
+  }
+
+  .bar {
+    grid-template-columns: 70px minmax(0, 1fr) 40px;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .source {
+    margin-top: 10px;
+    font-size: 13px;
+  }
+
+  .subheading {
+    font-size: 18px;
+    margin-top: 24px;
+  }
+
+  .photos img {
+    height: 120px;
+  }
+
+  .filters {
+    margin-top: 14px;
+    gap: 8px;
+  }
+
+  .chip {
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 22px;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--rv-card-ring);
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .tools {
+    margin-top: 16px;
+    justify-content: stretch;
+    gap: 8px;
+  }
+
+  .search {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 22px;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--rv-card-ring);
+    font-size: 15px;
+  }
+
+  .sort {
+    flex: none;
+    width: auto;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 22px;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--rv-card-ring);
+    font-size: 14px;
+  }
+
+  .cards {
+    margin-top: 12px;
+    gap: 12px;
+  }
+
+  .card {
+    border-radius: 26px;
+    background: var(--rv-card);
+    padding: 18px;
+  }
+
+  .cardName {
+    font-size: 15px;
+  }
+
+  .cardMeta {
+    margin-top: 6px;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .cardMeta .cardStars {
+    height: 16px;
+  }
+
+  .verified {
+    font-size: 13px;
+  }
+
+  .cardTitle {
+    margin-top: 6px;
+    font-size: 16px;
+  }
+
+  .cardBody {
+    margin-top: 6px;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .cardPhoto {
+    margin-top: 12px;
+    width: auto;
+    max-height: 180px;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  .more {
+    margin-top: 20px;
+    min-height: 56px;
+    width: 100%;
+    border-radius: 28px;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--rv-ink);
+    font-size: 16px;
+  }
+
+  .shown {
+    margin-top: 8px;
+    font-size: 13px;
+  }
+}

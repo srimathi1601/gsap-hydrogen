@@ -1,0 +1,434 @@
+/**
+ * SportstechLive.module.css
+ *
+ * Source: prototype/js/sections.js → SECTIONS.dlive (1920×1080) /
+ *         SECTIONS.mlive (390×844), 9 keyframes each
+ *         prototype/js/app.js — mountPinned(..., {fit:!MOB, per:.8, snap:false})
+ *
+ * Pinning is CSS position:sticky (prototype/index.html .pinbox); ScrollTrigger
+ * only drives the timeline. Travel = (9 - 1) × 100vh × 0.8 = 640svh.
+ */
+
+.section {
+  /* Colors — exact from the dlive node data */
+  --live-bg: rgba(245, 245, 245, 1);
+  --live-ink: rgba(24, 26, 29, 1);
+  --live-ink-muted: rgba(74, 79, 87, 1);
+  --live-ink-faint: rgba(107, 112, 121, 1);
+  --live-rule: rgba(24, 26, 29, 0.15);
+  --live-ring: rgba(24, 26, 29, 0.35);
+
+  /* Type — TODO: swap to Söhne */
+  --live-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+
+  /* Canvas + fit */
+  --live-canvas-w: 1920px;
+  --live-canvas-h: 1080px;
+  --live-fit: 1;
+  --live-travel: 640svh;
+
+  position: relative;
+  display: block;
+  width: 100%;
+  height: calc(100svh + var(--live-travel));
+  /* Explicit: the scaffold's reset.css:85 pads every <section> by 2rem,
+     which would shrink the scrub travel and open a white gap. The pinned
+     box must be exactly 100svh + travel. */
+  padding: 0;
+  background: var(--live-bg);
+  font-family: var(--live-font); /* TODO: swap to Söhne */
+  color: var(--live-ink);
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--live-bg);
+}
+
+.canvas {
+  position: relative;
+  width: var(--live-canvas-w);
+  height: var(--live-canvas-h);
+  transform: scale(var(--live-fit));
+  transform-origin: center center;
+  flex-shrink: 0;
+}
+
+/* ── Sticky heading — dlive /Sticky heading (x150 y300 → y72) ── */
+.heading {
+  position: absolute;
+  left: 150px;
+  top: 300px;
+  width: 780px;
+}
+
+.badge {
+  display: block;
+  margin: 0;
+  font-family: var(--live-font); /* TODO: swap to Söhne */
+  font-size: 14.1px;
+  font-weight: 500;
+  line-height: 17.96px;
+  letter-spacing: 1.97px;
+  color: var(--live-ink);
+  white-space: nowrap;
+}
+
+/* Starts 56px/780px wide (wraps to 2 lines), ends 40px/901px (1 line) —
+   the prototype swapped two literal strings with and without a newline;
+   width + font-size reproduce that without duplicating the copy. */
+.headingText {
+  position: absolute;
+  left: 0;
+  top: 40px;
+  margin: 0;
+  width: 760px;
+  font-family: var(--live-font); /* TODO: swap to Söhne */
+  font-size: 56px;
+  font-weight: 300;
+  line-height: 66px;
+  color: var(--live-ink);
+}
+
+.categories {
+  position: absolute;
+  left: 0;
+  top: 200px;
+  margin: 0;
+  width: 720px;
+  font-family: var(--live-font); /* TODO: swap to Söhne */
+  font-size: 18.6px;
+  font-weight: 400;
+  line-height: 23.7px;
+  color: var(--live-ink-muted);
+}
+
+/* ── Card track — dlive /Track (y300, 5980 wide, stride 830) ── */
+.track {
+  position: absolute;
+  left: 0;
+  top: 300px;
+  height: 600px;
+  margin: 0;
+  padding: 0 0 0 1000px; /* Card 1 starts at x = 1000 */
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 80px; /* 830 stride − 750 card */
+  will-change: transform;
+}
+
+.card {
+  position: relative;
+  flex-shrink: 0;
+  width: 750px;
+  height: 576px;
+}
+
+.cardImage {
+  position: relative;
+  width: 750px;
+  height: 426px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* The active card carries the elevation. In the Figma data only Card 1 has
+   the shadow (it is the active card in keyframe 0); applying it to whichever
+   card is active keeps that intent as the track moves. */
+.cardActive .cardImage {
+  box-shadow: 0 24px 48px -8px rgba(23, 26, 28, 0.18);
+}
+
+/* 840 wide inside a 750 window — the overhang is the parallax travel. */
+.cardImageInner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 840px;
+  height: 426px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  will-change: transform;
+}
+
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: var(--live-bg);
+  pointer-events: none;
+}
+
+.cardTitle {
+  position: absolute;
+  left: 0;
+  top: 454px;
+  margin: 0;
+  font-family: var(--live-font); /* TODO: swap to Söhne */
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 35.67px;
+  color: var(--live-ink-muted);
+  white-space: nowrap;
+}
+
+.cardDescription {
+  position: absolute;
+  left: 0;
+  top: 498px;
+  margin: 0;
+  width: 620px;
+  font-family: var(--live-font); /* TODO: swap to Söhne */
+  font-size: 18.6px;
+  font-weight: 400;
+  line-height: 28px;
+  color: var(--live-ink-muted);
+}
+
+/* ── Progress — dlive /Progress + track + fill (y ~1000) ── */
+.progress {
+  position: absolute;
+  left: 150px;
+  top: 1000px;
+  margin: 0;
+  font-family: var(--live-font); /* TODO: swap to Söhne */
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20.38px;
+  letter-spacing: 1.28px;
+  color: var(--live-ink);
+  white-space: nowrap;
+}
+
+.progressTrack {
+  position: absolute;
+  left: 240px;
+  top: 1010px;
+  width: 300px;
+  height: 2px;
+  background: var(--live-rule);
+}
+
+.progressFill {
+  position: absolute;
+  left: 240px;
+  top: 1010px;
+  width: 12px;
+  height: 2px;
+  background: var(--live-ink);
+}
+
+/* ── Big type outro — dlive /Big type (250px, appears at keyframe 7) ── */
+.bigType {
+  position: absolute;
+  left: 150px;
+  top: 320px;
+  margin: 0;
+  width: 1541px;
+  font-family: var(--live-font); /* TODO: swap to Söhne */
+  font-size: 250px;
+  font-weight: 600;
+  line-height: 220px;
+  letter-spacing: -7.5px;
+  color: var(--live-ink);
+  white-space: pre-line;
+  opacity: 0;
+}
+
+/* Mobile-only prev/next (mlive /Prev, /Next) */
+.navButton {
+  display: none;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   FIT — scale the 1920×1080 canvas down, preserving every ratio.
+   Mirrors the prototype's scale = min(vw/1920, vh/1080).
+   ────────────────────────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1919px) {
+  .section {
+    --live-fit: 0.9;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1599px) {
+  .section {
+    --live-fit: 0.75;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1365px) {
+  .section {
+    --live-fit: 0.62;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 1000px) {
+  .section {
+    --live-fit: 0.82;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 860px) {
+  .section {
+    --live-fit: 0.72;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 760px) {
+  .section {
+    --live-fit: 0.63;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE < 768 — SECTIONS.mlive (390×844)
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .section {
+    --live-canvas-w: 100%;
+    --live-canvas-h: 844px;
+    --live-fit: 1;
+  }
+
+  .sticky {
+    align-items: flex-start;
+  }
+
+  .heading {
+    left: 24px;
+    top: 64px;
+    width: 342px;
+  }
+
+  .badge {
+    font-size: 13px;
+    line-height: 16.56px;
+    letter-spacing: 1.82px;
+  }
+
+  .headingText {
+    top: 30px;
+    width: 342px;
+    font-size: 28px;
+    line-height: 34px;
+  }
+
+  /* mlive hides the category list (opacity 0, width 0). */
+  .categories {
+    display: none;
+  }
+
+  .track {
+    top: 250px;
+    height: 300px;
+    padding-left: 230px;
+    gap: 16px; /* 326 stride − 310 card */
+  }
+
+  .card {
+    width: 310px;
+    height: 286px;
+  }
+
+  .cardImage {
+    width: 310px;
+    height: 176px;
+    border-radius: 12px;
+  }
+
+  .cardImageInner {
+    width: 347px;
+    height: 176px;
+  }
+
+  .cardOverlay {
+    border-radius: 12px;
+  }
+
+  .cardTitle {
+    top: 192px;
+    font-size: 18px;
+    line-height: 22.93px;
+  }
+
+  .cardDescription {
+    top: 220px;
+    width: 300px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .bigType {
+    left: 24px;
+    top: 360px;
+    width: 333px;
+    font-size: 54px;
+    line-height: 47.52px;
+    letter-spacing: -1.62px;
+  }
+
+  /* mlive /Progress (x160 y752) — the desktop rule/fill are not in mlive. */
+  .progress {
+    left: 160px;
+    top: 752px;
+    font-size: 14px;
+    line-height: 17.84px;
+    letter-spacing: normal;
+  }
+
+  .progressTrack,
+  .progressFill {
+    display: none;
+  }
+
+  /* mlive /Prev (x24 y740) and /Next (x322 y740), 44×44, r22, inset ring */
+  .navButton {
+    position: absolute;
+    top: 740px;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 22px;
+    background: none;
+    box-shadow: inset 0 0 0 1px var(--live-ring);
+    font-family: var(--live-font); /* TODO: swap to Söhne */
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 30.58px;
+    color: var(--live-ink);
+    cursor: pointer;
+  }
+
+  .navPrev {
+    left: 24px;
+  }
+
+  .navNext {
+    left: 322px;
+  }
+}
