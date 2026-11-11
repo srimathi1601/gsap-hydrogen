@@ -1,0 +1,47 @@
+The `envFile` option is deprecated, please use `envDir: false` instead.
+The `envFile` option is deprecated, please use `envDir: false` instead.
+The `envFile` option is deprecated, please use `envDir: false` instead.
+The `envFile` option is deprecated, please use `envDir: false` instead.
+[33m[PLUGIN_TIMINGS] [0mJavaScript callbacks ran for 13.1s of this 14.1s build (93%).
+The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - plugin vite:prepare-out-dir renderStart (32%, 4.5s, 1 call)
+  - plugin react-router:route-exports transform (16%, 2.3s, 191 calls)
+Additional callback time came from the callbacks below and from callbacks under 1s.
+4 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+  - plugin react-router:dot-server resolveId (438 calls)
+  - plugin react-router:build-client-route transform (191 calls)
+  - plugin @tailwindcss/vite:generate:build transform (7 calls)
+  … and 1 more
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+
+The `envFile` option is deprecated, please use `envDir: false` instead.
+[33m[PLUGIN_TIMINGS] [0mJavaScript callbacks ran for 6.6s of this 7.7s build (86%).
+The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - plugin react-router:virtual-modules load (75%, 5.8s, 167 calls)
+  - plugin @tailwindcss/vite:generate:build transform (25%, 1.9s, 7 calls)
+These rows add up to more than the total. Callbacks can overlap, so the same time counts for more than one row.
+1 callback is listed without a time. Its calls overlapped, so the time inside one call includes work from other calls. To find its cost, profile the build with `node --cpu-prof`:
+  - plugin vite:asset load (3 calls)
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+
+The `envFile` option is deprecated, please use `envDir: false` instead.
+
+Environment variables injected into MiniOxygen:
+
+PUBLIC_STORE_DOMAIN                     from local .env
+PUBLIC_STOREFRONT_API_TOKEN             from local .env
+PUBLIC_STOREFRONT_ID                    from local .env
+PRIVATE_STOREFRONT_API_TOKEN            from local .env
+PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID   from local .env
+PUBLIC_CUSTOMER_ACCOUNT_API_URL         from local .env
+SHOP_ID                                 from local .env
+SESSION_SECRET                          from local .env
+
+╭─ success ────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  MiniOxygen (Worker Runtime) preview server running.                         │
+│                                                                              │
+│  View Hydrogen app: http://localhost:3006                                    │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+

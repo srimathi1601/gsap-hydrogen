@@ -28,6 +28,23 @@
  *
  * The `.home` half of each selector keeps the earlier hand-written React
  * sections working; they are unmounted but still in app/sections/.
+ *
+ * ── 2026-11-10: .v2-root (StreadProV2 / version2/) ─────────────────────
+ * version2/index.html now loads inside an <iframe> (see
+ * app/sections/StreadProV2/index.jsx) instead of being injected as markup
+ * into this document — so none of the element-level cancellations below
+ * (section/li/img/h1-h6/p/a/input) are relevant to it any more: an iframe
+ * is its own document, nothing in app.css/reset.css/tailwind.css can
+ * reach inside it regardless of class scoping. `.v2-root` was only added
+ * to the full-bleed `body > main` margin rule, below — that one still
+ * matters, because it targets the WRAPPER div around the iframe, not the
+ * iframe's own contents: version2's CSS measures 100vw/100vh against the
+ * iframe's own viewport, so the iframe element itself has to sit flush
+ * against the real browser viewport with no gutter for that to match
+ * opening version2/index.html directly. (An earlier version of this
+ * comment, when version2 was still injected directly, also added
+ * `.v2-root` to every other cancellation group here — see
+ * _backup/pdp-base.css.20261110-201843 if that's ever needed again.)
  */
 
 /* ── Full bleed ────────────────────────────────────────────────────
@@ -35,7 +52,8 @@
    outright, and scopes them so the other scaffold routes keep their
    gutter. */
 body:has(> main > .proto-root) > main,
-body:has(> main > .home) > main {
+body:has(> main > .home) > main,
+body:has(> main > .v2-root) > main {
   margin: 0;
 }
 

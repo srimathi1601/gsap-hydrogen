@@ -1189,3 +1189,870 @@ rules so they work if remounted.
 - **No browser verification of anything this session.** There is no
   headless browser in the project; every fix was established by tracing
   source and confirming asset reachability.
+
+---
+
+# Figma pixel-check against node 189:249 (2026-11-06)
+
+Approach B — Figma as pixel-check only. `prototype/` untouched.
+
+## Scope of the frame
+
+`189:249 "Section 1"` has exactly one child: `189:2 "04 Gallery + buy box"`,
+1920 x 3113. No other sections, so there are no inter-section gaps in scope,
+and no mobile frame — `mobile.css` is outside this node.
+
+## Method
+
+`sections.js` was machine-generated from this Figma file, so the comparison
+was done against the data rather than by eye. Each Figma node's position was
+converted to absolute coordinates inside frame `189:2` and matched against
+the equivalent absolute position in `SECTIONS.dtop`'s
+`/PDP – gallery + buy box` subtree.
+
+## Result: the values already match
+
+**Geometry — 140 of 140 Figma nodes identical** (tolerance 0.51px):
+
+- 119 matched by name
+- 21 matched by position; these are duplicate names that `sections.js`
+  suffixes (`Divider#2`, `Circle#9`, `Icon / right#3`, `2.179 €#2`, …), so
+  name matching alone could not resolve them
+
+Covers breadcrumb, gallery box, main image, zoom/arrows/counter, the 3D
+button, the thumb strip, all four accessory cards (including the clipped
+fourth), both delivery options, financing, total price box, USP row,
+Trustpilot card and room-fit card.
+
+**Type / colour — 10 of 10 identical** on `189:67`
+(`Button / 579,80 € gespart`), checked via `get_design_context`:
+
+| property | Figma | sections.js |
+|---|---|---|
+| pill background | `#dce7fd` | `#dce7fd` |
+| pill radius | `17px` | `17px` |
+| pill size | `165 x 34` | `165 x 34` |
+| text colour | `#1e5fd8` | `#1e5fd8` |
+| font-size | `16.9px` | `16.9px` |
+| font-weight | `Sohne:Halbfett` | `600` |
+| text-align / width / offset | `center` / `165` / `0.5` | `center` / `165` / `0.5` |
+
+So there is no padding, gap, dimension, font or colour value that is wrong.
+
+### Requested fix 1 — gap between preview and thumbnail strip
+
+Already Figma-exact; nothing changed.
+
+```
+Figma 189:8  Gallery box        y 71   h 1125 -> bottom 1196
+Figma 189:9  IMG:gallery-main   y 103  h 1050 -> bottom 1153
+Figma 189:27 IMG:gallery-thumbs y 1215
+             gap box -> strip   = 19px
+             gap image -> strip = 62px
+
+sections.js  identical: 19px and 62px
+```
+
+The nine-tile patch places `.thz` at `top:1144px`, the strip's own `y`, so
+it does not touch the vertical gap.
+
+### Requested fix 2 — @font-face weight mapping
+
+Already correct; nothing changed. Reading the TTF table directory of
+`public/fonts/intertight.ttf`:
+
+```
+tables : GDEF GPOS GSUB HVAR OS/2 STAT cmap fvar gasp glyf gvar head
+         hhea hmtx loca maxp name post prep
+fvar   : PRESENT -> VARIABLE font
+axis wght: min 100  default 400  max 900
+named instances: 9
+name[1]: Inter Tight
+```
+
+So the declaration in `app/styles/app.css` —
+
+```css
+@font-face{font-family:Sohne;src:url(/fonts/intertight.ttf) format('truetype');
+  font-weight:100 900;font-display:swap;
+  ascent-override:92%;descent-override:23%;line-gap-override:0%}
+```
+
+— is right: `font-weight: 100 900` on a variable face gives REAL
+interpolated weights at 300 / 400 / 500 / 700. Nothing is synthesised. The
+metric overrides are the prototype's own, aligning Inter Tight's line boxes
+to Söhne's.
+
+Corrected a factual error in `app/styles/fonts.css`, which claimed "this is
+a single static weight … every weight other than 400 is synthesised". That
+was wrong and is now documented accurately.
+
+## The one real mismatch found — FIXED
+
+Thumbnail cropping, introduced by my own nine-tile patch two rounds ago.
+
+```
+source thumbs g1-t … g9-t   240 x 240   aspect 1.000  (square)
+flat strip 7c907f3685f2     1846 x 224  = 2x of 923x112, eight tiles
+Figma tile (Active thumb border) 114 x 113  aspect 1.009 -> square, uncropped
+my tile  (924/9 - 4)          98.67 x 113  aspect 0.873
+```
+
+With `object-fit: cover` a square image in a 0.873 box loses ~13% off each
+side, so every thumbnail was cropped — visibly different from Figma, where
+the tiles are square and uncropped.
+
+Changed to `object-fit: contain` in the `tools/sync-prototype.mjs` patch, so
+the full square thumb renders letterboxed inside the 113px band. The button
+box, the `top:1144px` position and the 19px gap are unchanged.
+
+Nine tiles in a box sized for eight still render ~13% smaller than Figma's
+114x113. That is an unavoidable consequence of showing nine thumbs instead
+of eight, which was chosen deliberately to fix the click/preview mismatch.
+
+## Deliberate, approved deviations (unchanged)
+
+| what | where | why |
+|---|---|---|
+| frame scale `KP = 1440/1667 = 0.86383`, left `110.43px` | `app.js:76` | prototype re-fits the 1920 design into a 1440 container; everything renders 13.6% smaller than Figma. Load-bearing for `gk`/`ty`/`lim` in the sticky gallery — animation logic, left alone |
+| `Voraussichtl. Lieferdatum:` + `05.11.–09.11.2026` + its dot hidden | `app.js:52-53` `stripTime` | Figma shows them; the no-dates rule wins |
+| nine thumbs rather than Figma's flat eight-tile strip | sync patch | fixes click -> preview correspondence; makes image 9 reachable |
+| Söhne -> Inter Tight | `app.css` | licence not available |
+
+## Files touched
+
+- `tools/sync-prototype.mjs` — thumb `object-fit` cover -> contain
+- `app/styles/fonts.css` — corrected the false synthesis claim
+
+Backups: `_backup/sync-prototype.mjs.20261106-105758`,
+`_backup/fonts.css.20261106-105758`.
+
+`public/js/app.js` was regenerated by the sync script, not edited directly.
+`prototype/` untouched. `public/css/site.css` and `public/css/mobile.css` do
+not exist in this project — that CSS lives appended in `app/styles/app.css`
+between the sync script's markers.
+
+## Not verified
+
+The rendered result. There is no headless browser in this project, so the
+comparison was done against the Figma API data and the TTF binary, not by
+measuring pixels in a page. The thumbnail change is visible, so it is worth
+a look.
+
+---
+
+## Round 2026-11-06 b — Gallery vs Figma `189:249`
+
+Five reported mismatches checked against live Figma node `189:249`
+(file `OI4fY2NSIR5YSdxxSIG6jY`, frame `189:2` "04 Gallery + buy box",
+1920x3113). Coordinates below are frame-relative.
+
+### Measurement — `sections.js` is byte-exact to Figma
+
+| Figma node | Figma | `SECTIONS.dtop` | |
+|---|---|---|---|
+| `189:8` Gallery box | 150, 71, 924x1125 | `[0,0,924,1125]` rel Frame 3 `[150,71]` | match |
+| `189:9` IMG:gallery-main | 188, 103, **849x1050** | `[38,32,849,1050]` | match |
+| `189:19` Button / 1 / 9 | **171**, 1127, 60x38 | `[21,1056,60,38]` | match |
+| `189:3`-`189:7` breadcrumb | present, y 19 | present, y 19 | match |
+| `189:27` IMG:gallery-thumbs | 150, 1215, 924x113 | `[0,1144,924,113]` | match |
+| `189:2` Frame 4 buy box | 1129, 73, 688x2911 | `[1129,73,688,2911]` | match |
+
+No coordinate in the data was wrong. The divergence was entirely two
+runtime scale factors in `app.js`.
+
+### Three reported issues had inverted premises — Figma checked, nothing changed
+
+- **Counter position.** `189:19` is at x 171; the gallery box spans
+  150..1074, so centre would be x 552. Figma puts the counter at the
+  **bottom LEFT**, confirmed by screenshot of `189:2`. Already correct.
+  Decision 2026-11-06: keep bottom-left, do not centre.
+- **Breadcrumb.** `189:3`-`189:7` ("Startseite / Laufbaender / sTread Pro
+  Laufband") ARE in `189:249` at y 19, above the gallery box at y 71.
+  Present in the render too. Nothing hidden, nothing removed.
+- **Padding-top.** Figma PDP-frame-top -> gallery box = **71px**. Before
+  this round the render showed 71 x 0.86383 = 61.3px, i.e. *tighter* than
+  Figma, not looser. The extra space above the gallery is the 216px nav
+  band (`/Promo bar` 47 + `/Header - main nav` 98 + `/Sub-nav` 71), which
+  belongs to a different Figma frame; `189:249` has no nav above it, which
+  is why it reads as starting higher.
+
+### The one real cause — two scale factors, FIXED
+
+```
+KP = 1440/1667 = 0.86383   app.js:76   refit 1920 design into 1440 container
+gk = (H - 103s)/(1257*KP*s) app.js:81  shrink 1257px gallery into viewport
+```
+
+KP **cancels out** of the rendered gallery size whenever `gk < 1`:
+
+```
+s*KP*gk = s*KP*(H-103s)/(1257*KP*s) = (H-103s)/1257
+```
+
+so at 1920x1080 the main image measured 660px wide with KP at 0.86383 AND
+660px with KP at 1. Changing KP alone could never enlarge it; `gk` had to
+go with it. Both were changed.
+
+| | main image | gallery box | gallery L-R | buy box L-R | col gap |
+|---|---|---|---|---|---|
+| Figma `189:249` | **849 x 1050** | **924** | 150-1074 | 1129-1817 | 59 |
+| before, 1920x1080 | 660 x 816 | 718 | 240-958 | 1086-1680 | 128 |
+| before, 1512x982 | 578 x 714 | 629 | 189-818 | 855-1323 | 37 |
+| **after, 1920x1080** | **849 x 1050** | **924** | **150-1074** | **1129-1817** | **55** |
+
+After the fix every viewport renders the design at a uniform
+`s = innerWidth/1920`, so all Figma ratios hold at every width.
+
+### Trade-off accepted (approved 2026-11-06)
+
+The gallery is 1257px tall and no longer shrinks to fit. While it is
+pinned, the thumbnail strip sits below the fold on viewports under
+~1360px tall. This was presented with measurements and chosen
+deliberately; it is the only way to render Figma's 849x1050 main image on
+a 1080p screen.
+
+### Animation logic — unchanged
+
+The sticky travel is untouched. `ty` and `lim` are written in terms of KP
+and stay self-consistent at KP=1:
+
+```
+ty  = ((subH+gap)*s+rel)/(s*KP) - 216/KP - 71  ->  rel/s - 200
+lim = 3113 - 71 - fh*gk - 60                   ->  1725
+      Frame 3 bottom = 71 + 1725 + 1257 = 3053 of 3113  (Figma 60px gap kept)
+T.H = 216 + 3113*KP + 95                       ->  3424 = SECTIONS.dtop.H
+```
+
+No ScrollTrigger, Lenis, timeline, scrub, easing or trigger value was
+touched. `gk` was a layout fit factor, not a scroll-driven value.
+
+### Files touched
+
+- `tools/sync-prototype.mjs` — one new `patch('public/js/app.js', [...])`
+  block, three replacements, each documented with its reason
+- `public/js/app.js` — regenerated by the sync script (3-line diff)
+- `PROGRESS.md` — this entry
+
+`prototype/` untouched (`git status --porcelain prototype/` empty).
+`app/styles/app.css` and `body.html` regenerated byte-identical.
+
+Backups: `_backup/sync-prototype.mjs.20261106-113757`,
+`_backup/app.js.20261106-113757`, `_backup/PROGRESS.md.<this round>`.
+
+### Verified / not verified
+
+- Verified: `node tools/sync-prototype.mjs` -> `sync OK`, all 7 app.js
+  patches applied; `node --check` on app.js and engine.js; `npm run build`
+  exit 0; geometry recomputed by parsing the generated `app.js`.
+- Not verified: the rendered page. There is still no headless browser in
+  this project, so this is arithmetic against Figma API data, not measured
+  pixels. The change is large and visible — worth a look at localhost:3000.
+
+---
+
+## Round 2026-11-06 d — V2 performance optimization (8 steps)
+
+### STEP 1 — optimized GLB
+
+`public/v2/stread-pro-opt.glb` -> `public/v2/stread-pro.glb`, `-opt` deleted.
+**8,475,296 -> 2,087,028 bytes (75.4% smaller).**
+
+Verified before swapping by parsing both GLB JSON chunks: same 34 nodes /
+30 meshes / 1 animation (101 channels); `Handlebar_Stand`,
+`Handlebar_buttom`, `light_mat`, `Material.014`,
+`simple_black_plastic.002` all preserved. Materials 10 -> 8 (dedup/prune).
+`display004` and `conveyor_belt004` are absent from **both** files — a
+pre-existing condition, not caused by the swap (`local()` already
+no-ops on a missing node).
+
+Terminal change, not sourced from `stread-pro-3d-source/` — survives
+rebuilds, which only re-sync `dist/assets/`.
+
+### STEP 2 — studio.hdr -> RoomEnvironment
+
+`HDRLoader` import replaced with `RoomEnvironment`; the
+`new HDRLoader(mgr).load('/studio.hdr', ...)` call replaced with a local
+PMREM render. **Removes the 1.6MB studio.hdr fetch entirely** —
+confirmed: `studio.hdr` and `HDRLoader` now appear 0x in the bundle.
+
+Two deliberate adaptations to the given snippet:
+- Reuses the existing module-scope `pm` PMREMGenerator (created at
+  main.js:59 for exactly this, never read again) instead of allocating a
+  second one; disposed after use.
+- `new RoomEnvironment()` not `new RoomEnvironment(renderer)` — the
+  installed three@0.187.0 constructor takes no arguments (an extra arg is
+  silently ignored, not an error). Matches stage.js's own working call.
+- `compileEquirectangularShader()` omitted: it precompiles the shader for
+  `.fromEquirectangular()`, which is no longer called at all.
+
+### STEP 3 — video preload
+
+`preload="none"` on every video and `data-src`/`loadVideoSrc` were already
+in place from round c. Only change needed: IntersectionObserver
+`threshold: 0.5`. Play/pause already singled out the active index in
+`go()` — no change needed.
+
+### STEP 4 — lazy route loading
+
+`React.lazy()` + `Suspense`, with `links()` extracted to
+`app/sections/StreadProV2/links.js`.
+
+**The extraction is what makes this real.** `links()` must be
+synchronously available on the route module; importing it from index.jsx
+would force Vite to bundle that whole module (body.html included) eagerly,
+and a module both statically and dynamically imported from one entry point
+isn't split — `lazy()` would have been purely cosmetic.
+
+Measured result:
+
+```
+route chunk (eager)   (_locale).stread-pro-v2-CdLnqniM.js     768 bytes
+lazy component chunk  StreadProV2-dZ2hcOhC.js              44,647 bytes
+```
+
+`v2-root` appears 0x in the route chunk, 1x in the lazy chunk.
+
+SSR verified unaffected: `/stread-pro-v2` still returns full real markup
+(53,990 bytes, `#pdp`/`#story`/`#stl` all present, 0 fallback divs). The
+dynamic import resolves server-side within the request;
+`entry.server.jsx` only `await`s `allReady` for bots.
+
+### STEP 5 — NOT APPLIED (confirmed with user 2026-11-06)
+
+Asked to move `sections.js` last in PrototypePage's chain. `app.js:2` reads
+`window.SECTIONS` synchronously and `app.js:5` dereferences it
+(`S[MOB?'m3d':'d3d']`); `sections.js` is what defines it. Loading it after
+app.js throws `TypeError: Cannot read properties of undefined (reading
+'d3d')` and breaks the V1 homepage — and would NOT fail `npm run build`,
+so it would ship silently broken.
+
+Raised with the user, who chose to keep the working order:
+`gsap -> ScrollTrigger -> lenis -> sections -> faq -> engine -> app`
+(the order prototype/index.html itself uses). `PrototypePage/index.jsx`
+is unchanged.
+
+### STEP 6 — images -> WebP
+
+`npx sharp-cli --format webp --quality 80` on all 16 jpgs in
+`public/v2/img/`. **1,699,447 -> 1,151,864 bytes (32.2% smaller, 535 KB
+saved).** Range 28–49% per file.
+
+sharp-cli **flattened** its output into `public/v2/img/` root, losing the
+`pdp/live/` and `lv/` subfolders — 14 files were moved back to their
+correct paths before anything else.
+
+References updated at source (not in the built bundle), so they survive
+rebuilds:
+- `src/main.js` — `/img/pdp/live/${n}.jpg` -> `.webp` (2 occurrences:
+  main slide + thumbnail)
+- `index.html` — `lerne-poster`, `help-pro`, `wk-a/b/c` (8 occurrences,
+  +8 bytes exactly)
+
+`/vid/live/*.jpg` video posters deliberately untouched — outside
+`public/v2/img/`, and those indices (09/11/13/15/16) are videos.
+
+**Bug found and fixed in passing:** the original body.html extraction
+script only rewrote `src|href|poster` attributes, never
+`style="background-image:url(...)"`. So `url(/img/lv/wk-a|b|c.jpg)` had
+been un-prefixed — 404ing — in the `#stl` peek cards since the first V2
+build. The re-extraction now handles `url()` too; all six are
+`/v2/img/lv/wk-*.webp`.
+
+### STEP 7 — rebuild + re-patch
+
+`npm run build` in stread-pro-3d-source -> exit 0. New JS hash
+`index-C3Bg03_b.js` (836.93 kB, down from 842.71 kB). CSS hash unchanged
+(`src/style.css` still never touched).
+
+Re-applied: `/v2/` path patch (12 patterns), CSS scoping + loader-hide (4
+rules), body.html re-extraction, `MODULE_SCRIPT` updated.
+
+Two path patterns correctly "failed" — both confirm earlier steps landed:
+`/img/pdp/live/${i}.jpg` (now `.webp`) and `` `/studio.hdr` `` (gone).
+
+### STEP 8 — final build
+
+`npm run build` exit 0. 192 client / 170 server modules (+1 each, the new
+`links.js`).
+
+### Verified live (user's own `hydrogen dev`, port 3000)
+
+All 200: new JS bundle, CSS, GLB (2,087,028 bytes served), all 11 gallery
+`.webp`, `wk-a.webp`, `help-pro.webp`, `lerne-poster.webp`, draco, all 5
+video posters. Stale `index-DBbebHHt.js` correctly 404s.
+
+### Left in place deliberately (flagged, not deleted)
+
+- `public/v2/studio.hdr` (1.6MB) — nothing references it now; the *fetch*
+  is gone, the file is dead weight. Deletion was not requested.
+- The 16 original `public/v2/img/**/*.jpg` (1.7MB) — now unreferenced.
+  Deletion was not requested for these (unlike `-opt.glb`, which was).
+
+Both are safe to delete; backups at
+`_backup/public-v2-img-jpg.20261106-161008/`.
+
+### Not verified
+
+Visual/runtime behaviour in a real browser — still no headless browser in
+this project. All of the above is build output, served-asset status codes,
+GLB JSON-chunk parsing and bundle-content inspection, not rendered pixels.
+
+---
+
+## Round 2026-11-06 e — Key Features video + FIX 1–5
+
+### Key Features (#kf) — video instead of stills  [V1]
+
+Five supplied sportstech.de CDN URLs mapped 1:1 onto the five cover-flow
+cards (`REF`, five Figma fills). Two patches in `tools/sync-prototype.mjs`
+(prototype/ untouched):
+
+- card build: `<video>` child added; the original `/fig/<hash>.webp`
+  fill is KEPT as the `poster`, so a card shows the right still before
+  its video buffers or if the network blocks it
+- `render()`: only the FRONT card plays, all others pause; `preload:none`
+  so nothing is fetched until a card reaches the front
+
+CSP already permitted the host (`mediaSrc` includes
+`https://www.sportstech.de` in app/entry.server.jsx) — no policy change.
+All five URLs verified reachable (HTTP 206, `video/mp4`).
+
+The second patch initially failed: the real prototype text is
+`v/4)))};` — no semicolon before the brace — not `v/4)));};`. Corrected,
+then `sync OK`.
+
+### FIX 1 — V1 navbar uses V2 logo  [done]
+
+`/v2/img/logo-black.svg` (dark-on-light; the header is #ffffff).
+
+The file is the FULL lockup (mark + wordmark), not just the mark, so it
+replaced BOTH `<LogoMark/>` and the `SPORTSTECH` `<span>` — keeping both
+would have duplicated the wordmark. Height pinned to 26px desktop / 22px
+mobile, matching the previous mark exactly. `.logoMark`/`.logoWord` rules
+kept (unused) so reverting is a one-file change.
+
+### FIX 2 — V1 gallery thumbnails clipped  [partial — see note]
+
+Found the overflow the request predicted: `.pinbox{...;overflow:hidden}`
+in the generated prototype CSS. Removing it globally was NOT safe — the
+pinned 3D/keyfeatures/live/video sections rely on that clip or their
+scaled stages spill into the next section.
+
+Scoped the override to the gallery section only:
+`#top .pinbox{overflow:visible}`, added ABOVE the sync marker in
+app/styles/app.css so `node tools/sync-prototype.mjs` preserves it
+(specificity 1,1,0 beats the generated `.pinbox` 0,1,0 regardless of
+order). Verified it survived a regeneration.
+
+**Caveat, stated honestly:** measured against the node data all nine
+thumbs already fit — tile i sits at `left = i*(924/9)` with width
+`924/9-4`, so the strip spans 0..920 inside Frame 3's 924. I could not
+reproduce the clipping from geometry. If edge thumbs still look cut, the
+cause is something else and a screenshot is needed.
+
+### FIX 3 — V2 3D not working after gallery  [root cause NOT rootMargin]
+
+Ruled out by measurement before changing anything:
+- optimized GLB is structurally sound — 33/33 primitives Draco-compressed,
+  0 bad bufferView refs, 0 bufferViews exceeding the BIN chunk, 101
+  animation channels, 8 images intact (textures 19->8 = dedup)
+- all three draco files present AND served 200 from `/v2/draco/`
+- `RoomEnvironment.dispose()` exists in three@0.187.0 (line 147), so the
+  STEP 2 call was not throwing
+
+Applied as asked: `rootMargin` 200px -> 400px.
+
+Added what was actually missing — **`loader.load()` had NO error
+callback**, so a failed fetch/decode died silently and left exactly the
+reported symptom (backgrounds animate, no model, nothing in console).
+Now logs the failure.
+
+Also hardened the observer setup: `observe(null)` THROWS, and because
+that line sits at module top level it would have killed every line of
+main.js after it — which would explain "3D AND scroll animations both
+dead". Now null-checked, and falls back to loading immediately.
+
+Diagnostics on `window.__v2diag` — type `__v2diag` in the console:
+`storyFound / observed / fired / envReady / glbLoaded / ready / glbError`.
+Plus console.log at each stage, as requested.
+
+**Still unverified:** whether this fixes it. I cannot run a browser here.
+The diagnostics are there precisely so the next run says which link in
+the chain breaks.
+
+### FIX 4 — #stl ScrollTrigger  [8 of 9 already correct; 9th must NOT change]
+
+Audit of `main.js` (N = 6):
+
+| required | current | verdict |
+|---|---|---|
+| scrub 0.6 | `scrub: .6` | already correct |
+| snapTo 1/5 | `1/(N-1)`, N=6 | already correct |
+| duration {min .25, max .6} | identical | already correct |
+| delay 0.08 | `.08` | already correct |
+| ease 'power2.inOut' | identical | already correct |
+| start 'top top' | identical | already correct |
+| end 'bottom bottom' | identical | already correct |
+| invalidateOnRefresh true | identical | already correct |
+| **pin '.lv-pin'** | **absent** | **deliberately absent — NOT added** |
+
+`.lv-pin` is `position:sticky;top:0;height:100vh` in style.css. Adding
+ScrollTrigger `pin` on top of CSS sticky double-pins it: ScrollTrigger
+wraps the element in a pin-spacer and applies its own transform while
+the CSS sticky positioning still fights it.
+
+This is the project's own documented rule —
+guides/skills/pdp-builder.md §7 "CSS Sticky (not ScrollTrigger pin) …
+ScrollTrigger only drives the timeline — no pin:true" — and PROGRESS.md
+records the V1 retune that moved FROM `pin:true` TO CSS sticky for this
+exact reason. **Nothing changed in this block.**
+
+### FIX 5 — scroll feel  [3 added, 1 already correct]
+
+| setting | before | action |
+|---|---|---|
+| Lenis `smoothWheel: true` | present | left alone |
+| Lenis `lerp: .1` | present | left alone |
+| Lenis `wheelMultiplier: 0.8` | missing | added |
+| Lenis `touchMultiplier: 1.5` | missing | added |
+| ST `ignoreMobileResize: true` | present | left alone |
+| ST `fastScrollEnd: true` | missing | added |
+| ST `preventOverlaps: true` | missing | added |
+| ST `autoRefreshEvents` | missing | added |
+| fps limiter on `gsap.ticker.add(frame)` | missing | added |
+
+One `ScrollTrigger.config()` call and one `new Lenis()` — verified, no
+duplicates.
+
+The fps gate compares against the last frame that actually RAN, not the
+last tick. A naive `now - lastTick < 16` on a display ticking at ~15.9ms
+would skip every frame and freeze the scene; measuring from the last run
+lets time accumulate so the next tick always passes.
+
+### Build / verification
+
+- `node tools/sync-prototype.mjs` -> sync OK, both KF patches applied
+- V2 rebuild -> exit 0, new hash `index-DUrQfpxx.js` (837.81 kB)
+- round-4 path patch: 11 patterns, all applied; CSS patch: 4 rules
+- `npm run build` -> exit 0, 192 client / 170 server modules
+- live: logo 200 + referenced in homepage HTML; new bundle 200; stale
+  bundle 404; all 5 video URLs 206
+- `node --check` clean on public/js/app.js and the V2 bundle
+
+---
+
+## Round 2026-11-06 f — 3D invisible: ROOT CAUSE FOUND + FIX 1–4
+
+### THE BUG — `.v2-root{background:#000}` was painting over the canvas
+
+Symptom: GLB confirmed loading in console, frame loop running, yet no
+model visible in ANY scene section.
+
+Cause is CSS paint order, not three.js:
+
+```
+#bg       position:fixed inset:0  z-index:-3
+#bigtype  position:fixed inset:0  z-index:-2
+#gl       position:fixed inset:0  z-index:-1   <- the WebGL canvas
+```
+
+`.v2-root` creates NO stacking context (verified: no position, transform,
+opacity, filter, isolation, contain, will-change), so those three belong
+to the ROOT stacking context. CSS 2.1 Appendix E paint order within one
+stacking context:
+
+```
+step 2   child stacking contexts with NEGATIVE z-index   <- #bg / #bigtype / #gl
+step 3   in-flow, non-positioned block descendants       <- .v2-root's own background
+```
+
+Step 3 paints AFTER step 2 — so `.v2-root`'s opaque `#000` covered all
+three layers. Everything worked; every pixel was hidden behind the
+wrapper div.
+
+In the original standalone page that element was `<body>`, whose
+background PROPAGATES to the viewport canvas and paints beneath
+everything. A plain `<div>` gets no such propagation. The round-c merge
+of `html{background:#000}` + `body{background:transparent}` into a single
+`.v2-root{background:#000}` picked html's value — that one choice was the
+bug.
+
+Fix: `.v2-root{background:transparent}` (what `body` actually declared).
+`#bg` is fixed/inset:0 and always opaque, so it supplies the backdrop as
+designed. Patch script updated (round 5) so rebuilds keep it.
+
+Why `#pdp` stayed visible throughout: it has `position:relative;z-index:1`
+-> positive stacking level -> paints at step 7, above the canvas.
+
+### FIX 1 — CSP inline event handlers: NOTHING TO FIX
+
+Searched for `on*=` attributes in:
+- `stread-pro-3d-source/src/main.js`      -> none
+- `stread-pro-3d-source/index.html`       -> none
+- `app/sections/StreadProV2/body.html`    -> none
+- the served `/stread-pro-v2` HTML        -> none
+- `app/sections/PrototypePage/body.html`  -> none
+- the built V2 bundle (incl. `setAttribute('on…')`) -> none
+
+The page uses `.onclick = fn` property assignment throughout, which is
+NOT a CSP inline-handler violation. Nothing was changed. If the console
+message persists, it is coming from outside this code — a browser
+extension or an injected third-party script — and the violation report's
+`source-file` / line would identify it.
+
+### FIX 2 checklist — items 1–5 and 7 were already correct
+
+| asked | finding |
+|---|---|
+| 1 render called in loop | yes — `renderFrame()` (bloomComp + finalComp) from `frame()` |
+| 2 #gl z-index -1 | yes, `z-index:-1` — correct, and was never the problem |
+| 3 setSize correct dims | yes — `resize()` uses innerWidth/innerHeight |
+| 4 camera set for intro | yes — per-frame from `fitView()`/`cur3` |
+| 5 scene.add(model) | yes — `root.add(m)`, `scene.add(root)` |
+| 6 confirm loop runs | added counters (below) rather than per-frame logs |
+| 7 loop starts after ready | starts at module load and tolerates not-ready — correct by design, must NOT wait on the GLB |
+
+So none of the listed suspects was the fault; the cause was the CSS
+occlusion above.
+
+Diagnostics extended — `window.__v2diag` now also carries:
+`frames` (loop alive), `rendered` (canvas gate let renderFrame through),
+`canvasOpacity` (current gate value). One `console.log` on the first
+frame only.
+
+### FIX 3 — 2 already correct, 2 changed, 1 reported
+
+| item | before | action |
+|---|---|---|
+| `setPixelRatio(min(dpr,2))` | already in `resize()` (1.5 on mobile) | left alone |
+| `powerPreference:'high-performance'` | already in constructor | left alone |
+| `antialias` | `true` | -> `devicePixelRatio < 2` |
+| fps limiter | present from round e | confirmed: 0.016s gate, measured from last RUN frame |
+| Lenis `infinite:false` | absent (it is the default) | added, explicit |
+| duplicate RAF loops | none in main.js | see below |
+
+`requestAnimationFrame` appears only in `stage.js` (2 call sites, one
+loop) — the `#pcard` turntable's own renderer, IntersectionObserver-gated
+and cancelled when offscreen. It is a separate intentional loop, NOT a
+duplicate of the gsap.ticker loop. **Not removed** — removing it would
+kill the turntable.
+
+### FIX 4 — nonce: ALREADY CORRECT
+
+`app/root.jsx` already has `const nonce = useNonce()` (line 161) and
+`nonce={nonce}` on the importmap script (line 197), plus on
+`<ScrollRestoration>` and `<Scripts>`. Nothing changed.
+
+### Figma 124:2 — "sTread PDP 3D Scroll Page"
+
+Maps 1:1 onto the implementation. Desktop frames are 1440x900 each
+(mobile 390x844), in scroll order:
+
+| Figma frame (1440) | y | implemented as |
+|---|---|---|
+| Hero / PDP – Gallery + Buy box 133:381 | 220 | `#pdp` |
+| Scene – Intro 133:2 | 2648 | `.scene[data-k=intro]` |
+| Scene – Name 133:35 | 3708 | `name` |
+| Scene – Display 133:89 | 4768 | `display` |
+| Scene – Swivel 133:141 | 5828 | `swivel` |
+| Scene – App 133:199 | 6888 | `app` |
+| Sportstech Live 133:272 | 7948 | `#stl` |
+| Scene – Motor 133:1047 | 9008 | `motor` |
+| Scene – Led 133:1096 | 10068 | `led` |
+| Scene – Incline 133:1150 | 11128 | `incline` |
+| Scene – Top 133:1244 | 12188 | `top` |
+| Scene – Fold 133:1200 | 13248 | `fold` |
+| Scene – Extras 133:1315 | 14308 | `extras` |
+| Scene – Dims 133:1380 | 15368 | `dims` |
+| Awards 133:1432 | 16428 | `#awards` |
+| Podium card 133:1532 | 17192 | `#pcard` |
+| Video 133:1594 | 18237 | `#vid` |
+| Warum Sportstech 133:1602 | 21277 | `#why` |
+| Hilfe / Kontakt 133:1645 | 22048 | `#help` |
+| Footer 133:1675 | 22913 | `#foot` |
+
+All 12 `.scene` keyframes in `K` are present and in the same order. Each
+Figma frame is the SETTLED state of a scene; `.scene{height:200vh}` with
+a sticky 100vh `.panel` supplies the scroll travel.
+
+Mobile-only extra: "Technische Daten · 390" (134:952) has no 1440
+counterpart in this frame.
+
+### Build
+
+V2 rebuild exit 0 -> `index-D2EHI1jo.js` (837.97 kB). 11 JS path patterns
++ 4 CSS rules re-applied. `npm run build` exit 0, 192/170 modules.
+
+Could NOT verify live this round: the `hydrogen dev` session on :3000 had
+stopped. Verified on disk instead (bundle, CSS rule, component hash, dist
+chunks).
+
+---
+
+## 2026-11-10 — StreadProV2 repointed to `version2/` (Approach A)
+
+Status: ✅ done
+Approach: **A** (prototype folder exists — copy, do not rebuild)
+
+### What `version2/` actually is
+
+A **variant of the V1 prototype**, NOT the Three.js/Vite project in
+`stread-pro-3d-source/`. Verified by hash:
+
+| file | vs `prototype/` |
+|---|---|
+| `js/sections.js` | identical |
+| `js/engine.js` | identical |
+| `js/three3d.js` | identical |
+| `js/{gsap,lenis,ScrollTrigger}.min.js` | identical |
+| `models/stread-pro.glb` | identical |
+| `js/app.js` | **differs** |
+| `index.html` | **differs** |
+| `css/site.css` | **differs** |
+
+So it is a classic-script, `engine.js`-driven page with V1's own section
+ids (`#top #s3d #kf #live #vid`) and `.pinbox` / `.dstat` hosts — which is
+exactly why Approach A applies to it unchanged. It loads as 7 classic
+scripts + 1 module, not as a single bundle.
+
+**It has no `#story` element.** That belongs to
+`stread-pro-3d-source/src/main.js`.
+
+### Pipeline
+
+New `tools/sync-version2.mjs`, mirroring `tools/sync-prototype.mjs`.
+`version2/` is the source of truth and is never edited; re-run the script
+after it changes. Idempotent.
+
+```
+version2/{css,js,img,fig,fonts,models}/ -> public/version2/...
+version2/index.html  -> app/sections/StreadProV2/body.html (scripts stripped)
+inline window.FAQ    -> public/version2/js/faq.js
+```
+
+Patches applied to the COPIES only:
+
+| file | patch | why |
+|---|---|---|
+| `app.js` | `url(fig/` `url(img/` -> `/version2/...` | public/ is served from root |
+| `engine.js` | `url(fig/` -> `/version2/fig/` | same |
+| `three3d.js` | bare `'three'` -> `'./three/three.module.js'` | root.jsx's importmap maps `three` to **V1's** copy — left bare, version2 would load a 2nd Three.js instance |
+| `three3d.js` | draco + GLB -> `/version2/...` | same |
+| `three3d.js` | **`r.compile(scene,cam)`** before `gsap.ticker.add(frame)` | STEP 5 — see below |
+| 6 three addons | bare `'three'` -> `'../../three.module.js'` | same as above |
+
+The `/version2/` prefix is not cosmetic: `public/{img,fig,models}` already
+hold the V1 prototype's assets, which are DIFFERENT files. Unprefixed,
+version2 would silently render V1's images.
+
+CSS is **not** appended to `app/styles/app.css` (unlike the V1 prototype).
+`app.css` already carries prototype CSS globally and version2 declares the
+same selectors (`*`, `html,body`, `.pinbox`, `.stage`, `.card`, `#gbar`)
+with different values. Served as route-scoped `<link>`s from
+`app/sections/StreadProV2/links.js` instead. Order is load-bearing:
+root.jsx emits `app.css` before `<Links />`, so version2's wins.
+`url(../fonts/intertight.ttf)` already resolves correctly from
+`/version2/css/` — copied verbatim, no rebase needed.
+
+### Script order (from `version2/index.html` lines 46-49)
+
+```
+faq -> gsap -> ScrollTrigger -> lenis -> sections -> engine -> app
+then module: three3d.js
+```
+
+Differs from V1 only in that the FAQ block is **first** (it is inline in
+version2's `<body>`, ahead of gsap). `app.js` reads `FAQ[i]` while building
+the accordion, so it must precede `app.js` either way.
+
+### STEP 5 — `r.compile(scene, cam)` ✅
+
+Measured cause: on a scroll pass, `getProgramInfoLog` cost **1918 ms of
+CPU self-time (13.8% of all CPU)** plus `texSubImage2D` 1468 ms. GL
+counters showed **14 programs / 14 `linkProgram` calls TOTAL** — so it is
+not per-frame churn but a one-time compile of every shader, each
+`getProgramInfoLog` a synchronous stall on the driver.
+
+It landed mid-scroll because the GLB loads lazily: the IntersectionObserver
+on `#s3d` has `rootMargin:'900px 0px'`, so `start()` runs while the section
+is still approaching and the first `r.render()` forces every program to
+compile — by which time the user is already scrolling.
+
+`r.compile(scene,cam)` moves that work into the same 900px lead-in, before
+`frame()` is ever added to the ticker. Placed after `size()` (so
+`cam.aspect` and the drawing buffer are final) and after the GLB mount.
+
+### STEP 6 — NOT applied, deliberately ⬜
+
+Requested:
+
+```js
+const rect = document.getElementById('story')?.getBoundingClientRect()
+if (!rect || (rect.top > innerHeight + 400 && rect.bottom < -400)) return
+```
+
+Three independent reasons:
+
+1. **It would break the 3D entirely.** `version2/` has no `#story`
+   (grep: 0 hits). `getElementById('story')` returns `null`, so `!rect` is
+   always true and `frame()` would return on *every* call — nothing would
+   ever render.
+2. **The condition is unsatisfiable.** `rect.bottom < -400` implies
+   `rect.top < -400`, contradicting `rect.top > innerHeight + 400`. With
+   `&&` the guard can never fire; it needs `||`.
+3. **Its intent is already implemented.** `three3d.js`'s `frame()` opens
+   with `if(!visible||document.hidden)return;`, where `visible` is driven
+   by the IntersectionObserver on `#s3d`, and `start()` does not run until
+   that observer first fires.
+
+The off-screen CPU waste that measurement *did* find (`frame()` ran 666
+times, rendered only 286 — 57% wasted passes, `mixer.setTime()` included)
+is in `stread-pro-3d-source/src/main.js`, a different codebase, untouched
+here.
+
+### Verified live (`npm run preview`, :3000, Chromium 1440x900)
+
+```
+scripts loaded      8/8, correct order
+SECTIONS 14 · FAQ 5 · buildStage ✓ · mountPinned ✓ · lenis ✓
+stages 11 · stage nodes 989 · pinboxes 10 · ScrollTriggers 238
+docHeight 25842 · stage width 1440 · font "Sohne, Inter, …"
+.v2-root ✓ · SiteHeader absent (noLayout) ✓
+#s3d ✓ · GL canvas ✓ · __s3dReady 1 after scroll
+page errors 0 · failed requests 0
+```
+
+Scroll perf, before -> after STEP 5:
+
+| | V1 prototype (baseline) | /stread-pro-v2 (version2 + STEP 5) |
+|---|---|---|
+| avg FPS | 47.8 | **55.3** |
+| p95 frame | 33.6 ms | **30.9 ms** |
+| worst frame | 500 ms | **149.9 ms** |
+| long tasks | 6 (4832 ms) | **0 (0 ms)** |
+
+V1 home route re-checked after the change: 11 stages, 988 nodes,
+`.proto-root`, SiteHeader present, 0 problems — unaffected.
+
+Two console errors remain, both **pre-existing and unrelated**: the
+root.jsx `nonce` hydration warning, and `Analytics.Provider` wanting
+`PUBLIC_CHECKOUT_DOMAIN` (not set in preview).
+
+### Reversibility
+
+The previous Vite build is untouched on disk (`public/v2/`,
+`stread-pro-3d-source/`). Replaced files are in
+`_backup/*.v2swap.20261110-145425` (`index.jsx`, `body.html`, `links.js`).
+`app/routes/($locale).stread-pro-v2.jsx` needed **no change** — it still
+imports `links` from `./links.js` and lazy-loads the component, and
+`handle = {noLayout:true}` stays correct because version2 brings its own
+header (in `SECTIONS.dtop /Header – main nav`) and footer (`#foot-d`).
+
+Open points:
+  - `className="v2-root"` is now inert (no `.v2-root` rules remain
+    anywhere in `app/styles/`); kept as a stable hook.
+  - `version2/tools/` (build .py scripts) is not copied — build tooling,
+    not page input, same as `prototype/tools/`.
+
+Next: nothing outstanding for this task.

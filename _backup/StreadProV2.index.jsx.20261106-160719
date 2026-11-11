@@ -1,0 +1,171 @@
+/**
+ * StreadProV2 — renders stread-pro-3d-source/dist/index.html's <body>
+ * verbatim, mounted at /stread-pro-v2 (Approach A: prototype folder
+ * exists, zero semantic changes, exact copy).
+ *
+ * ── Why this is a PRE-BUILT bundle, not a copied-verbatim script ───────
+ * Unlike the home route's PrototypePage (app/sections/PrototypePage/),
+ * stread-pro-3d-source/ is a Vite/ESM project: src/main.js opens with 14
+ * bare-module imports (three, three/examples/jsm/*, gsap, gsap/
+ * ScrollTrigger, lenis). A browser cannot execute that as a classic
+ * `<script src>` the way PrototypePage's prototype/js/*.js files are
+ * loaded — there is no import map for a dependency graph this size.
+ *
+ * Approved approach (2026-11-06, Q1 option b): build the source project
+ * with its own `vite build`, copy the hashed output into public/v2/, and
+ * load the ONE resulting module script here. main.js itself was never
+ * edited — the only changes are path prefixes applied AFTER the build,
+ * to the built output, documented in PROGRESS.md.
+ *
+ * ── How the pieces fit ──────────────────────────────────────────────
+ *
+ *   body.html                  stread-pro-3d-source/dist/index.html's
+ *                               <body>, with every absolute asset path
+ *                               rewritten to live under /v2/. Vite hoists
+ *                               the module <script> and stylesheet <link>
+ *                               into <head> on build, so there are no
+ *                               <script> tags inside <body> to strip (0
+ *                               found — not a bug, see extraction notes
+ *                               in PROGRESS.md).
+ *   public/v2/assets/*.js       the built, hashed bundle, patched so every
+ *                               /img/ /vid/ /draco/ /stread-pro.glb
+ *                               /studio.hdr reference carries a /v2/
+ *                               prefix. /fonts/intertight.ttf is left
+ *                               unprefixed — it's byte-identical to the
+ *                               font already shipped at public/fonts/ and
+ *                               is treated as shared, not duplicated.
+ *   public/v2/assets/*.css      the built stylesheet. Its bare `*`,
+ *                               `html`, `body` rules are rewritten to
+ *                               target `.v2-root` instead (see CSS note
+ *                               below) — every other selector is already
+ *                               specific to V2's own IDs/classes and is
+ *                               untouched.
+ *   public/v2/{img,vid,draco,stread-pro.glb,studio.hdr,lerne.mp4}
+ *                               copied verbatim from dist/.
+ *
+ * ── Why the CSS is scoped under .v2-root (approved Q3) ─────────────────
+ * The source page IS the document: its stylesheet sets `html{background:
+ * #000}` and `body{font-family:Inter,...;color:#111;overflow-x:hidden}`
+ * meaning to style the real <html>/<body>. On this route, <body> also
+ * carries app/styles/app.css's global `body{font-family:Sohne;color:
+ * #1f1f1f}` (loaded on every route) and renders <SiteHeader>/<SiteFooter>
+ * as siblings of this component. If V2's `body{...}` rule were left
+ * as-is, it would apply unscoped to that real <body> too — overriding
+ * the header/footer's inherited font and color on this route alone.
+ *
+ * So the built CSS's bare `*`, `html`, `body` rules (and the `@media
+ * (pointer:fine){body,a{cursor:none}}` rule) were rewritten to target
+ * `.v2-root` / `.v2-root *` / `.v2-root a` instead — see PROGRESS.md for
+ * the exact before/after. `html`'s `background:#000` and `body`'s
+ * `background:transparent` were merged into one `.v2-root{background:
+ * #000}`: in the original page body's transparency existed only to let
+ * html's black show through beneath it, and #bg (position:fixed;inset:0,
+ * always opaque once painted) covers the viewport either way — black is
+ * the original page's own fallback if #bg were ever to fail, not
+ * Hydrogen's white.
+ *
+ * `.v2-root` itself declares no `position`, `transform`, `filter`,
+ * `contain`, `isolation` or `will-change` — any of those would make it
+ * the containing block for its `position:fixed` descendants (#gl, #bg,
+ * .nav, #cursor, ...) and break them. Verified absent after the patch.
+ *
+ * The stylesheet loads via this route's own `links()` export below, which
+ * React Router adds to <head> only while this route is active and
+ * removes on navigation away — the actual mechanism behind "load V2 CSS
+ * only on the V2 route, not globally." No global file was touched.
+ *
+ * ── Why the module script is loaded by hand, in useEffect ──────────────
+ * Same reasoning as PrototypePage: dangerouslySetInnerHTML never executes
+ * <script> elements, and the bundle's own lifecycle (ScrollTrigger
+ * creation, Lenis instance, WebGL context, global listeners) needs to run
+ * exactly once against the real, mounted DOM.
+ *
+ * ── Known constraints (same class as PrototypePage's) ──────────────────
+ * - The bundle is global and not idempotent: it is written to run once
+ *   per full page load. Client-side navigating away and back leaves the
+ *   markup but not the behaviour — a full reload is required. This is
+ *   inherent to how the source project is written, not something this
+ *   component changes.
+ * - V1 (home route, PrototypePage) and V2 never run on the same page
+ *   load (different routes, approved Q6) — their WebGL contexts and
+ *   global listeners never coexist.
+ * - FIX 3 (2026-11-06): the global <SiteHeader>/<SiteFooter> used to
+ *   render around this page on top of V2's own fixed `.nav` and `#foot`
+ *   footer (body.html) — the same double-chrome condition the home route
+ *   still has with the prototype's own `/Header – main nav`, which was
+ *   left alone (out of scope there). Here it's fixed: the route file
+ *   exports `handle = {noLayout: true}`, which app/root.jsx reads via
+ *   useMatches() and passes to PageLayout, which then skips both and
+ *   renders only `<main>{children}</main>`. See app/root.jsx and
+ *   app/components/PageLayout.jsx.
+ */
+
+import {useEffect} from 'react';
+import bodyHtml from './body.html?raw';
+
+const CSS_HREF = '/v2/assets/index-ClgtUvOx.css';
+// Hash changed 2026-11-06 (perf-fix rebuild: deferred GLB/HDR/video
+// loading + ScrollTrigger.config — see stread-pro-3d-source/src/main.js).
+// CSS hash is unchanged since src/style.css itself was not touched; the
+// loader-hide and scoping rules are applied as a post-build patch instead
+// (same pattern as the path-prefix patch), documented in PROGRESS.md.
+const MODULE_SCRIPT = '/v2/assets/index-DBbebHHt.js';
+
+/** React Router route convention: links added to <head> only while this
+ *  route is mounted, removed automatically on navigation away. */
+export function links() {
+  return [{rel: 'stylesheet', href: CSS_HREF}];
+}
+
+/** Appends the module script and resolves when it has executed. */
+function loadModuleScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[data-v2="${src}"]`);
+    if (existing) {
+      resolve();
+      return;
+    }
+    const el = document.createElement('script');
+    el.type = 'module';
+    el.src = src;
+    el.dataset.v2 = src;
+    el.onload = () => resolve();
+    el.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.body.appendChild(el);
+  });
+}
+
+/* Module scope, so the bundle boots exactly once per page load — same
+   StrictMode reasoning as PrototypePage: no cancellation flag, because
+   booting is a one-shot global side effect on the document, not
+   component-scoped work. See PrototypePage/index.jsx for the full
+   double-invoke trace this guards against. */
+let booted = false;
+
+export function StreadProV2() {
+  useEffect(() => {
+    if (booted) return;
+    booted = true;
+
+    loadModuleScript(MODULE_SCRIPT).catch((err) => {
+      booted = false;
+      console.error('[StreadProV2] module script failed:', err);
+    });
+  }, []);
+
+  return (
+    <div
+      className="v2-root"
+      // main.js queries and mutates this subtree immediately on load
+      // (gallery slides inserted, #gl canvas bound, ScrollTriggers
+      // created against .scene sections, ...), so the client DOM
+      // intentionally diverges from the server markup.
+      suppressHydrationWarning
+      // dist/index.html's own <body>, read from disk at build time —
+      // not user input.
+      dangerouslySetInnerHTML={{__html: bodyHtml}}
+    />
+  );
+}
+
+export default StreadProV2;

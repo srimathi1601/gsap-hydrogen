@@ -1,0 +1,116 @@
+gsap.registerPlugin(ScrollTrigger);ScrollTrigger.config({ignoreMobileResize:true});
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;const QCM=location.search.includes('qc');const MOB=innerWidth<768;const S=window.SECTIONS;
+let lenis;if(!RM){lenis=new Lenis({duration:1.1,easing:t=>Math.min(1,1.001-Math.pow(2,-10*t))});window.lenis=lenis;lenis.on('scroll',ScrollTrigger.update);gsap.ticker.add(t=>lenis.raf(t*1000));gsap.ticker.lagSmoothing(0);}
+// 3D
+window.S3D=mountPinned(document.getElementById("s3d"),S[MOB?'m3d':'d3d'],Object.assign({fit:false,per:1},MOB?{}:{nav:[200,1081]}));{const E3=window.S3D.els;const ap=E3["/Navigator/Row/Tabs/Active pill/Auto progress"];ap&&ap.remove();
+if(MOB){/* Figma mobile label icon differs per step, but name-path merge kept step-1 vectors: rebuild from desktop Tab icons */const IC=[1,2,3,4,5].map(i=>{const pre=`/Navigator/Row/Tabs/Tab 0${i}/Icon/`;return '<svg viewBox="0 0 18 18" width="100%" height="100%" overflow="visible">'+S.d3d.nodes.filter(n=>n.k.startsWith(pre)&&n.svg).map(n=>{const q=n.st.find(Boolean);return `<svg x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}" viewBox="${n.vb.join(' ')}" preserveAspectRatio="none" overflow="visible">${n.svg}</svg>`}).join('').replace(/fill="(?!none)[^"]*"/g,'fill="currentColor"').replace(/stroke="(?!none)[^"]*"/g,'stroke="currentColor"')+'</svg>'});const M=window.S3D.els,ic=M['/Navigator/Row/Current/Active label/Icon'],lb=M['/Navigator/Row/Current/Active label/Tab label'],names=['Display','Live App','Steigung','Tempo','Klappbar'];let cur=-1;if(ic&&lb){ic.style.color='#1f1f1f';gsap.ticker.add(()=>{const i=names.indexOf(lb.textContent.trim());if(i>=0&&i!==cur){cur=i;ic.innerHTML=IC[i]}})}}
+ const pairs=[];for(let i=1;i<=5;i++){const ic=E3[`/Navigator/Row/Tabs/Tab 0${i}/Icon`],lb=E3[`/Navigator/Row/Tabs/Tab 0${i}/Tab label`];if(ic&&lb){ic.querySelectorAll('[fill]').forEach(s=>{if(s.getAttribute('fill')!=='none')s.setAttribute('fill','currentColor')});ic.querySelectorAll('[stroke]').forEach(s=>{if(s.getAttribute('stroke')!=='none')s.setAttribute('stroke','currentColor')});ic.classList.add('pill-ic');pairs.push([ic,lb])}}
+ const syncIc=()=>pairs.forEach(([ic,lb])=>{const c=lb.style.color||getComputedStyle(lb).color;if(ic._c!==c){ic.style.color=c;ic._c=c}});gsap.ticker.add(syncIc);syncIc()}if(!MOB){const E=window.S3D.els;E["/Stage/Frame 17"].classList.add("s3col");["Title","Body","Tags"].forEach(k=>E["/Stage/Frame 17/"+k].classList.add("s3f"))}
+// Key features: scroll-driven cover-flow (pinned, 5 steps, snap)
+/* Figma rotates the play polygon 90deg and the KF Prev group 180deg; REST svg export drops rotation */
+['dvid','mvid'].forEach(s=>S[s].nodes.forEach(n=>{if(n.k.endsWith('Play button/Icon')){const p=n.st.find(Boolean),w=p.w,h=p.h,d=h*2/3;n.vb=[0,0,w,h];n.svg=`<path d="M${(w-d).toFixed(2)} 0L${w} ${h/2}L${(w-d).toFixed(2)} ${h}Z" fill="#fff"/>`}}));
+(function(){const host=document.getElementById('kf');const sec=S[MOB?'mkf':'dkf'];const box=host.querySelector('.pinbox');box.style.position='sticky';
+ const K=buildStage(sec,box);['/Prev/Bounding box','/Next/Bounding box'].forEach(k=>K.els[k]&&(K.els[k].style.background='none'));
+ const STEP=()=>innerHeight*.7;
+ const fit=()=>{const s=innerWidth/sec.W;K.st.style.transform=`scale(${s})`;const h=sec.H*s;box.style.height=h+'px';const top=Math.min(0,innerHeight-h);box.style.top=top+'px';host._top=top;host.style.height=(RM?h:h+4*STEP())+'px'};fit();addEventListener('resize',fit);
+ const c=sec.cards['Card 1'];const tr=document.createElement('div');tr.className='cf';Object.assign(tr.style,{left:c[0]+'px',top:c[1]+'px',width:c[2]+'px',height:c[3]+'px'});K.st.appendChild(tr);
+ const REF=['61eae081ef90','fa4863eecbc8','b4d8f5ef026a','e2aa5a7e1a31','1df19cf7dcc6'];
+ const X=MOB?[0,210,360]:[0,570,836];const KFV=["https://www.sportstech.de/cdn/shop/videos/c/vp/804849c8d3c446a388c766c146329ab8/804849c8d3c446a388c766c146329ab8.SD-480p-1.5Mbps-87284328.mp4?v=0","https://www.sportstech.de/cdn/shop/videos/c/vp/94dbc1db774b4225805383f74680f5ca/94dbc1db774b4225805383f74680f5ca.SD-480p-1.2Mbps-87284329.mp4?v=0","https://www.sportstech.de/cdn/shop/videos/c/vp/e1f245d03d91471899a655e61f521722/e1f245d03d91471899a655e61f521722.SD-480p-0.9Mbps-87284331.mp4?v=0","https://www.sportstech.de/cdn/shop/videos/c/vp/51a8bb8a2b504193ab504b8defe5eb8a/51a8bb8a2b504193ab504b8defe5eb8a.SD-480p-1.0Mbps-87284333.mp4?v=0","https://www.sportstech.de/cdn/shop/videos/c/vp/2434ef02e744413ab73cb99da3d24503/2434ef02e744413ab73cb99da3d24503.SD-480p-1.0Mbps-87284330.mp4?v=0"];const cards=REF.map((r,i)=>{const e=document.createElement('button');e.className='card';e.setAttribute('aria-label','Feature '+(i+1));e.style.borderRadius=(c[4]?c[4]+2:26)+'px';e.style.backgroundImage=`url(/fig/${r}.webp)`;const v=document.createElement('video');v.className='card-vid';v.muted=true;v.loop=true;v.playsInline=true;v.preload='none';v.poster='/fig/'+r+'.webp';v.setAttribute('playsinline','');v.setAttribute('aria-hidden','true');v.src=KFV[i];Object.assign(v.style,{position:'absolute',inset:'0',width:'100%',height:'100%',objectFit:'cover',borderRadius:'inherit',display:'block',pointerEvents:'none'});e.appendChild(v);tr.appendChild(e);return e});
+ const P=MOB?[{x:0,z:0,r:0,s:1,o:1},{x:X[1],z:-200,r:55,s:.7,o:.55},{x:X[2],z:-320,r:62,s:.55,o:0},{x:X[2]+120,z:-420,r:62,s:.45,o:0}]:[{x:0,z:0,r:0,s:1,o:1},{x:595,z:-20,r:31,s:.72,o:.6},{x:836,z:-200,r:40,s:.45,o:0},{x:960,z:-300,r:45,s:.4,o:0}];
+ const pose=d=>{const sg=d<0?-1:1,m=Math.min(3,Math.abs(d)),i=Math.floor(m),f=m-i,A=P[i],B=P[Math.min(3,i+1)],L=(a,b)=>a+(b-a)*f;return{x:sg*L(A.x,B.x),z:L(A.z,B.z),rotationY:sg*L(A.r,B.r),scale:L(A.s,B.s),opacity:L(A.o,B.o),filter:`brightness(${1+Math.min(1,m)*.08})`,zIndex:10-Math.round(m*3)}};
+ const wrap=d=>{d=((d%5)+7.5)%5-2.5;return d};
+ let f=0;const render=v=>{f=v;cards.forEach((e,i)=>gsap.set(e,pose(wrap(i-v))));K.tl.progress(Math.max(0,Math.min(1,v/4)));const _n=Math.max(0,Math.min(cards.length-1,Math.round(v)));cards.forEach((e,i)=>{const vd=e.querySelector('video');if(!vd)return;if(i===_n){if(vd.paused)vd.play().catch(()=>{})}else if(!vd.paused)vd.pause()})};render(0);
+ const st=RM?null:ScrollTrigger.create({trigger:host,start:()=>`top ${host._top}`,end:()=>`+=${4*STEP()}`,scrub:.5,onUpdate:x=>render(x.progress*4),invalidateOnRefresh:true});
+ const go=n=>{n=Math.max(0,Math.min(4,n));if(!st||!window.lenis){gsap.to({v:f},{v:n,duration:.7,ease:'power3.inOut',onUpdate(){render(this.targets()[0].v)}});return}lenis.scrollTo(st.start+n*STEP(),{duration:.9})};
+ // snap to nearest card after scrolling stops inside the pin
+ let to;if(st&&window.lenis)lenis.on('scroll',()=>{clearTimeout(to);to=setTimeout(()=>{const y=lenis.scroll;if(y>st.start+2&&y<st.end-2){const n=Math.round((y-st.start)/STEP());const t=st.start+n*STEP();if(Math.abs(t-y)>3)lenis.scrollTo(t,{duration:.5})}},160)});
+ cards.forEach((e,i)=>e.onclick=()=>go(i));const cur=()=>Math.round(f);
+ const btn=(k,fn)=>{const el=K.els[k];if(el){el.style.cursor='pointer';el.setAttribute('role','button');el.tabIndex=0;el.onclick=fn;el.onkeydown=e=>{if(e.key==='Enter')fn()}}};btn('/Prev',()=>go(cur()-1));btn('/Next',()=>go(cur()+1));
+ host.tabIndex=0;host.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(cur()+1);if(e.key==='ArrowLeft')go(cur()-1)});
+ let sx=null;tr.addEventListener('pointerdown',e=>sx=e.clientX);addEventListener('pointerup',e=>{if(sx!==null&&Math.abs(e.clientX-sx)>50)go(cur()+(e.clientX<sx?1:-1));sx=null});
+ // feature title -> black pill with stroke icon
+ (function(){const t=K.els[MOB?'/Feature title':'/Frame 18/Feature title'];if(!t)return;
+  const I={display:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',led:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.3 1 2.1h5c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',speed:'<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1"/>',incline:'<path d="M3 19h18L21 7z"/><path d="M15 13l2-2"/>',fold:'<path d="M7 4v8a4 4 0 0 0 4 4h8"/><path d="M16 13l3 3-3 3"/><path d="M4 7l3-3 3 3"/>',app:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 9l3 2-3 2z"/>'};
+  const pick=x=>/display/i.test(x)?'display':/led|licht/i.test(x)?'led':/speed|tempo/i.test(x)?'speed':/steig|incline/i.test(x)?'incline':/klapp|fold/i.test(x)?'fold':/app|live/i.test(x)?'app':'display';
+  t.classList.add('kf-pill-host');let busy=false;
+  const draw=()=>{if(busy)return;const x=t.textContent.trim();if(t.dataset.pt===x&&t.querySelector('.kf-pill'))return;busy=true;t.dataset.pt=x;
+   t.innerHTML='<span class="kf-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+I[pick(x)]+'</svg><span></span></span>';t.querySelector('.kf-pill span').textContent=x;
+   const pl=t.querySelector('.kf-pill');gsap.fromTo(pl,{scale:.96,opacity:0},{scale:1,opacity:1,duration:.45,ease:'power2.out'});busy=false};
+  draw();new MutationObserver(draw).observe(t,{childList:true,characterData:true,subtree:true});})();
+ window.KF={go,cards,get f(){return f}};
+})();
+// Live
+mountPinned(document.getElementById('live'),S[MOB?'mlive':'dlive'],{fit:!MOB,per:.8,snap:false});
+// Video
+(function(){const host=document.getElementById('vid');let played=false;
+ const V=mountPinned(host,S[MOB?'mvid':'dvid'],{fit:!MOB,per:1,snap:false,onUpdate:st=>{const fill=V&&V.els['/Video card/Video progress fill'];if(st.progress>.97&&!played){played=true;fill&&gsap.to(fill,{width:(MOB?300:1376)*.35,duration:4,ease:'none'})}if(st.progress<.9&&played){played=false;fill&&gsap.killTweensOf(fill)}}});})();
+
+// pills: centre labels vertically inside every Button frame
+function centrePills(root){root.querySelectorAll('.tx').forEach(el=>{const k=el.dataset.k||'';const p=el.parentElement;if(!p||!p.dataset.k||!/\/Button /.test(p.dataset.k)||!k.startsWith(p.dataset.k+'/'))return;
+ Object.assign(el.style,{top:'0px',height:p.style.height,display:'flex',alignItems:'center'});if(!el.style.justifyContent)el.style.justifyContent=(el.style.textAlign==='center'||parseFloat(el.style.width)>=parseFloat(p.style.width)-1)?'center':'flex-start';p.classList.add('hov')})}
+// time-bound content removed (user rule: no dates, countdowns, stock counts)
+const TIMEBOUND=k=>/Countdown|\/(STD|MIN|SEK)$|Voraussichtl\. Lieferdatum:$|05\.11\.|\d+\. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) 20\d\d|"Se…"|Frame 4\/Circle#11$|^\/Promo bar[^\/]*\/(\d+|T)\s*(#\d+)?$/.test(k);
+function stripTime(R){R.items.forEach(({n,el})=>{if(TIMEBOUND(n.k))el.style.display='none';if(n.t==='TEXT'&&/^Voraussichtl\. Lieferdatum: [^·]*· /.test(el.textContent)){const t=el.textContent.replace(/^Voraussichtl\. Lieferdatum: [^·]*· /,'');el.textContent=t.charAt(0).toUpperCase()+t.slice(1)}});
+ const dot=Object.entries(R.els).find(([k])=>/Frame 4\/(Ellipse|Dot|Status dot)/i.test(k));}
+// static desktop sections (real text at Figma coords)
+const STAT={};if(!MOB)document.querySelectorAll('.dstat').forEach(h=>{const sec=S[h.dataset.sec];const box=h.querySelector('.pinbox');const R=buildStage(sec,box);STAT[h.dataset.sec]=R;stripTime(R);
+ const fit=()=>{const s=innerWidth/sec.W;R.st.style.transform=`scale(${s})`;const H=(R.H||sec.H)*s;box.style.height=H+'px';h.style.height=H+'px'};R.fit=fit;fit();addEventListener('resize',fit);centrePills(R.st);
+ R.items.forEach(({n,el})=>{if(/RECTANGLE/.test(n.t)&&/card|Card/.test(n.k))el.classList.add('hovc');if(n.t==='TEXT'&&/Mehr|anzeigen|Alle|ansehen|Details/.test(n.k))el.classList.add('hl')})});
+const PROMO=(/[?&]lang=en/.test(location.search)||document.documentElement.lang.startsWith('en'))?'FREE SHIPPING · 30-DAY TRIAL · 2-YEAR WARRANTY':'KOSTENLOSER VERSAND · 30 TAGE TESTEN · 2 JAHRE GARANTIE';
+if(!MOB){const PB='/Promo bar – OKTOBER-FIT DAYS',E0=STAT.dtop.els;Object.keys(E0).forEach(k=>{if(k.startsWith(PB+'/')&&!k.startsWith(PB+'/Icon')&&k!==PB+'/OKTOBER-FIT DAYS')E0[k].style.display='none'});const m=E0[PB+'/OKTOBER-FIT DAYS'];if(m){const tx=m.querySelector('.tx')||m;tx.textContent=PROMO;Object.assign(m.style,{left:'0px',width:'1920px',textAlign:'center',whiteSpace:'nowrap'});tx.style&&(tx.style.textAlign='center',tx.style.width='100%')}}
+else{const mp=document.querySelector('.m-promo');if(mp)mp.innerHTML='<p><b>'+PROMO+'</b></p>'}
+if(!MOB){const T=STAT.dtop,E=T.els,G='/PDP – gallery + buy box/Frame 3',B='/PDP – gallery + buy box/Frame 4';
+ // gallery switching
+ const main=E[G+'/IMG:gallery-main']||Object.entries(E).find(([k])=>k.startsWith(G)&&/main/i.test(k))?.[1];const brd=E[G+'/Active thumb border'];
+ const L=main&&main.querySelector('.il');const orig=L&&L.style.backgroundImage;const cnt=Object.entries(E).find(([k])=>k.startsWith(G+'/Button / 1 / 9/')&&k.endsWith('1 / 9'))?.[1];
+ let gi=0;const show=i=>{gi=(i+9)%9;if(L){gsap.fromTo(L,{opacity:.3},{opacity:1,duration:.4});L.style.backgroundImage=gi?`url(/img/g${gi+1}.webp)`:orig;L.style.backgroundSize='contain'}if(brd)gsap.to(brd,{left:gi*(924/9),duration:.35,ease:'power3.out'});if(cnt)cnt.textContent=`${gi+1} / 9`};
+ const fr=E[G];{const TS=924/9,TW=TS-4,strip=E[G+'/IMG:gallery-thumbs'];if(strip)strip.style.display='none';if(brd){brd.style.width=TW+'px';brd.style.left='0px'}for(let i=0;i<9;i++){const z=document.createElement('button');z.className='thz';z.setAttribute('aria-label','Bild '+(i+1));Object.assign(z.style,{left:(i*TS)+'px',top:'1144px',width:TW+'px',height:'113px',padding:'0',border:'0',overflow:'hidden',borderRadius:'11px'});z.innerHTML='<img src="/img/g'+(i+1)+'-t.webp" alt="" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:11px">';z.onclick=()=>show(i);fr.appendChild(z)}}
+ Object.entries(E).forEach(([k,el])=>{if(k.startsWith(G)&&/(Prev|Next|Arrow|chevron)/i.test(k)&&k.split('/').length===4){el.style.cursor='pointer';el.onclick=()=>show(gi+(/(Prev|left)/i.test(k)?-1:1))}});
+ // toggles: swap styles between pairs
+ const pair=(a,b)=>{if(!a||!b)return;const st=x=>({bc:x.style.backgroundColor,bs:x.style.boxShadow,bo:x.style.border,ou:x.style.outline});const sa=st(a),sb=st(b);
+  const apply=(x,v)=>{x.style.backgroundColor=v.bc;x.style.boxShadow=v.bs;x.style.border=v.bo;x.style.outline=v.ou};
+  [a,b].forEach(x=>{x.style.cursor='pointer';x.style.transition='background-color .25s,box-shadow .25s'});a.onclick=()=>{apply(a,sa);apply(b,sb)};b.onclick=()=>{apply(b,sa);apply(a,sb)}};
+ pair(E[B+'/Button / Neu/Pill bg'],E[B+'/Button / Refurbished/Pill bg']);const pa=E[B+'/Button / Neu'],pb=E[B+'/Button / Refurbished'];if(pa&&pb){pa.onclick=()=>E[B+'/Button / Neu/Pill bg'].click();pb.onclick=()=>E[B+'/Button / Refurbished/Pill bg'].click()}
+ pair(E[B+'/Delivery option – selected'],E[B+'/Delivery option']);
+ // 1440 container for gallery+buy box, then JS sticky gallery (stage is transformed, so native sticky cannot work inside it)
+ const PD=E['/PDP – gallery + buy box'],KP=1;PD.style.transformOrigin='0 0';PD.style.left='0px';PD.style.transform=`scale(${KP})`;
+ T.H=216+3113*KP+95;T.fit();const fh=1257,subH=71,gap=16;const sub=E['/Sub-nav – sticky product bar'];sub.style.zIndex=5;fr.style.transformOrigin='0 0';fr.style.willChange='transform';
+ const sec=document.getElementById('top');
+ const onS=()=>{const s=innerWidth/1920;const sc=window.lenis?lenis.scroll:scrollY;const rel=sc-sec.offsetTop;
+  sub.style.transform=`translateY(${Math.max(0,Math.min(rel/s-145,3113*KP-71))}px)`;
+  const gk=1;
+  const ty=((subH+gap)*s+rel)/(s*KP)-216/KP-71;const lim=3113-71-fh*gk-60;fr.style.transform=`translateY(${Math.max(0,Math.min(ty,lim))}px) scale(${gk})`};
+ onS();if(window.lenis)lenis.on('scroll',onS);addEventListener('scroll',onS,{passive:true});addEventListener('resize',onS);
+ // FAQ accordion
+ const F=STAT.dfaq,FE=F.els;const Q=['/Was ist das sTread Pro Laufband?','/Welche Vorteile bietet das sTrea','/Welche Funktionen bietet das Dis','/Werden Distanzen in Kilometern o','/Wann muss ich die Laufmatte schm'].map(p=>Object.keys(FE).find(k=>k.startsWith(p)));
+ const ans0=Object.keys(FE).find(k=>k.startsWith('/Das sTread Pro ist'));const A=FE[ans0];const aStyle=A.getAttribute('style');
+ const rows=Q.map((q,i)=>({q:FE[q],ic:FE[['/Icon / x','/Icon / plus','/Icon / plus#2','/Icon / plus#3','/Icon / plus#4'][i]],dv:FE['/Divider#'+(i+2)]}));
+ const answers=rows.map((r,i)=>{if(i===0)return A;const e=document.createElement('div');e.className='n tx faqa';e.setAttribute('style',aStyle);e.textContent=FAQ[i];e.style.height='auto';F.st.appendChild(e);return e});
+ const base=rows.map(r=>({q:parseFloat(r.q.style.top),ic:parseFloat(r.ic.style.top),dv:parseFloat(r.dv.style.top)}));const btn=FE['/Button / Alle 19 Fragen anzeigen'];const b0=parseFloat(btn.style.top);
+ const plusSvg=rows[1].ic.innerHTML,xSvg=rows[0].ic.innerHTML;let open=0;
+ const lay=()=>{let off=0;rows.forEach((r,i)=>{const B=base[i];const shift=off-(i>0?(base[0].dv?0:0):0);r.q.style.top=(B.q-(i?306:0)+off+(i?306:0)-(i?0:0))+'px';});};
+ function render(inst){let y=231;rows.forEach((r,i)=>{const d=inst?0:.45;gsap.to(r.q,{top:y,duration:d,ease:'power3.out'});gsap.to(r.ic,{top:y+(i?4:5),duration:d,ease:'power3.out'});r.ic.innerHTML=i===open?xSvg:plusSvg;r.ic.style.cursor='pointer';
+   const a=answers[i];a.style.top=(y+60)+'px';const ah=i===open?a.scrollHeight:0;gsap.to(a,{opacity:i===open?1:0,duration:d});a.style.pointerEvents=i===open?'auto':'none';
+   y+= i===open?(60+ah+52):72;gsap.to(r.dv,{top:y-(i===open?0:0),duration:d,ease:'power3.out'});y+=48;});
+  gsap.to(btn,{top:y-48+27,duration:inst?0:.45,ease:'power3.out'});F.H=Math.max(1178,y-48+27+56+124);F.st.style.height=F.H+'px';STAT.dfaq&&document.querySelector('#faq-d')&&STAT.dfaq.fit&&STAT.dfaq.fit();ScrollTrigger.refresh()}
+ rows.forEach((r,i)=>{[r.q,r.ic].forEach(e=>{e.style.cursor='pointer';e.onclick=()=>{open=open===i?-1:i;render()}})});document.fonts.ready.then(()=>render(1));
+ // global sticky buy bar = clone of video bar
+ const vb=S.dvid.nodes.filter(n=>n.k.startsWith('/Sticky buy bar'));const bar={W:1599,H:90,bg:'transparent',nodes:vb.map(n=>Object.assign({},n,{k:n.k.replace('/Sticky buy bar',''),p:n.p.replace('/Sticky buy bar',''),st:n.st.map(p=>p&&(n.k==='/Sticky buy bar'?Object.assign({},p,{x:0,y:0,o:1}):Object.assign({},p,{o:p.o||1})))}))};
+ const gb=document.getElementById('gbar');const GB=buildStage(bar,gb);centrePills(GB.st);const gfit2=()=>{const s=Math.min(1,innerWidth/1920);GB.st.style.transform=`scale(${s})`;GB.st.style.left=(innerWidth-1599*s)/2+'px';GB.st.style.top=-(90+24)*s+'px'};gfit2();addEventListener('resize',gfit2);
+ const vid=document.getElementById('vid');let pastBuy=false,inVid=false,inS3d=false;const upd=()=>gb.classList.toggle('show',pastBuy&&!inVid&&!inS3d);const hid=new Set();ScrollTrigger.create({trigger:'#foot-d',start:'top bottom',end:()=>'+='+1e6,onToggle:s=>{s.isActive?hid.add('f'):hid.delete('f');inS3d=hid.size>0;upd()}});['#s3d','#kf','#live'].forEach(q=>ScrollTrigger.create({trigger:q,start:'top 60%',end:'bottom 40%',onToggle:s=>{s.isActive?hid.add(q):hid.delete(q);inS3d=hid.size>0;upd()}}));
+ ScrollTrigger.create({trigger:'#top',start:'top top',end:'bottom 30%',onLeave:()=>{pastBuy=true;upd()},onEnterBack:()=>{pastBuy=false;upd()}});
+ ScrollTrigger.create({trigger:vid,start:'top bottom',end:'bottom top',onToggle:s=>{inVid=s.isActive;upd()}});
+ // reveals
+ if(!RM&&!QCM)['drev','dfaq','dtech','dsvc','dfoot'].forEach(k=>{const kids=[...STAT[k].st.children].filter(e=>e.classList.contains('n')&&!e.classList.contains('faqa')&&e!==A);ScrollTrigger.batch(kids,{start:'top 92%',once:true,onEnter:b=>gsap.fromTo(b,{y:40,opacity:0},{y:0,opacity:1,duration:.8,ease:'power3.out',stagger:.08,overwrite:'auto',clearProps:'transform'})});kids.forEach(e=>{e._o=e.style.opacity})});
+}
+// mobile interactions
+if(MOB)(function(){const tr=document.querySelector('.m-track');const cnt=document.querySelector('.m-count');const th=[...document.querySelectorAll('.m-th')];
+ if(tr){tr.addEventListener('scroll',()=>{const i=Math.round(tr.scrollLeft/tr.clientWidth);cnt.textContent=`${i+1} / 9`;th.forEach((t,j)=>t.classList.toggle('on',j===i))},{passive:true});th.forEach((t,i)=>t.onclick=()=>tr.scrollTo({left:i*tr.clientWidth,behavior:'smooth'}))}
+ const grp=sel=>{const b=[...document.querySelectorAll(sel)];b.forEach(x=>x.onclick=()=>b.forEach(y=>{y.classList.toggle('on',y===x);y.setAttribute('aria-checked',y===x)}))};grp('.m-opt');grp('.m-dopt');
+ const gb=document.getElementById('gbar');gb.innerHTML=`<div class="m-bar"><img src="${document.querySelector('.m-track img').src}" alt="" loading="lazy"><div><b>sTread Pro</b><span>${document.querySelector('.m-price b').textContent}</span></div><button>In den Warenkorb</button></div>`;
+ let mPast=false;const mU=()=>gb.classList.toggle('show',mPast&&!mIn&&!mF);ScrollTrigger.create({trigger:'#buybox',start:'bottom top',end:()=>'+='+1e6,onToggle:s=>{mPast=s.isActive;mU()}});let mIn=false,mF=false;ScrollTrigger.create({trigger:'#s3d',start:'top bottom',end:'bottom top',onToggle:s=>{mIn=s.isActive;mU()}});ScrollTrigger.create({trigger:'.m-foot',start:'top bottom',end:()=>'+='+1e6,onToggle:s=>{mF=s.isActive;mU()}});
+ if(!RM)gsap.utils.toArray('.m-sec > *, .m-foot > *').forEach(e=>gsap.from(e,{y:40,opacity:0,duration:.8,ease:'power3.out',scrollTrigger:{trigger:e,start:'top 92%',once:true}}));
+ document.querySelectorAll('.m-faq details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)document.querySelectorAll('.m-faq details').forEach(o=>o!==d&&(o.open=false));setTimeout(()=>ScrollTrigger.refresh(),50)}));
+})();
+document.fonts.ready.then(()=>{fitTexts();document.querySelectorAll('#foot-d .tx').forEach(e=>{if(e.textContent.startsWith('Allgemeine Gesch')){e.style.whiteSpace='pre';e.style.letterSpacing='';e.style.overflow='visible';e.style.textOverflow='clip'}});ScrollTrigger.refresh()});addEventListener('load',()=>{setTimeout(()=>ScrollTrigger.refresh(),500)});
+if(MOB){const t=document.querySelector('#vid [data-k^="/Sticky buy bar/sTread Pro Laufband"]');if(t){t.textContent='sTread Pro Laufband';t.style.overflow='visible';t.style.textOverflow='clip';new MutationObserver(()=>{if(t.textContent!=='sTread Pro Laufband')t.textContent='sTread Pro Laufband'}).observe(t,{childList:true,characterData:true,subtree:true})}}

@@ -52,32 +52,74 @@ import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import styles from './KeyFeatures.module.css';
 
+/* Tab icons - added 2026-11-11 alongside the tab menu below. No Figma node
+   data for these (the tab menu itself isn't in SECTIONS.dkf/mkf — it was
+   requested from a reference screenshot, not extracted from Figma), so
+   these are plain generic glyphs, not vector-traced exports. */
+const DisplayTabIcon = (props) => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+    <rect x="1.5" y="2.5" width="13" height="8.5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M5.5 13.5h5M8 11v2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+const LedTabIcon = (props) => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+    <circle cx="8" cy="7" r="3.25" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M8 1v1.3M8 13.7V15M2.6 7H1M15 7h-1.6M3.5 2.5l1 1M12.5 2.5l-1 1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+const KnobTabIcon = (props) => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M8 8l3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+const InclineTabIcon = (props) => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+    <path d="M2 13.5h12M4 13.5V9M8 13.5V5.5M12 13.5V2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+const FoldTabIcon = (props) => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+    <path d="M2 4l3 3-3 3M14 4l-3 3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 /* Copy - verbatim from SECTIONS.dkf /Frame 18 + /Frame 19 */
 const FEATURES = [
   {
     title: '21,5" Display',
     desc: 'Mit dem 360 Grad schwenkbaren Touch-Display sind deine Workouts so flexibel wie nie!',
     img: '/images/key-features/card-01.webp',
+    icon: DisplayTabIcon,
   },
   {
     title: 'LED Lichter',
     desc: 'Die LED-Lichter passen sich deiner Leistung an und geben dir motivierendes Feedback.',
     img: '/images/key-features/card-02.webp',
+    icon: LedTabIcon,
   },
   {
     title: 'Speed Knob',
     desc: 'Passe dein Tempo in Sekunden an – mit nur einer Drehbewegung.',
     img: '/images/key-features/card-03.webp',
+    icon: KnobTabIcon,
   },
   {
     title: '15 Steigungsstufen',
     desc: 'Mit 15 Steigungsstufen passt du dein Training individuell an und forderst dich immer wieder neu heraus.',
     img: '/images/key-features/card-04.webp',
+    icon: InclineTabIcon,
   },
   {
     title: 'Einfach klappen',
     desc: 'Dank Klappfunktion und Transportrollen lässt sich das Laufband schnell verstauen – ideal für dein Homegym mit wenig Platz.',
     img: '/images/key-features/card-05.webp',
+    icon: FoldTabIcon,
   },
 ];
 
@@ -111,23 +153,6 @@ const DOT_X = [
 const DOT_ON = 'rgba(31,31,31,1)';
 const DOT_OFF = 'rgba(31,31,31,0.2)';
 
-/* `expand_circle_right` - SECTIONS.dkf /Prev|/Next, path verbatim.
-   Rendered with currentColor so the module CSS sets Prev vs Next fill. */
-const ARROW_PATH =
-  'M20.773 18L15.2925 23.481C15.1052 23.6617 15.0115 23.8875 15.0115 24.1585C15.0115 24.4298 15.1052 24.6628 15.2925 24.8575C15.4872 25.0782 15.725 25.182 16.006 25.169C16.2867 25.1563 16.5243 25.0525 16.719 24.8575L22.446 19.131C22.7693 18.8077 22.931 18.4307 22.931 18C22.931 17.5693 22.7693 17.1923 22.446 16.869L16.7075 11.131C16.5128 10.936 16.277 10.834 16 10.825C15.723 10.816 15.4872 10.9218 15.2925 11.1425C15.1052 11.3372 15.016 11.573 15.025 11.85C15.034 12.127 15.136 12.3628 15.331 12.5575L20.773 18ZM18.0065 36C15.5175 36 13.1773 35.5277 10.986 34.583C8.795 33.6383 6.889 32.3563 5.268 30.737C3.647 29.1177 2.36383 27.2133 1.4185 25.024C0.472833 22.835 0 20.4958 0 18.0065C0 15.5175 0.472333 13.1773 1.417 10.986C2.36167 8.795 3.64367 6.889 5.263 5.268C6.88233 3.647 8.78666 2.36383 10.976 1.4185C13.165 0.472833 15.5042 0 17.9935 0C20.4825 0 22.8227 0.472335 25.014 1.417C27.205 2.36167 29.111 3.64367 30.732 5.263C32.353 6.88234 33.6362 8.78667 34.5815 10.976C35.5272 13.165 36 15.5042 36 17.9935C36 20.4825 35.5277 22.8227 34.583 25.014C33.6383 27.205 32.3563 29.111 30.737 30.732C29.1177 32.353 27.2133 33.6362 25.024 34.5815C22.835 35.5272 20.4958 36 18.0065 36Z';
-
-const ArrowIcon = () => (
-  <svg
-    className={styles.navIcon}
-    viewBox="0 0 36 36"
-    fill="none"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <path d={ARROW_PATH} fill="currentColor" fillRule="nonzero" />
-  </svg>
-);
-
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const pad2 = (n) => String(n).padStart(2, '0');
 
@@ -135,7 +160,6 @@ export function KeyFeatures() {
   const rootRef = useRef(null);
   const deckRef = useRef(null);
   const cardRefs = useRef([]);
-  const nameRef = useRef(null);
   const titleRef = useRef(null);
   const descRef = useRef(null);
   const counterRef = useRef(null);
@@ -216,7 +240,6 @@ export function KeyFeatures() {
         };
 
         for (let i = 1; i <= STEPS; i++) {
-          swap(nameRef.current, i);
           swap(titleRef.current, i);
           swap(descRef.current, i);
 
@@ -390,29 +413,27 @@ export function KeyFeatures() {
             sTread Pro - Key Features
           </h2>
 
-          <button
-            type="button"
-            className={`${styles.nav} ${styles.navPrev}`}
-            onClick={() => go(Math.round(posRef.current) - 1)}
-            onKeyDown={onArrowKeys}
-            aria-label="Vorheriges Feature"
-          >
-            <ArrowIcon />
-          </button>
-
-          <p ref={nameRef} className={styles.name}>
-            {feature.title}
-          </p>
-
-          <button
-            type="button"
-            className={`${styles.nav} ${styles.navNext}`}
-            onClick={() => go(Math.round(posRef.current) + 1)}
-            onKeyDown={onArrowKeys}
-            aria-label="Nächstes Feature"
-          >
-            <ArrowIcon />
-          </button>
+          <div className={styles.tabs} role="tablist" aria-label="Feature auswählen">
+            {FEATURES.map((f, i) => {
+              const Icon = f.icon;
+              const active = i === copyIndex;
+              return (
+                <button
+                  key={f.title}
+                  type="button"
+                  role="tab"
+                  id={`kf-tab-${i}`}
+                  aria-selected={active}
+                  className={`${styles.tab} ${active ? styles.tabActive : ''}`}
+                  onClick={() => go(i)}
+                  onKeyDown={onArrowKeys}
+                >
+                  <Icon className={styles.tabIcon} />
+                  {f.title}
+                </button>
+              );
+            })}
+          </div>
 
           <div ref={deckRef} className={styles.deck}>
             {FEATURES.map((f, i) => (

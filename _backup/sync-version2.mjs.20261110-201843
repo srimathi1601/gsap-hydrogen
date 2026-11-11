@@ -1,0 +1,150 @@
+/**
+ * tools/sync-version2.mjs — re-sync version2/ into the Hydrogen app.
+ *
+ *   node tools/sync-version2.mjs
+ *
+ * version2/ is the source of truth and is NEVER edited; re-run this
+ * script after it changes. It is idempotent (full wipe + recopy of its
+ * output dirs each run).
+ *
+ * ── What version2/ actually is (as of 2026-11-10 16:26) ────────────────
+ * This is NOT the classic-script, engine.js-driven prototype variant an
+ * earlier version of this script and app/sections/StreadProV2/index.jsx
+ * were built for (that version2/ was overwritten on disk before this
+ * rewrite — see _backup/sync-version2.mjs.20261110-165909 and
+ * _backup/StreadProV2.index.jsx.20261110-165909 for the retired shape).
+ *
+ * The current version2/ is a pre-built Vite/Three.js ES-module package:
+ *
+ *   index.html   <script type="module" src="./js/main.js">, one <link>
+ *   css/style.css          single stylesheet (not site.css+mobile.css)
+ *   js/main.js              842KB bundle: GSAP+ScrollTrigger, Lenis,
+ *                           Three.js r187 (GLTFLoader/DRACOLoader), and
+ *                           all page logic — one file, nothing else to
+ *                           load in order
+ *   js/draco_decoder-*.{js,wasm}, js/draco_wasm_wrapper-*.js
+ *                           hashed Vite worker/wasm assets, referenced
+ *                           from main.js via `new URL('./draco_decoder-
+ *                           HASH.wasm', import.meta.url)` — resolved
+ *                           relative to main.js's OWN url, so these do
+ *                           NOT need the /version2/ prefix treatment and
+ *                           are copied byte-identical, untouched.
+ *   draco/                 a second, un-hashed decoder set, loaded via
+ *                           DRACOLoader.setDecoderPath('./draco/') — this
+ *                           IS a page-relative string (resolved against
+ *                           the document, not the module), so it DOES
+ *                           need the /version2/ prefix.
+ *   models/stread-pro.glb, studio.hdr, img/, vid/, fonts/
+ *                           page-relative asset references in main.js
+ *                           and in index.html's own markup — all need
+ *                           the /version2/ prefix for the same reason.
+ *   (no fig/ in this version2/)
+ *
+ * Outputs:
+ *   public/version2/{css,js,img,vid,fonts,models,draco}/  copied, then
+ *     main.js patched (paths + STEP 5 shader pre-warm)
+ *   public/version2/studio.hdr
+ *   app/sections/StreadProV2/body.html   version2/index.html's <body>,
+ *     same /version2/ path rewrites applied (no <script> to strip — the
+ *     only script tag lives in <head>, not <body>, in this version2/)
+ *
+ * CSS is a single file and is NOT appended to app/styles/app.css, for the
+ * same reason as before: app.css is global, version2 is route-scoped.
+ * Linked by app/sections/StreadProV2/links.js.
+ *
+ * Every patch below is listed with the reason it exists.
+ */
+import fs from 'fs';
+import path from 'path';
+
+const R = (p) => fs.readFileSync(p, 'utf8');
+const W = (p, s) => fs.writeFileSync(p, s);
+const log = (...a) => console.log(' ', ...a);
+
+const SRC = 'version2';
+const OUT = 'public/version2';
+
+/* ─── 1. copy ──────────────────────────────────────────────────────── */
+fs.mkdirSync(OUT, {recursive: true});
+for (const d of ['css', 'js', 'img', 'vid', 'fonts', 'models', 'draco']) {
+  fs.rmSync(`${OUT}/${d}`, {recursive: true, force: true});
+  fs.cpSync(`${SRC}/${d}`, `${OUT}/${d}`, {recursive: true});
+  const n = fs
+    .readdirSync(`${OUT}/${d}`, {recursive: true})
+    .filter((f) => fs.statSync(path.join(OUT, d, f)).isFile()).length;
+  log(`copied ${SRC}/${d} -> ${OUT}/${d}  (${n} files)`);
+}
+fs.copyFileSync(`${SRC}/studio.hdr`, `${OUT}/studio.hdr`);
+log(`copied ${SRC}/studio.hdr -> ${OUT}/studio.hdr`);
+
+/* ─── 2. patch the copied main.js ─────────────────────────────────── */
+const patchCount = (file, pairs) => {
+  let s = R(file);
+  for (const [find, repl, why] of pairs) {
+    const n = s.split(find).length - 1;
+    if (n === 0) {
+      console.error(`  !! ${file}: pattern gone -> ${why}`);
+      console.error(`     ${find}`);
+      process.exitCode = 1;
+      continue;
+    }
+    s = s.split(find).join(repl);
+    log(`${file}: ${why}  (${n}x)`);
+  }
+  W(file, s);
+};
+
+// Hydrogen serves public/ from the site root. Every PAGE-RELATIVE asset
+// reference (plain './img/...' style strings, resolved against the
+// document URL) must become absolute with the /version2/ prefix, or it
+// resolves onto the wrong path once this page is mounted at
+// /stread-pro-v2 instead of version2/index.html's own location.
+//
+// The hashed draco_decoder-*/draco_wasm_wrapper-* references are
+// deliberately NOT in this list: they're resolved via
+// `new URL('./draco_decoder-HASH.wasm', import.meta.url)`, i.e. relative
+// to main.js's own module URL, which is correct unchanged as long as
+// those hashed files stay siblings of main.js (they do: both land in
+// public/version2/js/ with the same copy step above).
+patchCount(`${OUT}/js/main.js`, [
+  ['./img/', '/version2/img/', 'page-relative image paths -> /version2/img/'],
+  ['./vid/', '/version2/vid/', 'page-relative video paths -> /version2/vid/'],
+  ['./models/', '/version2/models/', 'GLB path -> /version2/models/'],
+  ['./draco/', '/version2/draco/', 'DRACOLoader.setDecoderPath -> /version2/draco/'],
+  ['./studio.hdr', '/version2/studio.hdr', 'HDR env map -> /version2/studio.hdr'],
+  [
+    'n(`Handlebar_buttom`,e=>$((e.min.x+e.max.x)/2,e.max.y,(e.min.z+e.max.z)/2)),Lx=!0})',
+    'n(`Handlebar_buttom`,e=>$((e.min.x+e.max.x)/2,e.max.y,(e.min.z+e.max.z)/2)),Lx=!0,ix.compile(ax,sx)})',
+    'STEP 5: renderer.compile(scene,camera) pre-warm at the END of the GLB ' +
+      'onLoad callback (ix=renderer, ax=scene, sx=camera — confirmed by ' +
+      'reading the surrounding scope), after every material/traverse ' +
+      'mutation has already run, so the compiled shader variants match ' +
+      "what's actually rendered. Prevents the first-frame shader-compile " +
+      'stutter on scroll into view.',
+  ],
+]);
+
+// NOT done, deliberately: the same pre-warm for the two smaller card
+// renderers built by Kb() (#pcard .pc-stage, #pdp .g-360) — those have
+// their own local renderer/scene/camera (i/a/o) fully set up synchronously
+// within Kb() itself. Only the main full-viewport #gl scene was asked for;
+// extending this to Kb() is a separate, smaller follow-up if needed.
+
+/* ─── 3. extract + patch body.html ────────────────────────────────── */
+const html = R(`${SRC}/index.html`);
+const bodyMatch = html.match(/<body>([\s\S]*)<\/body>/);
+if (!bodyMatch) {
+  console.error('  !! could not find <body>...</body> in version2/index.html');
+  process.exitCode = 1;
+} else {
+  let body = bodyMatch[1];
+  const before = body;
+  body = body.split('./img/').join('/version2/img/');
+  body = body.split('./vid/').join('/version2/vid/');
+  if (body === before) {
+    console.error('  !! body.html: no ./img/ or ./vid/ paths found to rewrite');
+    process.exitCode = 1;
+  }
+  W('app/sections/StreadProV2/body.html', body);
+  log('wrote app/sections/StreadProV2/body.html (paths rewritten to /version2/)');
+}

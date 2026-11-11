@@ -1,0 +1,40 @@
+/**
+ * StreadProV2's `links()` export, kept in its own file for the same
+ * reason as before: React Router calls a route's `links()` synchronously
+ * as part of loading the route module, so it cannot be behind the
+ * component's dynamic import. This file has no dependency on React or
+ * body.html, so the route can import it statically and cheaply while
+ * index.jsx's actual component stays behind `lazy()`.
+ *
+ * ── 2026-11-10 16:59: repointed to the current version2/ ──────────────
+ * The current version2/ is a single Vite/Three.js ES-module bundle, not
+ * the classic-script prototype variant this file previously pointed at
+ * (site.css + mobile.css — see _backup/StreadProV2.links.js.20261110-165909).
+ * It ships exactly one stylesheet, synced byte-identical by
+ * tools/sync-version2.mjs into public/version2/css/style.css.
+ *
+ * ── 2026-11-10 17:39: modulepreload added ──────────────────────────────
+ * version2/index.html declares its script in <head>
+ * (`<script type="module" crossorigin src="./js/main.js">`), so the
+ * browser starts fetching/compiling it immediately, in parallel with HTML
+ * parsing. index.jsx can't do that — innerHTML never executes <script>
+ * tags, so the real <script> element is only created inside a React
+ * effect, after mount/hydration. A `modulepreload` link here closes most
+ * of that gap: it starts the fetch+compile at the same time as every
+ * other <head> resource, so by the time the effect actually inserts the
+ * <script type="module"> tag, the module is already warm and only needs
+ * to execute, not fetch. `crossOrigin: 'anonymous'` matches version2/
+ * index.html's own `crossorigin` attribute (an empty `crossorigin=""` is
+ * anonymous mode) and index.jsx's script element, so the preload and the
+ * real load key to the same cache entry instead of double-fetching.
+ */
+
+const CSS_HREFS = ['/version2/css/style.css'];
+const MODULE_PRELOAD = '/version2/js/main.js';
+
+export function links() {
+  return [
+    ...CSS_HREFS.map((href) => ({rel: 'stylesheet', href})),
+    {rel: 'modulepreload', href: MODULE_PRELOAD, crossOrigin: 'anonymous'},
+  ];
+}

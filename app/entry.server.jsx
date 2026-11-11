@@ -40,7 +40,17 @@ export default async function handleRequest(
     // permits workers/scripts from blobs this document itself created. It
     // does NOT widen the policy to any external origin. 'wasm-unsafe-eval'
     // permits WebAssembly compilation only; it does not re-enable eval().
-    scriptSrc: ["'self'", "'wasm-unsafe-eval'", 'blob:'],
+    //
+    // cdn.shopify.com is in Hydrogen's own script-src default, and naming
+    // scriptSrc here replaces that default rather than extending it. Without
+    // it the consent-tracking-api script is refused and useCustomerPrivacy
+    // logs "Unable to load the Customer Privacy API" on every page.
+    scriptSrc: [
+      "'self'",
+      "'wasm-unsafe-eval'",
+      'blob:',
+      'https://cdn.shopify.com',
+    ],
     workerSrc: ["'self'", 'blob:'],
     childSrc: ["'self'", 'blob:'],
     // The GLB embeds its 8 textures as JPEG bufferViews rather than
@@ -69,6 +79,16 @@ export default async function handleRequest(
       'http://localhost:*',
     ],
     connectSrc: ["'self'", 'blob:'],
+    // The Key Features deck streams the product clips from the live
+    // storefront's Shopify CDN (public/js/app.js, const VID). Media does not
+    // inherit from default-src once this is declared, so 'self' is repeated.
+    mediaSrc: [
+      "'self'",
+      'blob:',
+      'data:',
+      'https://www.sportstech.de',
+      'https://cdn.shopify.com',
+    ],
   });
 
   const body = await renderToReadableStream(

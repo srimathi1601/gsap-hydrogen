@@ -1,0 +1,177 @@
+/**
+ * pdp-base.css — lets the injected prototype page render unmodified inside
+ * the Hydrogen scaffold.
+ *
+ * app/sections/PrototypePage injects prototype/index.html's <body> into a
+ * `.proto-root` div. prototype/css/site.css + mobile.css are appended to
+ * app/styles/app.css, so the prototype's own styling is present — but the
+ * scaffold still ships element-level base rules that load first and win
+ * over the prototype's `*` reset:
+ *
+ *   reset.css:81   body > main { margin: 0 1rem 1rem 1rem }   (0,0,2)
+ *   reset.css:85   section { padding: 1rem 0 -> 2rem 0 }      (0,0,1)
+ *   reset.css:126  li { margin-bottom: .5rem }                (0,0,1)
+ *   reset.css:25   h1 { font-size: 1.6rem; margin: 2rem 0 }   (0,0,1)
+ *   reset.css:50   p { font-size: 1rem; line-height: 1.4 }    (0,0,1)
+ *   reset.css:55   a { color: #000 }                          (0,0,1)
+ *   app.css:11     img { border-radius: 4px }                 (0,0,1)
+ *
+ * The prototype's own reset is `*{box-sizing:border-box;margin:0;padding:0}`,
+ * specificity (0,0,0) — it cannot beat any of them.
+ *
+ * SPECIFICITY, deliberately: `:where(.proto-root)` contributes 0, so each
+ * rule below stays at plain element specificity (0,0,1). It ties with the
+ * scaffold rule it cancels — and this sheet is linked AFTER reset.css and
+ * app.css in app/root.jsx, so it wins — while still losing to every one of
+ * the prototype's own class selectors (.m-buy h1, .m-faq p, …). Nothing
+ * here can override the prototype's intent.
+ *
+ * The `.home` half of each selector keeps the earlier hand-written React
+ * sections working; they are unmounted but still in app/sections/.
+ *
+ * ── 2026-11-10: extended to .v2-root (StreadProV2 / version2/) ────────
+ * Same situation, same fix. version2/ is another injected, self-contained
+ * static page (app/sections/StreadProV2 injects version2/index.html's
+ * <body> into a `.v2-root` div) that assumes it owns the whole document,
+ * same as the V1 prototype. Added `.v2-root` alongside `.proto-root`/
+ * `.home` everywhere that's still a real leak for it:
+ *
+ *   body > main margin        — version2 has no selector that reaches
+ *                                outside its own root, so this is the
+ *                                only way to cancel it; version2's own
+ *                                `#foot{margin:0 -7vw}`-style full-bleed
+ *                                math assumes a zero-margin ancestor.
+ *   img border-radius:4px     — app.css's scaffold rule (not reset.css);
+ *                                nothing in version2/css/style.css cancels
+ *                                border-radius globally.
+ *   section/li/h1-h6/p/a/…    — defensive, not confirmed necessary: audited
+ *                                version2/css/style.css and nearly every
+ *                                heading/paragraph/list-item/link it styles
+ *                                goes through an ancestor-scoped descendant
+ *                                selector (`.specs h2`, `.fc a`, `.list li`,
+ *                                …) at higher specificity than anything
+ *                                here, so this mostly changes nothing. Kept
+ *                                as the same safety net the V1 prototype
+ *                                already has, for whatever bare element (if
+ *                                any) isn't covered by one of those rules.
+ *
+ * NOT added for .v2-root: the header/footer `display:none` rule (version2's
+ * route already sets `handle:{noLayout:true}`, which skips SiteHeader/
+ * SiteFooter at the React level — nothing to hide) and the `overflow-x:clip`
+ * guard (version2/css/style.css sets its own `body{overflow-x:hidden}`,
+ * loaded after this sheet via the route's own <link>, so it already wins).
+ */
+
+/* ── Full bleed ────────────────────────────────────────────────────
+   body > main is (0,0,2); :has() lifts these to (0,1,2) so they win
+   outright, and scopes them so the other scaffold routes keep their
+   gutter. */
+body:has(> main > .proto-root) > main,
+body:has(> main > .home) > main,
+body:has(> main > .v2-root) > main {
+  margin: 0;
+}
+
+/* ── The prototype supplies its own header and footer ──────────────
+   PageLayout renders <SiteHeader /> and <SiteFooter /> for every route.
+   prototype/index.html already contains both (header.m-head on mobile,
+   /Header – main nav inside SECTIONS.dtop on desktop), so the layout's
+   copies are hidden while the prototype page is mounted. */
+body:has(.proto-root) > header,
+body:has(.proto-root) > footer {
+  display: none;
+}
+
+/* ── Horizontal overflow guard ─────────────────────────────────────
+   The pinned stages lay out 1920px wide and are scaled with a transform,
+   so their layout width stays 1920. This is prototype/css/site.css:2's own
+   guard. `clip`, not `hidden`: it creates no scroll container, so
+   position:sticky keeps working. */
+html:has(body > main > .proto-root),
+body:has(> main > .proto-root) {
+  overflow-x: clip;
+}
+
+/* ── Cancel the scaffold's prose/layout defaults ───────────────────
+   See the specificity note in the header. */
+:where(.proto-root) section,
+:where(.home) section,
+:where(.v2-root) section {
+  padding: 0;
+}
+
+:where(.proto-root) li,
+:where(.home) li,
+:where(.v2-root) li {
+  margin-bottom: 0;
+}
+
+:where(.proto-root) img,
+:where(.home) img,
+:where(.v2-root) img {
+  border-radius: 0;
+}
+
+:where(.proto-root) h1,
+:where(.proto-root) h2,
+:where(.proto-root) h3,
+:where(.proto-root) h4,
+:where(.home) h1,
+:where(.home) h2,
+:where(.home) h3,
+:where(.home) h4,
+:where(.v2-root) h1,
+:where(.v2-root) h2,
+:where(.v2-root) h3,
+:where(.v2-root) h4 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+:where(.proto-root) p,
+:where(.home) p,
+:where(.v2-root) p {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+:where(.proto-root) a,
+:where(.home) a,
+:where(.v2-root) a {
+  color: inherit;
+}
+
+/* The remaining scaffold rules that add box space to elements the
+   prototype styles by class. reset.css:106 gives every <input> 0.25rem
+   top + 0.5rem bottom margin, which the prototype's `.m-search input`
+   (css/mobile.css:47) does not override — 12px of stray height in the
+   mobile reviews filter. The rest are here so a future prototype update
+   that introduces one of these elements does not inherit prose spacing. */
+:where(.proto-root) input,
+:where(.proto-root) fieldset,
+:where(.proto-root) dl,
+:where(.proto-root) h5,
+:where(.proto-root) h6,
+:where(.home) input,
+:where(.home) fieldset,
+:where(.home) dl,
+:where(.home) h5,
+:where(.home) h6,
+:where(.v2-root) input,
+:where(.v2-root) fieldset,
+:where(.v2-root) dl,
+:where(.v2-root) h5,
+:where(.v2-root) h6 {
+  margin: 0;
+}
+
+/* ── Stacking ──────────────────────────────────────────────────────
+   The scaffold's drawers (cart / search / mobile menu) sit at z-index:10
+   (app.css:168), below the prototype's #gbar (z-index:50, site.css:11) and
+   its 3D overlay (.v3d, z-index:200). Raised so an open drawer is on top.
+   Same selector as app.css, linked later, so it wins. */
+.overlay {
+  z-index: 300;
+}

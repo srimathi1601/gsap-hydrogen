@@ -1,0 +1,253 @@
+/**
+ * SiteHeader.module.css
+ *
+ * Source: prototype/js/sections.js -> SECTIONS.dtop /Header – main nav
+ *                                     (30 nodes, 1920 x 98, y = 47)
+ *         prototype/index.html:6-7  -> header.m-head + nav.m-nav (mobile)
+ *         prototype/css/mobile.css:6-8
+ *
+ * MODEL: approved Q1b - the header belongs to the static dtop frame, so it
+ * is hand-written semantic responsive flow. Node coordinates are the spec,
+ * not literal absolute positions.
+ *
+ * Desktop measurements taken from the node data:
+ *   bar height      98px, background #ffffff
+ *   bottom divider  1px rgba(226,221,210,1)   (/Divider at y 96)
+ *   content inset   150px left  (logo x)      -> max-width 1620 container
+ *   logo            38x26 mark + "SPORTSTECH" 25px / 800 / italic / ls 1
+ *   nav link        20.6px / 400 / #1f1f1f, first run starts at x 608
+ *   locale + icons  17.8px / 500, icons 23x23 at x 1595.5 / 1651.5 / 1711.5
+ */
+
+.header {
+  --sh-bg: rgba(255, 255, 255, 1);
+  --sh-ink: rgba(31, 31, 31, 1);
+  --sh-logo-ink: rgba(26, 26, 26, 1);
+  --sh-chevron: rgba(85, 85, 85, 1);
+  --sh-divider: rgba(226, 221, 210, 1);
+
+  /* TODO: swap to Söhne */
+  --sh-font: 'Inter Tight', Inter, -apple-system, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+
+  position: relative;
+  z-index: 30;
+  background: var(--sh-bg);
+  border-bottom: 1px solid var(--sh-divider);
+  font-family: var(--sh-font); /* TODO: swap to Söhne */
+  color: var(--sh-ink);
+}
+
+.inner {
+  max-width: 1620px; /* 1920 - 2 x 150 */
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 98px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Logo / SPORTSTECH - [150, 36, 257, 26] */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px; /* wordmark x 47 - mark width 38 */
+  flex: none;
+  text-decoration: none;
+  color: var(--sh-logo-ink);
+}
+
+.logoMark {
+  width: 38px;
+  height: 26px;
+  display: block;
+}
+
+.logoWord {
+  font-size: 25px;
+  font-weight: 800;
+  font-style: italic;
+  line-height: 30.26px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* Main nav - links at x 608 / 744 / 906 / 1103 / 1206.
+   flex-wrap (2026-11-06, FIX 2): the Figma-exact 5 items fit one row at
+   any width >= 768px (the only breakpoint below that, see the mobile
+   block). Adding the 6th "sTread Pro V2" item pushes the row's min-content
+   width past what fits between the logo and the tools cluster at common
+   laptop widths (~1280-1440px) before this -- with no wrap and no
+   overflow handling, that overage either clipped the trailing item(s) or
+   forced .inner wider than the viewport, depending on the browser. */
+.nav {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  row-gap: 8px;
+  gap: 32px;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 20.6px;
+  font-weight: 400;
+  line-height: 26.24px;
+  color: var(--sh-ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  text-decoration: underline;
+}
+
+.chevron {
+  width: 15px;
+  height: 15px;
+  display: block;
+  color: var(--sh-chevron);
+  flex: none;
+}
+
+/* Right cluster - locale + icon buttons */
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+
+.locale {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 17.8px;
+  font-weight: 500;
+  line-height: 22.68px;
+  color: var(--sh-ink);
+  cursor: pointer;
+}
+
+/* Flag DE - [1483, 41, 24, 17], three 24x6 bands, radius 3 */
+.flag {
+  width: 24px;
+  height: 17px;
+  border-radius: 3px;
+  overflow: hidden;
+  display: block;
+  flex: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 0 6px,
+    rgba(221, 0, 0, 1) 6px 12px,
+    rgba(255, 206, 0, 1) 12px 17px
+  );
+}
+
+.iconButton {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--sh-ink);
+  text-decoration: none;
+}
+
+.icon {
+  width: 23px;
+  height: 23px;
+  display: block;
+}
+
+.navLink:focus-visible,
+.locale:focus-visible,
+.iconButton:focus-visible,
+.logo:focus-visible {
+  outline: 3px solid var(--sh-ink);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE < 768 - prototype/index.html:6-7 + css/mobile.css:6-8
+   Logo left, icons right, nav scrolls horizontally on a second row.
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .inner {
+    height: auto;
+    padding: 8px 16px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .logo {
+    min-height: 44px;
+  }
+
+  .logoMark {
+    width: 32px;
+    height: 22px;
+  }
+
+  .logoWord {
+    font-size: 19px;
+    line-height: 22px;
+  }
+
+  .tools {
+    order: 1;
+    gap: 0;
+  }
+
+  /* The locale picker is desktop-only in the prototype's mobile header. */
+  .locale {
+    display: none;
+  }
+
+  .nav {
+    order: 2;
+    width: 100%;
+    flex: none;
+    flex-wrap: nowrap; /* override the desktop rule's wrap — mobile stays
+                           a single horizontally-scrolling row, unchanged
+                           from before the 2026-11-06 FIX 2 wrap addition */
+    justify-content: flex-start;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navLink {
+    flex: none;
+    padding: 0 10px;
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  .chevron {
+    display: none;
+  }
+}

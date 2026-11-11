@@ -1,0 +1,307 @@
+/**
+ * tools/sync-version2.mjs — re-sync version2/ into the Hydrogen app.
+ *
+ *   node tools/sync-version2.mjs
+ *
+ * The V2 counterpart of tools/sync-prototype.mjs, and deliberately the
+ * same shape: version2/ is the source of truth and is NEVER edited.
+ * Everything this script produces is derived, so re-running it after
+ * version2/ changes is the only step needed. It is idempotent.
+ *
+ * ── What version2/ actually is ─────────────────────────────────────────
+ * A VARIANT OF THE V1 PROTOTYPE, not the Three.js/Vite project in
+ * stread-pro-3d-source/. Verified 2026-11-10 by hash:
+ *
+ *   version2/js/sections.js          identical to prototype/
+ *   version2/js/engine.js            identical to prototype/
+ *   version2/js/three3d.js           identical to prototype/
+ *   version2/js/{gsap,lenis,ScrollTrigger}.min.js   identical
+ *   version2/models/stread-pro.glb   identical
+ *   version2/js/app.js               DIFFERS
+ *   version2/index.html              DIFFERS
+ *   version2/css/site.css            DIFFERS
+ *
+ * So it is a classic-script, engine.js-driven page with V1's own section
+ * ids (#top #s3d #kf #live #vid) and `.pinbox` / `.dstat` hosts — which
+ * is exactly why Approach A applies to it unchanged.
+ *
+ * It does NOT contain a `#story` element; that belongs to
+ * stread-pro-3d-source/src/main.js. Anything keyed to `#story` is a no-op
+ * here. See the STEP 6 note at the bottom of this file.
+ *
+ * Outputs:
+ *   public/version2/{css,js,img,fig,fonts,models}/  copied, then patched
+ *   public/version2/js/faq.js                       the inline window.FAQ block
+ *   app/sections/StreadProV2/body.html              the <body>, scripts stripped
+ *
+ * CSS is NOT appended to app/styles/app.css (the way the V1 prototype's
+ * is). app.css already carries prototype/css/site.css + mobile.css
+ * globally, and version2's stylesheets declare the SAME selectors
+ * (`*`, `html,body`, `.pinbox`, `.stage`, `.n`, `.card`, `#gbar`, …) with
+ * different values. Appending them would mean two global copies of the
+ * same rules fighting on every route. They are served as their own files
+ * from public/version2/css/ and linked only on /stread-pro-v2, by
+ * app/sections/StreadProV2/links.js.
+ *
+ * Every patch below is listed with the reason it exists.
+ */
+import fs from 'fs';
+import path from 'path';
+
+const R = (p) => fs.readFileSync(p, 'utf8');
+const W = (p, s) => fs.writeFileSync(p, s);
+const log = (...a) => console.log(' ', ...a);
+
+const SRC = 'version2';
+const OUT = 'public/version2';
+
+/* ─── 1. copy ──────────────────────────────────────────────────────── */
+// Flat, self-contained destination: nothing here is shared with the V1
+// prototype's public/{img,fig,fonts,js,models}, so the whole tree can be
+// wiped and recopied. version2/tools/ is build tooling, not page input —
+// not copied (same reason prototype/tools/ is not).
+fs.mkdirSync(OUT, {recursive: true});
+for (const d of ['css', 'js', 'img', 'fig', 'fonts', 'models']) {
+  fs.rmSync(`${OUT}/${d}`, {recursive: true, force: true});
+  fs.cpSync(`${SRC}/${d}`, `${OUT}/${d}`, {recursive: true});
+  const n = fs
+    .readdirSync(`${OUT}/${d}`, {recursive: true})
+    .filter((f) => fs.statSync(path.join(OUT, d, f)).isFile()).length;
+  log(`copied ${SRC}/${d} -> ${OUT}/${d}  (${n} files)`);
+}
+
+/* ─── 2. patch the copied JS ───────────────────────────────────────── */
+const patch = (file, pairs) => {
+  let s = R(file);
+  for (const [find, repl, why] of pairs) {
+    if (!s.includes(find)) {
+      console.error(`  !! ${file}: pattern gone -> ${why}`);
+      console.error(`     ${find}`);
+      process.exitCode = 1;
+      continue;
+    }
+    s = s.split(find).join(repl);
+    log(`${file}: ${why}`);
+  }
+  W(file, s);
+};
+
+// Hydrogen serves public/ from the site root, so every relative asset
+// reference in version2's JS has to become absolute AND carry the
+// /version2/ prefix — otherwise it resolves onto the V1 prototype's
+// assets at /img/ and /fig/, which are different files.
+patch(`${OUT}/js/app.js`, [
+  [
+    'url(fig/${r}.webp)',
+    'url(/version2/fig/${r}.webp)',
+    'card fill path -> /version2/fig/',
+  ],
+  [
+    'url(img/g${gi+1}.webp)',
+    'url(/version2/img/g${gi+1}.webp)',
+    'gallery image path -> /version2/img/',
+  ],
+]);
+
+patch(`${OUT}/js/engine.js`, [
+  [
+    'url(fig/${r}.webp)',
+    'url(/version2/fig/${r}.webp)',
+    'image-layer path -> /version2/fig/',
+  ],
+]);
+
+patch(`${OUT}/js/three3d.js`, [
+  // version2/index.html relies on <script type="importmap"> to resolve the
+  // bare 'three' specifier. The body extraction below strips every
+  // <script>, importmap included, and an importmap injected at runtime is
+  // unreliable (it must precede all module loading, and browsers other
+  // than Chrome accept only one). app/root.jsx does ship one, but it maps
+  // `three` -> /js/three/three.module.js — the V1 PROTOTYPE's copy. Left
+  // bare, version2 would quietly load a SECOND Three.js instance from V1's
+  // tree. Making the specifier relative pins it to version2's own copy.
+  [
+    "from 'three';",
+    "from './three/three.module.js';",
+    "bare 'three' -> version2's own copy (not V1's via root.jsx importmap)",
+  ],
+  [
+    "'js/three/draco/'",
+    "'/version2/js/three/draco/'",
+    'draco decoder path -> /version2/',
+  ],
+  [
+    "'models/stread-pro.glb'",
+    "'/version2/models/stread-pro.glb'",
+    'GLB path -> /version2/',
+  ],
+  // ── STEP 5 (requested 2026-11-10): kill the mid-scroll shader freeze ──
+  //
+  // Measured on the V1 prototype, which ships this same three3d.js:
+  // `getProgramInfoLog` cost 1918 ms of CPU self-time during a single
+  // scroll pass (13.8% of all CPU), with `texSubImage2D` a further
+  // 1468 ms. GL counters showed 14 programs / 14 linkProgram calls TOTAL,
+  // so this is not per-frame churn — it is a one-time compile of every
+  // shader program, and each getProgramInfoLog is a synchronous stall
+  // waiting on the driver to finish linking.
+  //
+  // It lands mid-scroll because the GLB loads lazily: the
+  // IntersectionObserver on #s3d has rootMargin '900px 0px', so start()
+  // runs while the section is still approaching, and the first r.render()
+  // inside frame() is what forces every program to compile — by which
+  // time the user is already scrolling.
+  //
+  // r.compile(scene, cam) walks the scene and compiles all of them up
+  // front, here, inside that same 900px lead-in and BEFORE frame() is ever
+  // added to the ticker. The stall still happens, but off-screen and
+  // before the animation starts, instead of as a 500 ms hitch in the
+  // middle of it.
+  //
+  // Placed after size() so cam.aspect and the drawing buffer are final,
+  // and after studio()/the GLB mount so every material and light the
+  // programs are compiled for is already in the scene.
+  [
+    '    gsap.ticker.add(frame);',
+    '    r.compile(scene,cam);\n    gsap.ticker.add(frame);',
+    'STEP 5: r.compile(scene,cam) pre-warms shaders off-screen (was a ~500ms mid-scroll hitch)',
+  ],
+]);
+
+// Every three addon imports the same bare specifier. Same reasoning as
+// three3d.js above: left bare, root.jsx's importmap would resolve these
+// to the V1 prototype's three.module.js and version2 would run two
+// separate Three.js instances.
+const walk = (d) =>
+  fs
+    .readdirSync(d, {withFileTypes: true})
+    .flatMap((e) =>
+      e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)],
+    );
+let addons = 0;
+for (const f of walk(`${OUT}/js/three/addons`).filter((f) => f.endsWith('.js'))) {
+  const s = R(f);
+  if (!s.includes("from 'three'")) continue;
+  W(f, s.split("from 'three'").join("from '../../three.module.js'"));
+  addons++;
+}
+log(`three addons: bare 'three' -> '../../three.module.js' in ${addons} files`);
+
+// Nothing may be left resolving through root.jsx's importmap.
+const stillBare = walk(`${OUT}/js`)
+  .filter((f) => f.endsWith('.js'))
+  .filter((f) => R(f).includes("from 'three'"));
+if (stillBare.length) {
+  console.error("  !! bare 'three' specifier left in:", stillBare.join(', '));
+  process.exitCode = 1;
+}
+
+/* ─── 3. body.html + faq.js ────────────────────────────────────────── */
+const src = R(`${SRC}/index.html`);
+
+// version2/index.html carries window.FAQ as an INLINE <script>. An inline
+// <script> never executes when the markup is injected with
+// dangerouslySetInnerHTML, so it is written out as a file and loaded
+// before app.js — app.js reads FAQ[i] while building the accordion.
+const faq = [
+  ...src.matchAll(
+    /<script(?![^>]*\bsrc=)(?![^>]*importmap)[^>]*>([\s\S]*?)<\/script>/g,
+  ),
+]
+  .map((m) => m[1])
+  .find((s) => s.includes('window.FAQ'));
+if (!faq) throw new Error('inline window.FAQ block not found in version2/index.html');
+W(
+  `${OUT}/js/faq.js`,
+  '/* Extracted verbatim from version2/index.html. An inline <script> cannot\n' +
+    '   execute when the page is injected with dangerouslySetInnerHTML, so it is\n' +
+    '   served as a file and loaded before app.js. Generated by\n' +
+    '   tools/sync-version2.mjs — do not edit. */\n' +
+    faq.trim() +
+    '\n',
+);
+log(`${OUT}/js/faq.js (${faq.length} bytes)`);
+
+const bodyMatch = src.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+if (!bodyMatch) throw new Error('<body> not found in version2/index.html');
+let body = bodyMatch[1];
+const stripped = (body.match(/<script/g) || []).length;
+body = body.replace(/<script[\s\S]*?<\/script>/g, '');
+let abs = 0;
+body = body.replace(
+  /(src|href)="(?!https?:|\/|#|mailto:|tel:|data:)(img|fig|fonts|models|js|css)\//g,
+  (_, a, d) => {
+    abs++;
+    return `${a}="/version2/${d}/`;
+  },
+);
+body = body.replace(
+  /url\((['"]?)(?!https?:|\/|data:)(img|fig|fonts|models)\//g,
+  (_, q, d) => {
+    abs++;
+    return `url(${q}/version2/${d}/`;
+  },
+);
+W('app/sections/StreadProV2/body.html', body.trim() + '\n');
+log(
+  `app/sections/StreadProV2/body.html (${body.length} bytes, ${stripped} scripts stripped, ${abs} paths -> /version2/)`,
+);
+
+const leftover = [
+  ...body.matchAll(/(?:src|href)="(?!https?:|\/|#|mailto:|tel:|data:)([^"]+)"/g),
+];
+if (leftover.length) {
+  console.error(
+    '  !! relative refs left in body.html:',
+    [...new Set(leftover.map((m) => m[1]))].join(', '),
+  );
+  process.exitCode = 1;
+}
+
+/* ─── 4. CSS — copied verbatim, deliberately unpatched ─────────────── */
+// version2/css/site.css's only relative reference is
+// `url(../fonts/intertight.ttf)`. Served from /version2/css/site.css that
+// resolves to /version2/fonts/intertight.ttf, which is exactly right — so
+// unlike the V1 prototype (whose CSS is inlined into app/styles/app.css
+// and therefore had to be rebased to /fonts/), nothing needs rewriting.
+// Both files are already in place from the copy step above.
+for (const f of ['site.css', 'mobile.css']) {
+  const n = R(`${OUT}/css/${f}`).length;
+  log(`${OUT}/css/${f} (${n} bytes, verbatim)`);
+}
+
+/* ─── STEP 6, as requested 2026-11-10 — NOT APPLIED, with reason ───── */
+//
+// The requested snippet was:
+//
+//   const rect = document.getElementById('story')?.getBoundingClientRect()
+//   if (!rect || (rect.top > window.innerHeight + 400 && rect.bottom < -400)) return
+//
+// at the top of the main animation frame(). It is not applied, for three
+// independent reasons:
+//
+//  1. version2/ has no #story element (grep: 0 hits). #story belongs to
+//     stread-pro-3d-source/src/main.js. getElementById('story') returns
+//     null, `!rect` is therefore always true, and frame() would return on
+//     EVERY call — the 3D would never render at all.
+//
+//  2. The condition is unsatisfiable even given a valid element:
+//     `rect.bottom < -400` implies `rect.top < -400`, which contradicts
+//     `rect.top > innerHeight + 400`. The two can never hold at once, so
+//     with `&&` the guard can never fire. It needs `||`.
+//
+//  3. Its intent — don't burn CPU while the 3D is off-screen — is ALREADY
+//     implemented in this file. three3d.js's frame() opens with
+//     `if(!visible||document.hidden)return;` where `visible` is driven by
+//     an IntersectionObserver on the #s3d host (rootMargin '900px 0px'),
+//     and `start()` does not even run until that observer first fires.
+//     Confirmed by measurement: V1's render loop is correctly gated, and
+//     its 3D cost showed up as raycasting + the one-time shader compile,
+//     never as off-screen rendering.
+//
+// The off-screen CPU waste that measurement DID find was in
+// stread-pro-3d-source/src/main.js (frame() ran 666 times and rendered
+// only 286 — 57% wasted full CPU passes, mixer.setTime() included). That
+// is the Three.js/Vite V2 page, a different codebase, and this script
+// does not touch it.
+
+console.log(process.exitCode ? '\nSYNC COMPLETED WITH ERRORS' : '\nsync OK');

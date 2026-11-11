@@ -1,5 +1,7 @@
 (function(){
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const imgObserver=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.backgroundImage=e.target.dataset.bg;imgObserver.unobserve(e.target)}})},{rootMargin:'300px'});
+const CDN_FIG={"e9ac26fbf8d3":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/e9ac26fbf8d3.webp?v=1794395983","45ba2bc9cb7d":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/45ba2bc9cb7d.webp?v=1794395982","ca93da750e60":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/ca93da750e60.webp?v=1794395982","100f7b534a9e":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/100f7b534a9e.webp?v=1794395982","f86d4179b4f9":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/f86d4179b4f9.webp?v=1794395982","e0595c9d6e75":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/e0595c9d6e75.webp?v=1794395983","4c1771f4781f":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/4c1771f4781f.webp?v=1794395982","ce131b330785":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/ce131b330785.webp?v=1794395983","28905357799c":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/28905357799c.webp?v=1794395982","504091300394":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/504091300394.webp?v=1794395982","ea1587470644":"https://cdn.shopify.com/s/files/1/1020/0694/8118/files/ea1587470644.webp?v=1794395982"};
 const near=(st,i)=>{if(st[i])return st[i];for(let d=1;d<st.length;d++){if(st[i-d])return Object.assign({},st[i-d],{o:0});if(st[i+d])return Object.assign({},st[i+d],{o:0});}};
 function bgOf(p){const l=[];(p.gr||[]).forEach(g=>l.push(g));return l.join(',')}
 window.buildStage=function(sec,host){
@@ -12,7 +14,7 @@ window.buildStage=function(sec,host){
     else if(n.svg!==undefined){el.innerHTML=`<svg viewBox="${n.vb.join(' ')}" width="100%" height="100%" preserveAspectRatio="none" overflow="visible">${n.svg}</svg>`}
     else{const g=bgOf(p0);if(g)el.style.backgroundImage=g;}
     const layers={};
-    if(n.t!=='TEXT'&&n.svg===undefined){n.st.forEach(p=>p&&(p.img||[]).forEach(([r,m])=>{if(!layers[r]){const L=document.createElement('div');L.className='il';L.style.backgroundImage=`url(/fig/${r}.webp)`;L.style.backgroundSize=m==='FIT'?'contain':'cover';L.style.borderRadius='inherit';el.appendChild(L);layers[r]=L}}))}
+    if(n.t!=='TEXT'&&n.svg===undefined){n.st.forEach(p=>p&&(p.img||[]).forEach(([r,m])=>{if(!layers[r]){const L=document.createElement('div');L.className='il';L.dataset.bg=CDN_FIG[r]?`url(${CDN_FIG[r]})`:`url(/fig/${r}.webp)`;imgObserver.observe(L);L.style.backgroundSize=m==='FIT'?'contain':'cover';L.style.borderRadius='inherit';el.appendChild(L);layers[r]=L}}))}
     Object.assign(el.style,{left:p0.x+'px',top:p0.y+'px',width:p0.w+'px',height:p0.h+'px',opacity:p0.o});
     if(p0.bg)el.style.backgroundColor=p0.bg;if(p0.c)el.style.color=p0.c;
     (els[n.p]||st).appendChild(el);els[n.k]=el;

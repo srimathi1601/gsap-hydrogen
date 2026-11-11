@@ -21,6 +21,16 @@ export function PageLayout({
   // replaced the Shopify-menu-driven footer — see the note below.
   header,
   publicStoreDomain,
+  // FIX 3 (2026-11-06): set by root.jsx from the leaf route's
+  // `handle.noLayout`. True for routes — currently just
+  // app/routes/($locale).stread-pro-v2.jsx — that bring their own full
+  // page chrome (nav + footer) in their own markup, so the global
+  // SiteHeader/SiteFooter would otherwise double up with it. The Aside
+  // providers stay mounted either way: they render no visible chrome of
+  // their own (off-canvas panels, opened only from SiteHeader's trigger
+  // buttons), so there is nothing to skip and no reason to special-case
+  // them.
+  noLayout = false,
 }) {
   return (
     <Aside.Provider>
@@ -30,7 +40,7 @@ export function PageLayout({
       {/* Replaces SportstechHeader (approved Q6) — rebuilt from
           prototype/js/sections.js SECTIONS.dtop /Header – main nav.
           See app/components/SiteHeader/. */}
-      <SiteHeader />
+      {noLayout ? null : <SiteHeader />}
       <main>{children}</main>
       {/* Replaces the Hydrogen scaffold <Footer> — rebuilt from
           prototype/js/sections.js SECTIONS.dfoot. It is site chrome, not
@@ -39,7 +49,7 @@ export function PageLayout({
           single route. The old component is still at
           app/components/Footer.jsx with its `footer` / `header` props if
           the Shopify-menu-driven version is wanted back. */}
-      <SiteFooter />
+      {noLayout ? null : <SiteFooter />}
     </Aside.Provider>
   );
 }

@@ -101,7 +101,10 @@ function loadScript(src, {module = false} = {}) {
  * So: if `load` has been and gone, call the refresh ourselves.
  */
 function replayMissedLifecycleHooks() {
-  const refresh = () => window.ScrollTrigger?.refresh();
+  // Share app.js's coalescing queue so these hooks, the webfont swap and the
+  // accordion do not each force their own full re-measure of 240 triggers.
+  const refresh = () =>
+    window.stRefresh ? window.stRefresh() : window.ScrollTrigger?.refresh();
   if (document.readyState === 'complete') refresh();
   else window.addEventListener('load', refresh, {once: true});
   // Belt and braces: refresh once more after webfonts have swapped in.

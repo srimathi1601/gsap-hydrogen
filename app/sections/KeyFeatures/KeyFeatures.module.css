@@ -122,66 +122,58 @@
   color: var(--kf-ink);
 }
 
-/* Control row
-   dkf /Prev [265,191,48,48] opacity .5 - /Next [1606,191,48,48]
-   /Frame 19 [x,201,w,28] - x + w/2 is 960 in every keyframe, so the label is
-   simply centred and the per-keyframe x/width tween is redundant. */
-.nav {
+/* Tab menu - added 2026-11-11, replacing the Prev/Next arrows + floating
+   name label that occupied this row (same slot: top 191px). Not Figma
+   node data - built from a reference screenshot (no Figma source for this
+   row), so these are approximate, round-number measurements, not
+   vector-exact coordinates. One pill per FEATURES entry; clicking jumps
+   straight to that card via the existing go(i), same as clicking a card. */
+.tabs {
   position: absolute;
+  left: 0;
   top: 191px;
-  width: 48px;
+  width: 1920px;
   height: 48px;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 12px;
 }
 
-.navPrev {
-  left: 265px;
-  color: var(--kf-prev);
-  opacity: 0.5; /* verbatim from the node data */
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 9999px;
+  border: 1px solid rgba(31, 31, 31, 0.15);
+  background: #fff;
+  color: var(--kf-ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 
-.navNext {
-  left: 1606px;
-  color: var(--kf-next);
+.tabActive {
+  background: var(--kf-ink);
+  border-color: var(--kf-ink);
+  color: #fff;
 }
 
-.navIcon {
-  width: 36px;
-  height: 36px;
+.tabIcon {
+  width: 16px;
+  height: 16px;
   display: block;
+  flex: none;
 }
 
-/* The prototype ships /Prev with the SAME right-pointing
-   expand_circle_right glyph as /Next - a Figma capture artefact (both
-   arrows cannot point right). Mirrored here so the control reads correctly. */
-.navPrev .navIcon {
-  transform: scaleX(-1);
-}
-
-.nav:focus-visible {
+.tab:focus-visible {
   outline: 3px solid var(--kf-ink);
   outline-offset: 2px;
-  border-radius: 50%;
-}
-
-.name {
-  position: absolute;
-  left: 660px;
-  top: 201px;
-  width: 600px;
-  margin: 0;
-  font-size: 22px;
-  font-weight: 500;
-  line-height: 28.03px;
-  text-align: center;
-  color: var(--kf-ink);
-  white-space: nowrap;
 }
 
 /* Deck - dkf cards['Card 1'] = [635, 290, 651, 572, r24]
@@ -296,28 +288,26 @@
     line-height: 35.67px;
   }
 
-  .nav {
-    top: 148px;
-    width: 44px;
-    height: 44px;
-    opacity: 1;
-    color: var(--kf-ink);
-  }
-
-  .navPrev {
+  .tabs {
     left: 16px;
+    top: 148px;
+    width: 358px; /* 390 - 2x16 */
+    height: 44px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 8px;
   }
 
-  .navNext {
-    left: 330px;
+  .tabs::-webkit-scrollbar {
+    display: none;
   }
 
-  .name {
-    left: 64px;
-    top: 159px;
-    width: 262px;
-    font-size: 17px;
-    line-height: 21.66px;
+  .tab {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+    flex: none;
   }
 
   .deck {

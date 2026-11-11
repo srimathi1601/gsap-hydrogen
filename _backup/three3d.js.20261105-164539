@@ -1,0 +1,99 @@
+import * as T from './three/three.module.js';
+import {GLTFLoader} from './three/addons/loaders/GLTFLoader.js';
+import {DRACOLoader} from './three/addons/loaders/DRACOLoader.js';
+import {RoomEnvironment} from './three/addons/environments/RoomEnvironment.js';
+import {OrbitControls} from './three/addons/controls/OrbitControls.js';
+const MOB=innerWidth<768,QC=location.search.includes('qc');
+const hasGL=(()=>{try{const c=document.createElement('canvas');return !!(c.getContext('webgl2')||c.getContext('webgl'))}catch(e){return false}})();
+// Flat #f9f9f9 so the model sits on the same colour as its container:
+// SECTIONS.d3d /Stage is rgba(249,249,249,1.0), and the radial gradient
+// that used to live here read as a visible panel behind the product.
+// Used by the inline stage wrapper (.g3d) and the fullscreen viewer box.
+const BG='#f9f9f9';
+let gltfP=null;
+function loadGLB(){if(gltfP)return gltfP;const l=new GLTFLoader(),d=new DRACOLoader();d.setDecoderPath('/js/three/draco/');l.setDRACOLoader(d);gltfP=l.loadAsync('/models/stread-pro.glb');return gltfP}
+function makeRenderer(canvas){const r=new T.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});r.setPixelRatio(Math.min(2,devicePixelRatio));r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=1.05;r.outputColorSpace=T.SRGBColorSpace;return r}
+function studio(r,scene){const pm=new T.PMREMGenerator(r);scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture;
+  const k=new T.DirectionalLight(0xffffff,1.1);k.position.set(2,4,3);scene.add(k);scene.add(new T.HemisphereLight(0xffffff,0xe8e2d6,.35));
+  const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');const gr=g.createRadialGradient(128,128,0,128,128,128);gr.addColorStop(0,'rgba(40,35,30,.55)');gr.addColorStop(.55,'rgba(40,35,30,.22)');gr.addColorStop(1,'rgba(40,35,30,0)');g.fillStyle=gr;g.fillRect(0,0,256,256);
+  const sh=new T.Mesh(new T.PlaneGeometry(1.5,2.6),new T.MeshBasicMaterial({map:new T.CanvasTexture(c),transparent:true,depthWrite:false,toneMapped:false}));sh.rotation.x=-Math.PI/2;sh.position.y=.002;scene.add(sh);return sh}
+const smooth=x=>x*x*(3-2*x);
+// ---------- pinned 3D section ----------
+// p (0..4) -> animation time; jumps only happen between identical neutral poses (t=0 and t=9.75)
+const TP=[[0,0],[.75,3.75],[1,0],[1.6,0],[1.6001,9.75],[2,11.25],[2.3,11.25],[2.7,12.75],[3.3,12.75],[4,15.75]];
+const tAt=p=>{for(let i=1;i<TP.length;i++){const[a,ta]=TP[i-1],[b,tb]=TP[i];if(p<=b){const f=b===a?1:(p-a)/(b-a);return ta+(tb-ta)*smooth(Math.min(1,Math.max(0,f)))}}return TP[TP.length-1][1]};
+// camera per step: azimuth (0 = front, +z), elevation, distance, target
+const PI=Math.PI;const CAM=[{az:PI-.55,el:.14,d:2.1,tg:[0,1.45,.75]},{az:PI,el:.05,d:1.5,tg:[0,1.5,.72]},{az:PI/2+.12,el:.1,d:3.4,tg:[0,.62,-.05]},{az:PI-.35,el:.5,d:1.45,tg:[.08,1.1,.5]},{az:PI/2+.45,el:.16,d:3.7,tg:[0,.8,-.05]}];
+const CAMM=CAM.map(c=>Object.assign({},c,{d:c.d*1.25}));
+// hotspot anchors (rest pose), with a ray direction used to snap onto the surface
+const HS=[[[0,1.55,.3],[0,0,1],0],[[0,1.28,.3],[0,0,1],0],[[0,1.55,.3],[0,0,1],1],[[1,.2,-.3],[-1,0,0],2],[[1,.12,.55],[-1,0,0],2],[[0,1.6,.45],[0,-1,0],3],[[.38,1.6,.55],[0,-1,0],3],[[1,.12,.45],[-1,0,0],4],[[1,.08,-.85],[-1,0,0],4]];
+function initSection(){const S=window.S3D;if(!S)return;const host=document.getElementById('s3d');
+  const box=S.els[MOB?'/Image wrap/Step image':'/Stage/Step image'];if(!box)return;
+  const col=S.els['/Stage/Frame 17'];
+  // nav clicks: pills, arrows, mobile dots -> scroll to that step (scrubbed motion follows)
+  const go=i=>{const t=S.trig;if(!t)return;i=Math.max(0,Math.min(S.N-1,i));const y=t.start+(t.end-t.start)*i/(S.N-1)+1;window.lenis?lenis.scrollTo(y,{duration:1.2}):scrollTo({top:y,behavior:'smooth'})};
+  const cur=()=>Math.round(S.tl.progress()*(S.N-1));
+  for(let i=0;i<5;i++){const e=S.els[`/Navigator/Row/Tabs/Tab 0${i+1}`]||S.els[`/Navigator/Dots/Dot 0${i+1}`];if(e){e.style.cursor='pointer';e.style.pointerEvents='auto';e.addEventListener('click',()=>go(i))}}
+  [['/Navigator/Row/Prev',-1],['/Navigator/Row/Next',1]].forEach(([k,d])=>{const e=S.els[k];if(e){e.style.cursor='pointer';e.style.pointerEvents='auto';e.addEventListener('click',()=>go(cur()+d))}});
+  // text column crossfade around step midpoints
+  const colEl=MOB?S.els['/Copy']:col;
+  gsap.ticker.add(()=>{if(!colEl)return;const idx=S.tl.progress()*(S.N-1),f=idx-Math.floor(idx);colEl.style.opacity=QC?1:(idx>=S.N-1?1:Math.min(1,Math.abs(f-.5)/.18))});
+  if(!hasGL)return;
+  const wrap=document.createElement('div');wrap.className='g3d';Object.assign(wrap.style,{position:'absolute',inset:0,borderRadius:'inherit',overflow:'hidden',background:BG,opacity:0,transition:'opacity .8s ease',zIndex:2});
+  const cv=document.createElement('canvas');Object.assign(cv.style,{width:'100%',height:'100%',display:'block',touchAction:'pan-y'});wrap.appendChild(cv);box.appendChild(wrap);
+  const dots=document.createElement('div');Object.assign(dots.style,{position:'absolute',inset:0,pointerEvents:'none'});wrap.appendChild(dots);
+  let started=false,visible=false;
+  const io=new IntersectionObserver(es=>es.forEach(e=>{visible=e.isIntersecting;if(visible&&!started){started=true;start()}}),{rootMargin:'900px 0px'});io.observe(host);
+  async function start(){let g;try{g=await loadGLB()}catch(e){console.warn('3D model failed, keeping poster',e);return}
+    const r=makeRenderer(cv),scene=new T.Scene();studio(r,scene);const root=new T.Group();root.add(g.scene);scene.add(root);
+    const mixer=new T.AnimationMixer(g.scene);if(g.animations[0]){const a=mixer.clipAction(g.animations[0]);a.play();window.__act=a}
+    if(window.__act){__act.time=0;mixer.update(0)}g.scene.updateMatrixWorld(true);
+    const cam=new T.PerspectiveCamera(MOB?34:30,1,.01,50);const meshes=[];g.scene.traverse(o=>{if(o.isMesh){meshes.push(o);o.frustumCulled=false}});
+    const rc=new T.Raycaster();
+    const hs=HS.map(([p,dir,step])=>{const o=new T.Vector3(...p),dv=new T.Vector3(...dir).normalize();rc.set(o.clone().addScaledVector(dv,-.6),dv);const h=rc.intersectObjects(meshes,false)[0];if(!h)return null;
+      const obj=h.object,loc=obj.worldToLocal(h.point.clone()),nrm=dv.clone().negate();const nl=nrm.clone().transformDirection(obj.matrixWorld.clone().invert());
+      const el=document.createElement('div');el.className='hs3d';dots.appendChild(el);return {obj,loc,nl,step,el}}).filter(Boolean);
+    const size=()=>{const w=wrap.clientWidth,h=wrap.clientHeight;if(!w||!h)return;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()};new ResizeObserver(size).observe(wrap);size();
+    const st={p:0};const qp=gsap.quickTo(st,'p',{duration:QC?0.01:.9,ease:'power3.out'});
+    const C=MOB?CAMM:CAM;const tv=new T.Vector3(),wp=new T.Vector3(),wn=new T.Vector3(),cd=new T.Vector3();let ft=[],last=performance.now();window.__s3dFT=ft;
+    const lerp=(a,b,f)=>a+(b-a)*f;
+    function frame(){if(!visible||document.hidden)return;const now=performance.now();ft.push(now-last);if(ft.length>240)ft.shift();last=now;
+      qp(S.tl.progress()*(S.N-1));const p=st.p,i=Math.min(S.N-2,Math.floor(p)),f=smooth(Math.min(1,p-i));const a=C[i],b=C[i+1];
+      const az=lerp(a.az,b.az,f),el=lerp(a.el,b.el,f),d=lerp(a.d,b.d,f);tv.set(lerp(a.tg[0],b.tg[0],f),lerp(a.tg[1],b.tg[1],f),lerp(a.tg[2],b.tg[2],f));
+      const tm=now/1000;root.rotation.y=QC?0:Math.sin(tm*.4)*.035;root.position.y=QC?0:Math.sin(tm*.9)*.006;
+      cam.position.set(tv.x+d*Math.cos(el)*Math.sin(az),tv.y+d*Math.sin(el),tv.z+d*Math.cos(el)*Math.cos(az));cam.lookAt(tv);
+      if(window.__act){__act.time=tAt(p);mixer.update(0)}scene.updateMatrixWorld(true);r.render(scene,cam);
+      const stepNow=Math.round(p),W=wrap.clientWidth,H=wrap.clientHeight;
+      hs.forEach(h=>{wp.copy(h.loc).applyMatrix4(h.obj.matrixWorld);wn.copy(h.nl).transformDirection(h.obj.matrixWorld);cd.copy(cam.position).sub(wp);const dist=cd.length();cd.normalize();
+        let ok=h.step===stepNow&&Math.abs(p-stepNow)<.25&&wn.dot(cd)>.05;
+        if(ok){rc.set(cam.position,wp.clone().sub(cam.position).normalize());const hit=rc.intersectObjects(meshes,false)[0];if(hit&&hit.distance<dist-.03)ok=false}
+        const s=wp.clone().project(cam);if(s.z>1)ok=false;h.el.style.transform=`translate(${(s.x*.5+.5)*W}px,${(-s.y*.5+.5)*H}px) translate(-50%,-50%)`;h.el.classList.toggle('on',ok)});}
+    gsap.ticker.add(frame);
+    // first frame then reveal over the poster
+    requestAnimationFrame(()=>{frame();wrap.style.opacity=1;window.__s3dReady=1});
+  }
+}
+// ---------- gallery 360 viewer ----------
+function initViewer(){const btn=MOB?document.querySelector('.m-3d'):(()=>{const q=[...document.querySelectorAll('[data-k]')];const b=q.find(e=>e.dataset.k.endsWith('/Button / 3D ansehen'));if(!b)return q.find(e=>e.dataset.k.endsWith('/Frame 3/3D ansehen'))?.parentElement;q.forEach(e=>{const k=e.dataset.k;if(k.endsWith('/Frame 3/3D ansehen')||k.endsWith('/Frame 3/Icon / cube'))e.style.pointerEvents='none'});return b})();if(!btn)return;
+  btn.style.cursor='pointer';btn.style.pointerEvents='auto';
+  let ov=null;btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();open()});
+  async function open(){if(ov){ov.classList.add('on');ov._go();return}
+    ov=document.createElement('div');ov.className='v3d on';ov.innerHTML=`<div class="v3d-box" style="background:${BG}"><canvas></canvas><div class="v3d-load">3D-Modell wird geladen …</div><button class="v3d-x" aria-label="Schließen">✕</button><button class="v3d-r">Ansicht zurücksetzen</button><div class="v3d-hint">Ziehen zum Drehen · Scrollen/Pinch zum Zoomen</div></div>`;document.body.appendChild(ov);
+    const cv=ov.querySelector('canvas');const close=()=>{ov.classList.remove('on');running=false;window.lenis&&lenis.start();document.documentElement.style.overflow=''};
+    ov.querySelector('.v3d-x').onclick=close;ov.addEventListener('click',e=>{if(e.target===ov)close()});addEventListener('keydown',e=>{if(e.key==='Escape'&&ov.classList.contains('on'))close()});
+    let running=false;
+    ov._go=()=>{window.lenis&&lenis.stop();document.documentElement.style.overflow='hidden';running=true;size()};
+    if(!hasGL){ov.querySelector('.v3d-load').textContent='3D-Ansicht benötigt WebGL.';ov._go();return}
+    const r=makeRenderer(cv),scene=new T.Scene();const sh=studio(r,scene);const cam=new T.PerspectiveCamera(32,1,.01,50);
+    const ctl=new OrbitControls(cam,cv);ctl.enableDamping=true;ctl.enablePan=false;ctl.minDistance=1.6;ctl.maxDistance=9;ctl.minPolarAngle=.2;ctl.maxPolarAngle=Math.PI/2-.04;ctl.autoRotate=!QC;ctl.autoRotateSpeed=1.6;ctl.zoomToCursor=false;
+    ctl.addEventListener('start',()=>{ctl.autoRotate=false});
+    const home=()=>{const k=cam.aspect<1?1.9:1;cam.position.set(2.6*k,1.6*k,3.0*k);ctl.target.set(0,.8,0);ctl.update()};home();
+    ov.querySelector('.v3d-r').onclick=()=>{home();ctl.autoRotate=!QC};
+    const size=()=>{const w=cv.clientWidth,h=cv.clientHeight;if(!w)return;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()};new ResizeObserver(size).observe(cv);
+    ov._go();size();home();
+    const g=await loadGLB();const m=g.scene.clone(true);scene.add(m);ov.querySelector('.v3d-load').remove();window.__v3dReady=1;
+    r.setAnimationLoop(()=>{if(!running)return;ctl.update();r.render(scene,cam)});
+  }
+}
+const boot=()=>{initSection();initViewer()};
+document.readyState==='loading'?addEventListener('DOMContentLoaded',boot):boot();

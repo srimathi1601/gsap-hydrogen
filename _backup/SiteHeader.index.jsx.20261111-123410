@@ -1,0 +1,124 @@
+/**
+ * SiteHeader - Sportstech main navigation
+ *
+ * Source: prototype/js/sections.js -> SECTIONS.dtop /Header – main nav
+ *                                     (30 nodes, 1920 x 98 at y 47)
+ *         prototype/index.html:6-7  -> header.m-head / nav.m-nav (mobile)
+ *
+ * Replaces app/components/SportstechHeader.jsx (approved Q6). Backed up to
+ * _backup/SportstechHeader.jsx.<ts> before removal.
+ *
+ * Layout: logo left, nav centred, locale + icons right - matching the
+ * prototype. Hand-written semantic flow (approved Q1b): <header>/<nav>/<a>,
+ * not absolutely-positioned divs.
+ *
+ * ONE responsive tree (approved Q2). Below 768px the inner row wraps and the
+ * nav becomes a horizontally scrolling second row, mirroring .m-head/.m-nav.
+ *
+ * Animations: none. The prototype's header does not move or stick.
+ *
+ * Assets: all icons inline SVG, paths lifted verbatim from the node data and
+ * from prototype/index.html:6. No image files.
+ *
+ * TODO: wire the links to real Shopify routes - every href is a placeholder,
+ * exactly as in the prototype.
+ */
+
+import {Link} from 'react-router';
+import {
+  ChevronDownIcon,
+  SearchIcon,
+  UserIcon,
+  BagIcon,
+} from '~/components/icons/PdpIcons';
+import styles from './SiteHeader.module.css';
+
+/* FIX 1 (2026-11-06): swapped the hand-traced inline mark for V2's own
+   logo file, /v2/img/logo-black.svg (the dark-on-light variant — this
+   header's background is #ffffff). /v2/img/logo-white.svg is its
+   counterpart and is unused here.
+
+   The file is the FULL Sportstech lockup (mark + wordmark), not just the
+   mark, so it replaces BOTH the old <LogoMark/> and the "SPORTSTECH"
+   <span> — rendering both would duplicate the wordmark. Sized to the
+   same 38x26 mark + 9px gap + wordmark footprint the prototype node data
+   specifies, so position and height are unchanged.
+
+   Previously: inline <svg viewBox="0 0 38 26"> mark + .logoWord span
+   (/Header – main nav/Logo / SPORTSTECH/Logo mark/Vector). Kept in git
+   history and in _backup/SiteHeader.index.jsx.kf.* if the inline mark is
+   wanted back (it recoloured with currentColor; the file does not).
+
+   FIX 5 (2026-11-11): re-pointed from /v2/img/logo-black.svg to
+   /version2/img/logo-black.svg — the live V2 build's own logo asset,
+   served from public/version2/img (mirrored from the version2/ source by
+   tools/sync-version2.mjs), instead of the older /v2/img copy. Same
+   dimensions, same file otherwise. */
+const LogoLockup = () => (
+  <img
+    className={styles.logoImg}
+    src="/version2/img/logo-black.svg"
+    alt="Sportstech"
+    width="257"
+    height="26"
+    decoding="async"
+  />
+);
+
+/* Nav items - /Header – main nav text nodes at x 608 / 744 / 906 / 1103 / 1206.
+   `menu: true` marks the two that carry a chevron in the node data.
+   TODO: wire the placeholder links (to: '/') to real Shopify routes.
+   "sTread Pro V2" is not from the prototype node data - added 2026-11-06
+   as a real, working link to the V2 build at app/routes/($locale).
+   stread-pro-v2.jsx, so it is the only entry with a non-placeholder `to`. */
+const NAV = [
+  {label: 'Geräte', menu: true, to: '/'},
+  {label: 'Nach Ziel', menu: true, to: '/'},
+  {label: 'Sportstech Live', menu: false, to: '/'},
+  {label: 'Deals', menu: false, to: '/'},
+  {label: 'Ratgeber', menu: false, to: '/'},
+  {label: 'sTread Pro V2', menu: false, to: '/stread-pro-v2'},
+];
+
+export function SiteHeader() {
+  return (
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        <Link to="/" className={styles.logo} aria-label="Sportstech – Startseite">
+          <LogoLockup />
+        </Link>
+
+        <nav className={styles.nav} aria-label="Hauptnavigation">
+          {NAV.map((item) => (
+            <Link key={item.label} to={item.to} className={styles.navLink}>
+              {item.label}
+              {item.menu ? <ChevronDownIcon className={styles.chevron} /> : null}
+            </Link>
+          ))}
+        </nav>
+
+        <div className={styles.tools}>
+          <button type="button" className={styles.locale}>
+            <span className={styles.flag} aria-hidden="true" />
+            DE
+            <ChevronDownIcon className={styles.chevron} />
+          </button>
+
+          <button type="button" className={styles.iconButton} aria-label="Suche">
+            <SearchIcon className={styles.icon} />
+          </button>
+
+          <Link to="/account" className={styles.iconButton} aria-label="Konto">
+            <UserIcon className={styles.icon} />
+          </Link>
+
+          <Link to="/cart" className={styles.iconButton} aria-label="Warenkorb">
+            <BagIcon className={styles.icon} />
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export default SiteHeader;

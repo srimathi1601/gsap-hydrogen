@@ -33,7 +33,29 @@ img{display:block;max-width:100%}button{font:inherit;color:inherit;background:no
 .pill-ic,.pill-ic *{opacity:1!important}.pill-ic svg{overflow:visible}
 [data-k="/Prev/expand_circle_right"] svg{transform:rotate(180deg)}
 
+/* Project override (2026-11-11): app/components/SiteHeader now renders the
+   header at every viewport, including mobile, so .m-head (mobile.css:6)
+   is a duplicate second header. Its own display:flex is itself mobile-only
+   (wrapped in @media max-width:767px), so without this it still rendered
+   via default block flow on desktop. !important wins on both desktop and
+   mobile regardless of mobile.css's later cascade position. Hidden here,
+   not removed from the markup — PrototypePage/body.html must stay a
+   verbatim copy of prototype/index.html per the Approach A rule. */
+.m-head{display:none!important}
+
 /* Key Features title pill */
 .kf-pill-host{display:flex!important;justify-content:center;align-items:center;overflow:visible!important;white-space:nowrap}
 .kf-pill{display:inline-flex;align-items:center;gap:.45em;background:#000;color:#fff;border-radius:999px;padding:.45em 1.1em;font-weight:600;line-height:1.15;transform-origin:center;position:relative;top:-.32em}
 .kf-pill svg{width:1em;height:1em;flex:none;display:block}
+
+/* Key Features tab menu - one pill per card, added 2026-11-11 from a
+   reference screenshot (not in the SECTIONS.dkf/mkf node data). Replaces
+   the single dynamic .kf-pill above with a full row; see app.js's
+   "feature tabs" block. */
+.kf-tabs{position:absolute;display:flex;justify-content:center;align-items:center;gap:12px;z-index:2;background:#fff;pointer-events:none}
+.kf-tab{display:inline-flex;align-items:center;gap:.4em;height:40px;padding:0 18px;border-radius:999px;border:1px solid rgba(31,31,31,.15);background:#fff;color:#1f1f1f;font-weight:500;font-size:15px;white-space:nowrap;transition:background .25s,color .25s,border-color .25s;pointer-events:auto}
+.kf-tab svg{width:16px;height:16px;flex:none;display:block}
+.kf-tab-on{background:#000;border-color:#000;color:#fff}
+.kf-tabs-mob{justify-content:flex-start;overflow-x:auto;gap:8px;scrollbar-width:none;background:none}
+.kf-tabs-mob::-webkit-scrollbar{display:none}
+.kf-tabs-mob .kf-tab{height:36px;padding:0 12px;font-size:13px;flex:none}

@@ -9,9 +9,15 @@
  * prototype aliased this same file to the family name "Sohne"; here it is
  * named honestly so nobody mistakes it for the licensed face.
  *
- * NOTE: this is a single static weight stretched across 100–900, so every
- * weight other than 400 is synthesised by the browser. Replace with the real
- * weight files (or a variable font) when the licence lands.
+ * NOTE: Inter Tight is a VARIABLE font. Reading the TTF table directory
+ * shows an `fvar` table with a single `wght` axis (min 100, default 400,
+ * max 900) and 9 named instances, so the `font-weight: 100 900` below
+ * yields REAL interpolated weights at 300 / 400 / 500 / 700 — nothing is
+ * synthesised. An earlier version of this comment claimed the opposite;
+ * that was wrong.
+ *
+ * Still a stand-in: swap to the licensed Söhne weights when they land
+ * (Leicht 300 / Buch 400 / Kräftig 500 / Halbfett 700).
  */
 @font-face {
   font-family: 'Inter Tight';

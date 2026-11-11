@@ -10,6 +10,12 @@
  * is hand-written semantic responsive flow. Node coordinates are the spec,
  * not literal absolute positions.
  *
+ * REPLACED (2026-11-11): nav/locale rules reworked to match the
+ * /stread-pro-v2 reference header (app/sections/StreadProV2/body.html,
+ * version2/index.html:14) — see index.jsx's header comment. Old
+ * .chevron/.locale/.flag rules removed (no longer rendered); kept in
+ * _backup/SiteHeader.module.css.<ts> if ever wanted back.
+ *
  * Desktop measurements taken from the node data:
  *   bar height      98px, background #ffffff
  *   bottom divider  1px rgba(226,221,210,1)   (/Divider at y 96)
@@ -23,7 +29,7 @@
   --sh-bg: rgba(255, 255, 255, 1);
   --sh-ink: rgba(31, 31, 31, 1);
   --sh-logo-ink: rgba(26, 26, 26, 1);
-  --sh-chevron: rgba(85, 85, 85, 1);
+  --sh-sale: rgba(224, 49, 49, 1);
   --sh-divider: rgba(226, 221, 210, 1);
 
   /* TODO: swap to Söhne */
@@ -58,34 +64,34 @@
   color: var(--sh-logo-ink);
 }
 
-.logoMark {
-  width: 38px;
-  height: 26px;
+/* FIX 1 (2026-11-06): V2's logo file replaces the inline mark + wordmark.
+   The lockup is 257x26 in the prototype node data (/Header – main nav/
+   Logo / SPORTSTECH), so height is pinned to 26px and width follows the
+   file's own aspect ratio — same height and baseline as before.
+
+   FIX 2 (2026-11-11): resized to 24px to match the 154x24 logo block from
+   the sTread Pro V2 reference header (see FIX 6 in index.jsx). */
+.logoImg {
+  height: 24px;
+  width: auto;
   display: block;
 }
 
-.logoWord {
-  font-size: 25px;
-  font-weight: 800;
-  font-style: italic;
-  line-height: 30.26px;
-  letter-spacing: 1px;
-  white-space: nowrap;
-}
-
-/* Main nav - links at x 608 / 744 / 906 / 1103 / 1206 */
+/* Main nav - Shop / Bundles / Über uns / Sale % (reference header order).
+   flex-wrap kept so narrower desktop widths don't clip/overflow. */
 .nav {
   flex: 1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  row-gap: 8px;
   gap: 32px;
 }
 
 .navLink {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
   min-height: 44px;
   padding: 0 4px;
   font-size: 20.6px;
@@ -100,15 +106,13 @@
   text-decoration: underline;
 }
 
-.chevron {
-  width: 15px;
-  height: 15px;
-  display: block;
-  color: var(--sh-chevron);
-  flex: none;
+/* "Sale %" - accent/red, matching the reference header's .sale class. */
+.navLinkSale {
+  composes: navLink;
+  color: var(--sh-sale);
 }
 
-/* Right cluster - locale + icon buttons */
+/* Right cluster - lang text + icon buttons */
 .tools {
   display: flex;
   align-items: center;
@@ -116,36 +120,16 @@
   flex: none;
 }
 
-.locale {
+.lang {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   min-height: 44px;
   padding: 0 4px;
-  background: none;
-  border: 0;
-  font: inherit;
   font-size: 17.8px;
   font-weight: 500;
   line-height: 22.68px;
   color: var(--sh-ink);
-  cursor: pointer;
-}
-
-/* Flag DE - [1483, 41, 24, 17], three 24x6 bands, radius 3 */
-.flag {
-  width: 24px;
-  height: 17px;
-  border-radius: 3px;
-  overflow: hidden;
-  display: block;
-  flex: none;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 1) 0 6px,
-    rgba(221, 0, 0, 1) 6px 12px,
-    rgba(255, 206, 0, 1) 12px 17px
-  );
+  white-space: nowrap;
 }
 
 .iconButton {
@@ -169,7 +153,6 @@
 }
 
 .navLink:focus-visible,
-.locale:focus-visible,
 .iconButton:focus-visible,
 .logo:focus-visible {
   outline: 3px solid var(--sh-ink);
@@ -194,14 +177,10 @@
     min-height: 44px;
   }
 
-  .logoMark {
-    width: 32px;
+  /* FIX 1: mobile matches the old mark's 22px height (prototype
+     index.html:6 header.m-head). */
+  .logoImg {
     height: 22px;
-  }
-
-  .logoWord {
-    font-size: 19px;
-    line-height: 22px;
   }
 
   .tools {
@@ -209,8 +188,8 @@
     gap: 0;
   }
 
-  /* The locale picker is desktop-only in the prototype's mobile header. */
-  .locale {
+  /* The lang text is desktop-only in the prototype's mobile header. */
+  .lang {
     display: none;
   }
 
@@ -218,6 +197,9 @@
     order: 2;
     width: 100%;
     flex: none;
+    flex-wrap: nowrap; /* override the desktop rule's wrap — mobile stays
+                           a single horizontally-scrolling row, unchanged
+                           from before the 2026-11-06 FIX 2 wrap addition */
     justify-content: flex-start;
     gap: 4px;
     overflow-x: auto;
@@ -233,9 +215,5 @@
     padding: 0 10px;
     font-size: 14px;
     line-height: 18px;
-  }
-
-  .chevron {
-    display: none;
   }
 }

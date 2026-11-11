@@ -1,0 +1,56 @@
+/**
+ * StreadProV2's `links()` export, split out of index.jsx (2026-11-06,
+ * perf STEP 4).
+ *
+ * React Router calls a route's `links()` synchronously as part of loading
+ * the route module itself — it cannot be behind a dynamic import. index.jsx
+ * exports both `links` and the `StreadProV2` component from one file, and
+ * that file also does `import bodyHtml from './body.html?raw'` (~98KB
+ * inlined as a JS string). If the route statically imported `links` from
+ * index.jsx, Vite would have to put the WHOLE module — component, body.html
+ * string, and all — in the route's eager bundle, since a module that's
+ * both statically and dynamically imported from the same entry point isn't
+ * split: the dynamic `import()` the route also does for the lazy component
+ * would just resolve instantly from the already-loaded module, with zero
+ * code-splitting benefit. That would make `lazy()` in the route purely
+ * cosmetic.
+ *
+ * This file has no dependency on React or body.html, so the route can
+ * import it statically — cheap — while index.jsx's actual component stays
+ * behind `lazy()` and only loads when <StreadProV2/> actually mounts.
+ * index.jsx re-exports `links` from here too, so anything importing it
+ * directly still works exactly as before.
+ *
+ * ── 2026-11-10: repointed from the Vite bundle to version2/ ────────────
+ * Was a single hashed stylesheet from the stread-pro-3d-source Vite build
+ * (`/v2/assets/index-ClgtUvOx.css`). version2/ is a classic-script
+ * prototype folder, not a Vite project, so it ships the two plain
+ * stylesheets its own index.html links, in that same order:
+ *
+ *   <link rel="stylesheet" href="css/site.css">
+ *   <link rel="stylesheet" href="css/mobile.css">
+ *
+ * They are served from public/version2/css/ by tools/sync-version2.mjs
+ * and are byte-identical to the source — site.css's only relative
+ * reference, `url(../fonts/intertight.ttf)`, resolves correctly to
+ * /version2/fonts/intertight.ttf from /version2/css/.
+ *
+ * Why these are NOT appended into app/styles/app.css (which is what
+ * tools/sync-prototype.mjs does for the V1 prototype): app.css already
+ * carries prototype/css/site.css + mobile.css globally on every route,
+ * and version2's stylesheets declare the SAME selectors (`*`,
+ * `html,body`, `.pinbox`, `.stage`, `.n`, `.card`, `#gbar`, …) with
+ * different values. Two global copies of the same rules would fight
+ * everywhere. Kept as route-scoped <link>s, they load only here.
+ *
+ * Load order is load-bearing: root.jsx emits app.css in <head> BEFORE
+ * React Router's <Links />, so these come later and win on equal
+ * specificity — which is required for version2 to override the V1
+ * prototype CSS already in app.css.
+ */
+
+const CSS_HREFS = ['/version2/css/site.css', '/version2/css/mobile.css'];
+
+export function links() {
+  return CSS_HREFS.map((href) => ({rel: 'stylesheet', href}));
+}

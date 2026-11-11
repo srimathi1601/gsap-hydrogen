@@ -1,0 +1,20 @@
+node_modules
+/.cache
+/build
+/dist
+/public/build
+/.mf
+.env
+.shopify
+.react-router
+
+.vercel
+.env*
+
+# V2 (stread-pro-3d-source) — videos too large to commit; see
+# app/sections/StreadProV2/README.md for how to restore them locally.
+/public/v2/vid
+
+# V2 source project's own disposable Vite build output — already copied
+# into public/v2/ (STEP 2). Not committed, same as the root /dist rule.
+/stread-pro-3d-source/dist

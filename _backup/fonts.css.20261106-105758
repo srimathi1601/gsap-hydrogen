@@ -1,0 +1,22 @@
+/**
+ * Local webfont.
+ *
+ * Source: prototype/fonts/intertight.ttf → public/fonts/intertight.woff2
+ * (converted with `npx ttf2woff2`, 580 KB TTF → 239 KB WOFF2).
+ *
+ * TODO: swap to Söhne — the design calls for Söhne (Leicht 300 / Buch 400 /
+ * Kräftig 500 / Halbfett 700). Inter Tight is the approved stand-in. The
+ * prototype aliased this same file to the family name "Sohne"; here it is
+ * named honestly so nobody mistakes it for the licensed face.
+ *
+ * NOTE: this is a single static weight stretched across 100–900, so every
+ * weight other than 400 is synthesised by the browser. Replace with the real
+ * weight files (or a variable font) when the licence lands.
+ */
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('/fonts/intertight.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}

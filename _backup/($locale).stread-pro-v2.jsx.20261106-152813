@@ -1,0 +1,27 @@
+/**
+ * /stread-pro-v2 — sTread Pro 3D scroll page, Version 2.
+ *
+ * Approach A (prototype folder exists): stread-pro-3d-source/ pre-built
+ * with its own `vite build`, output copied to public/v2/, mounted here
+ * verbatim. See app/sections/StreadProV2/index.jsx for the full build
+ * pipeline and the CSS-scoping / path-prefixing decisions.
+ *
+ * No Shopify data needed — this is a static, pre-built page — so there is
+ * no loader.
+ */
+import {StreadProV2, links as streadProV2Links} from '~/sections/StreadProV2';
+
+export const links = streadProV2Links;
+
+/**
+ * @type {Route.MetaFunction}
+ */
+export const meta = () => {
+  return [{title: 'sTread Pro 3D — V2'}];
+};
+
+export default function StreadProV2Route() {
+  return <StreadProV2 />;
+}
+
+/** @typedef {import('./+types/($locale).stread-pro-v2').Route} Route */

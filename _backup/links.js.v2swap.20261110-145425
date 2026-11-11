@@ -1,0 +1,29 @@
+/**
+ * StreadProV2's `links()` export, split out of index.jsx (2026-11-06,
+ * perf STEP 4).
+ *
+ * React Router calls a route's `links()` synchronously as part of loading
+ * the route module itself — it cannot be behind a dynamic import. index.jsx
+ * exports both `links` and the `StreadProV2` component from one file, and
+ * that file also does `import bodyHtml from './body.html?raw'` (~43KB
+ * inlined as a JS string). If the route statically imported `links` from
+ * index.jsx, Vite would have to put the WHOLE module — component, body.html
+ * string, and all — in the route's eager bundle, since a module that's
+ * both statically and dynamically imported from the same entry point isn't
+ * split: the dynamic `import()` the route also does for the lazy component
+ * would just resolve instantly from the already-loaded module, with zero
+ * code-splitting benefit. That would make `lazy()` in the route purely
+ * cosmetic.
+ *
+ * This file has no dependency on React or body.html, so the route can
+ * import it statically — cheap — while index.jsx's actual component stays
+ * behind `lazy()` and only loads when <StreadProV2/> actually mounts.
+ * index.jsx re-exports `links` from here too, so anything importing it
+ * directly still works exactly as before.
+ */
+
+const CSS_HREF = '/v2/assets/index-ClgtUvOx.css';
+
+export function links() {
+  return [{rel: 'stylesheet', href: CSS_HREF}];
+}

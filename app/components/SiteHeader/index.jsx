@@ -1,91 +1,102 @@
 /**
  * SiteHeader - Sportstech main navigation
  *
- * Source: prototype/js/sections.js -> SECTIONS.dtop /Header – main nav
- *                                     (30 nodes, 1920 x 98 at y 47)
- *         prototype/index.html:6-7  -> header.m-head / nav.m-nav (mobile)
+ * REPLACED (2026-11-11): the original "/Header – main nav" build (Geräte /
+ * Nach Ziel / Sportstech Live / Deals / Ratgeber + locale dropdown) has been
+ * swapped for the /stread-pro-v2 landing page's own header — same markup
+ * shape as app/sections/StreadProV2/body.html's <header class="nav"> block
+ * and version2/index.html:14 (the sTread Pro V2 reference header: Shop /
+ * Bundles / Über uns / Sale %, plain "DE | EN" text, no locale dropdown).
+ * Old nav/locale markup is kept in _backup/SiteHeader.index.jsx.<ts> and
+ * _backup/SiteHeader.module.css.<ts> if it's ever wanted back.
  *
- * Replaces app/components/SportstechHeader.jsx (approved Q6). Backed up to
- * _backup/SportstechHeader.jsx.<ts> before removal.
+ * Nav links point at the live sportstech.de pages (target="_blank",
+ * rel="noopener"), exactly like the reference header and like this
+ * project's logo link (see LogoLockup below) — this header isn't wired to
+ * real Shopify routes for Shop/Bundles/Über uns/Sale.
  *
- * Layout: logo left, nav centred, locale + icons right - matching the
- * prototype. Hand-written semantic flow (approved Q1b): <header>/<nav>/<a>,
- * not absolutely-positioned divs.
+ * Account and cart stay internal React Router links (to /account, /cart):
+ * those are real working Hydrogen routes, unlike the reference site's
+ * plain non-navigating buttons, so keeping them functional here is not a
+ * visual regression.
  *
- * ONE responsive tree (approved Q2). Below 768px the inner row wraps and the
- * nav becomes a horizontally scrolling second row, mirroring .m-head/.m-nav.
- *
- * Animations: none. The prototype's header does not move or stick.
- *
- * Assets: all icons inline SVG, paths lifted verbatim from the node data and
- * from prototype/index.html:6. No image files.
- *
- * TODO: wire the links to real Shopify routes - every href is a placeholder,
- * exactly as in the prototype.
+ * Animations: none.
  */
 
 import {Link} from 'react-router';
-import {
-  ChevronDownIcon,
-  SearchIcon,
-  UserIcon,
-  BagIcon,
-} from '~/components/icons/PdpIcons';
+import {SearchIcon, UserIcon, BagIcon} from '~/components/icons/PdpIcons';
 import styles from './SiteHeader.module.css';
 
-/* /Header – main nav/Logo / SPORTSTECH/Logo mark/Vector, viewBox 257x26 in
-   the prototype's mobile markup; the mark alone is 38x26 on desktop. */
-const LogoMark = () => (
-  <svg
-    className={styles.logoMark}
-    viewBox="0 0 38 26"
-    fill="none"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <path
-      transform="translate(2.29 0)"
-      d="M9.28571 0L33.4286 0L28.7857 9.28571L4.64286 9.28571L9.28571 0ZM4.64286 16.7143L28.7857 16.7143L24.1429 26L0 26L4.64286 16.7143Z"
-      fill="currentColor"
-    />
-  </svg>
+/* FIX 1 (2026-11-06): swapped the hand-traced inline mark for V2's own
+   logo file, /v2/img/logo-black.svg (the dark-on-light variant — this
+   header's background is #ffffff). /v2/img/logo-white.svg is its
+   counterpart and is unused here.
+
+   FIX 5 (2026-11-11): re-pointed from /v2/img/logo-black.svg to
+   /version2/img/logo-black.svg — the live V2 build's own logo asset,
+   served from public/version2/img (mirrored from the version2/ source by
+   tools/sync-version2.mjs), instead of the older /v2/img copy. Same
+   dimensions, same file otherwise.
+
+   FIX 6 (2026-11-11): resized to 154x24 and wrapped in an external link
+   to https://www.sportstech.de/ (target="_blank", rel="noopener"), matching
+   the "/Header – main nav" logo block from the sTread Pro V2 reference
+   header (prototype/index.html, version2/index.html:14). Same image file
+   — only the markup and link target changed, not the asset. */
+const LogoLockup = () => (
+  <img
+    className={styles.logoImg}
+    src="/version2/img/logo-black.svg"
+    alt="Sportstech"
+    width="154"
+    height="24"
+    decoding="async"
+  />
 );
 
-/* Nav items - /Header – main nav text nodes at x 608 / 744 / 906 / 1103 / 1206.
-   `menu: true` marks the two that carry a chevron in the node data.
-   TODO: wire the links to real Shopify routes. */
+/* Nav items — lifted from the /stread-pro-v2 reference header
+   (app/sections/StreadProV2/body.html, version2/index.html:14). All four
+   are external, exactly as in that header. `sale: true` marks the one
+   styled in the accent/red color. */
 const NAV = [
-  {label: 'Geräte', menu: true},
-  {label: 'Nach Ziel', menu: true},
-  {label: 'Sportstech Live', menu: false},
-  {label: 'Deals', menu: false},
-  {label: 'Ratgeber', menu: false},
+  {label: 'Shop', href: 'https://www.sportstech.de/collections/laufband'},
+  {label: 'Bundles', href: 'https://www.sportstech.de/'},
+  {label: 'Über uns', href: 'https://www.sportstech.de/pages/jobs-karriere'},
+  {label: 'Sale %', href: 'https://www.sportstech.de/', sale: true},
 ];
 
 export function SiteHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <Link to="/" className={styles.logo} aria-label="Sportstech – Startseite">
-          <LogoMark />
-          <span className={styles.logoWord}>SPORTSTECH</span>
-        </Link>
+        <a
+          className={styles.logo}
+          href="https://www.sportstech.de/"
+          target="_blank"
+          rel="noopener"
+          aria-label="Sportstech"
+        >
+          <LogoLockup />
+        </a>
 
         <nav className={styles.nav} aria-label="Hauptnavigation">
           {NAV.map((item) => (
-            <Link key={item.label} to="/" className={styles.navLink}>
+            <a
+              key={item.label}
+              href={item.href}
+              target="_blank"
+              rel="noopener"
+              className={item.sale ? styles.navLinkSale : styles.navLink}
+            >
               {item.label}
-              {item.menu ? <ChevronDownIcon className={styles.chevron} /> : null}
-            </Link>
+            </a>
           ))}
         </nav>
 
         <div className={styles.tools}>
-          <button type="button" className={styles.locale}>
-            <span className={styles.flag} aria-hidden="true" />
-            DE
-            <ChevronDownIcon className={styles.chevron} />
-          </button>
+          <span className={styles.lang}>
+            <b>DE</b> | EN
+          </span>
 
           <button type="button" className={styles.iconButton} aria-label="Suche">
             <SearchIcon className={styles.icon} />

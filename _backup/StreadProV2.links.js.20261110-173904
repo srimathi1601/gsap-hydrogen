@@ -1,0 +1,21 @@
+/**
+ * StreadProV2's `links()` export, kept in its own file for the same
+ * reason as before: React Router calls a route's `links()` synchronously
+ * as part of loading the route module, so it cannot be behind the
+ * component's dynamic import. This file has no dependency on React or
+ * body.html, so the route can import it statically and cheaply while
+ * index.jsx's actual component stays behind `lazy()`.
+ *
+ * ── 2026-11-10 16:59: repointed to the current version2/ ──────────────
+ * The current version2/ is a single Vite/Three.js ES-module bundle, not
+ * the classic-script prototype variant this file previously pointed at
+ * (site.css + mobile.css — see _backup/StreadProV2.links.js.20261110-165909).
+ * It ships exactly one stylesheet, synced byte-identical by
+ * tools/sync-version2.mjs into public/version2/css/style.css.
+ */
+
+const CSS_HREFS = ['/version2/css/style.css'];
+
+export function links() {
+  return CSS_HREFS.map((href) => ({rel: 'stylesheet', href}));
+}

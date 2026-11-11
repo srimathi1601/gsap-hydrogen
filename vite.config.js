@@ -40,6 +40,17 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['.tryhydrogen.dev'],
+    // Allow any Host header, so tunnelled dev URLs (Cloudflare
+    // *.trycloudflare.com, ngrok, Shopify's own *.tryhydrogen.dev) are not
+    // rejected with a 403 by Vite's host-validation middleware.
+    //
+    // `true` is the allow-any value: the option is typed `string[] | true`, and
+    // the array form only ever matches literal hostnames or a leading-dot
+    // suffix. A string such as 'all' is NOT special-cased — it would match the
+    // single host named "all" and tunnels would still be refused.
+    //
+    // This disables the DNS-rebinding protection on the dev server. To keep it,
+    // list the domains instead: ['.tryhydrogen.dev', '.trycloudflare.com'].
+    allowedHosts: true,
   },
 });

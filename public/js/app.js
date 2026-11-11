@@ -15,11 +15,11 @@ if(MOB){/* Figma mobile label icon differs per step, but name-path merge kept st
  const fit=()=>{const s=innerWidth/sec.W;K.st.style.transform=`scale(${s})`;const h=sec.H*s;box.style.height=h+'px';const top=Math.min(0,innerHeight-h);box.style.top=top+'px';host._top=top;host.style.height=(RM?h:h+4*STEP())+'px'};fit();addEventListener('resize',fit);
  const c=sec.cards['Card 1'];const tr=document.createElement('div');tr.className='cf';Object.assign(tr.style,{left:c[0]+'px',top:c[1]+'px',width:c[2]+'px',height:c[3]+'px'});K.st.appendChild(tr);
  const REF=['61eae081ef90','fa4863eecbc8','b4d8f5ef026a','e2aa5a7e1a31','1df19cf7dcc6'];
- const X=MOB?[0,210,360]:[0,570,836];const cards=REF.map((r,i)=>{const e=document.createElement('button');e.className='card';e.setAttribute('aria-label','Feature '+(i+1));e.style.borderRadius=(c[4]?c[4]+2:26)+'px';e.style.backgroundImage=`url(/fig/${r}.webp)`;tr.appendChild(e);return e});
+ const X=MOB?[0,210,360]:[0,570,836];const KFV=["https://www.sportstech.de/cdn/shop/videos/c/vp/804849c8d3c446a388c766c146329ab8/804849c8d3c446a388c766c146329ab8.SD-480p-1.5Mbps-87284328.mp4?v=0","https://www.sportstech.de/cdn/shop/videos/c/vp/94dbc1db774b4225805383f74680f5ca/94dbc1db774b4225805383f74680f5ca.SD-480p-1.2Mbps-87284329.mp4?v=0","https://www.sportstech.de/cdn/shop/videos/c/vp/e1f245d03d91471899a655e61f521722/e1f245d03d91471899a655e61f521722.SD-480p-0.9Mbps-87284331.mp4?v=0","https://www.sportstech.de/cdn/shop/videos/c/vp/51a8bb8a2b504193ab504b8defe5eb8a/51a8bb8a2b504193ab504b8defe5eb8a.SD-480p-1.0Mbps-87284333.mp4?v=0","https://www.sportstech.de/cdn/shop/videos/c/vp/2434ef02e744413ab73cb99da3d24503/2434ef02e744413ab73cb99da3d24503.SD-480p-1.0Mbps-87284330.mp4?v=0"];const cards=REF.map((r,i)=>{const e=document.createElement('button');e.className='card';e.setAttribute('aria-label','Feature '+(i+1));e.style.borderRadius=(c[4]?c[4]+2:26)+'px';e.style.backgroundImage=`url(/fig/${r}.webp)`;const v=document.createElement('video');v.className='card-vid';v.muted=true;v.loop=true;v.playsInline=true;v.preload='none';v.poster='/fig/'+r+'.webp';v.setAttribute('playsinline','');v.setAttribute('aria-hidden','true');v.src=KFV[i];Object.assign(v.style,{position:'absolute',inset:'0',width:'100%',height:'100%',objectFit:'cover',borderRadius:'inherit',display:'block',pointerEvents:'none'});e.appendChild(v);tr.appendChild(e);return e});
  const P=MOB?[{x:0,z:0,r:0,s:1,o:1},{x:X[1],z:-200,r:55,s:.7,o:.55},{x:X[2],z:-320,r:62,s:.55,o:0},{x:X[2]+120,z:-420,r:62,s:.45,o:0}]:[{x:0,z:0,r:0,s:1,o:1},{x:595,z:-20,r:31,s:.72,o:.6},{x:836,z:-200,r:40,s:.45,o:0},{x:960,z:-300,r:45,s:.4,o:0}];
  const pose=d=>{const sg=d<0?-1:1,m=Math.min(3,Math.abs(d)),i=Math.floor(m),f=m-i,A=P[i],B=P[Math.min(3,i+1)],L=(a,b)=>a+(b-a)*f;return{x:sg*L(A.x,B.x),z:L(A.z,B.z),rotationY:sg*L(A.r,B.r),scale:L(A.s,B.s),opacity:L(A.o,B.o),filter:`brightness(${1+Math.min(1,m)*.08})`,zIndex:10-Math.round(m*3)}};
  const wrap=d=>{d=((d%5)+7.5)%5-2.5;return d};
- let f=0;const render=v=>{f=v;cards.forEach((e,i)=>gsap.set(e,pose(wrap(i-v))));K.tl.progress(Math.max(0,Math.min(1,v/4)))};render(0);
+ let tabs=[];let f=0;const render=v=>{f=v;cards.forEach((e,i)=>gsap.set(e,pose(wrap(i-v))));K.tl.progress(Math.max(0,Math.min(1,v/4)));const _n=Math.max(0,Math.min(cards.length-1,Math.round(v)));cards.forEach((e,i)=>{const vd=e.querySelector('video');if(!vd)return;if(i===_n){if(vd.paused)vd.play().catch(()=>{})}else if(!vd.paused)vd.pause()});tabs.forEach((b,i)=>b.classList.toggle('kf-tab-on',i===_n))};render(0);
  const st=RM?null:ScrollTrigger.create({trigger:host,start:()=>`top ${host._top}`,end:()=>`+=${4*STEP()}`,scrub:.5,onUpdate:x=>render(x.progress*4),invalidateOnRefresh:true});
  const go=n=>{n=Math.max(0,Math.min(4,n));if(!st||!window.lenis){gsap.to({v:f},{v:n,duration:.7,ease:'power3.inOut',onUpdate(){render(this.targets()[0].v)}});return}lenis.scrollTo(st.start+n*STEP(),{duration:.9})};
  // snap to nearest card after scrolling stops inside the pin
@@ -28,15 +28,23 @@ if(MOB){/* Figma mobile label icon differs per step, but name-path merge kept st
  const btn=(k,fn)=>{const el=K.els[k];if(el){el.style.cursor='pointer';el.setAttribute('role','button');el.tabIndex=0;el.onclick=fn;el.onkeydown=e=>{if(e.key==='Enter')fn()}}};btn('/Prev',()=>go(cur()-1));btn('/Next',()=>go(cur()+1));
  host.tabIndex=0;host.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(cur()+1);if(e.key==='ArrowLeft')go(cur()-1)});
  let sx=null;tr.addEventListener('pointerdown',e=>sx=e.clientX);addEventListener('pointerup',e=>{if(sx!==null&&Math.abs(e.clientX-sx)>50)go(cur()+(e.clientX<sx?1:-1));sx=null});
- // feature title -> black pill with stroke icon
- (function(){const t=K.els[MOB?'/Feature title':'/Frame 18/Feature title'];if(!t)return;
-  const I={display:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',led:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.3 1 2.1h5c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',speed:'<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1"/>',incline:'<path d="M3 19h18L21 7z"/><path d="M15 13l2-2"/>',fold:'<path d="M7 4v8a4 4 0 0 0 4 4h8"/><path d="M16 13l3 3-3 3"/><path d="M4 7l3-3 3 3"/>',app:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 9l3 2-3 2z"/>'};
-  const pick=x=>/display/i.test(x)?'display':/led|licht/i.test(x)?'led':/speed|tempo/i.test(x)?'speed':/steig|incline/i.test(x)?'incline':/klapp|fold/i.test(x)?'fold':/app|live/i.test(x)?'app':'display';
-  t.classList.add('kf-pill-host');let busy=false;
-  const draw=()=>{if(busy)return;const x=t.textContent.trim();if(t.dataset.pt===x&&t.querySelector('.kf-pill'))return;busy=true;t.dataset.pt=x;
-   t.innerHTML='<span class="kf-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+I[pick(x)]+'</svg><span></span></span>';t.querySelector('.kf-pill span').textContent=x;
-   const pl=t.querySelector('.kf-pill');gsap.fromTo(pl,{scale:.96,opacity:0},{scale:1,opacity:1,duration:.45,ease:'power2.out'});busy=false};
-  draw();new MutationObserver(draw).observe(t,{childList:true,characterData:true,subtree:true});})();
+// feature tabs - one pill per card, active one highlighted; click jumps
+ // straight to that card via go(i). Added 2026-11-11 from a reference
+ // screenshot (not in SECTIONS.dkf/mkf node data) - a NEW row, independent
+ // of /Frame 18/Feature title (which is NOT this block's old single pill -
+ // that key is the bottom title under the deck, Figma position 611,923,
+ // paired with the description right below it - so it's left alone here
+ // and keeps rendering normally, undoing the earlier mistake of hiding it).
+ (function(){
+  const LABELS=['21,5" Display','LED Lichter','Speed Knob','15 Steigungsstufen','Einfach klappen'];
+  const KEYS=['display','led','speed','incline','fold'];
+  const I={display:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',led:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.3 1 2.1h5c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',speed:'<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1"/>',incline:'<path d="M3 19h18L21 7z"/><path d="M15 13l2-2"/>',fold:'<path d="M7 4v8a4 4 0 0 0 4 4h8"/><path d="M16 13l3 3-3 3"/><path d="M4 7l3-3 3 3"/>'};
+  const tabsEl=document.createElement('div');tabsEl.className='kf-tabs'+(MOB?' kf-tabs-mob':'');
+  if(MOB)Object.assign(tabsEl.style,{top:'148px',left:'16px',width:(sec.W-32)+'px'});
+  else Object.assign(tabsEl.style,{top:'191px',left:'50%',transform:'translateX(-50%)'});
+  tabs=LABELS.map((label,i)=>{const b=document.createElement('button');b.type='button';b.className='kf-tab';b.setAttribute('aria-label',label);b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+I[KEYS[i]]+'</svg><span>'+label+'</span>';b.onclick=()=>go(i);tabsEl.appendChild(b);return b});
+  tabs[cur()].classList.add('kf-tab-on');
+  K.st.appendChild(tabsEl);})();
  window.KF={go,cards,get f(){return f}};
 })();
 // Live
@@ -64,7 +72,7 @@ if(!MOB){const T=STAT.dtop,E=T.els,G='/PDP – gallery + buy box/Frame 3',B='/PD
  const main=E[G+'/IMG:gallery-main']||Object.entries(E).find(([k])=>k.startsWith(G)&&/main/i.test(k))?.[1];const brd=E[G+'/Active thumb border'];
  const L=main&&main.querySelector('.il');const orig=L&&L.style.backgroundImage;const cnt=Object.entries(E).find(([k])=>k.startsWith(G+'/Button / 1 / 9/')&&k.endsWith('1 / 9'))?.[1];
  let gi=0;const show=i=>{gi=(i+9)%9;if(L){gsap.fromTo(L,{opacity:.3},{opacity:1,duration:.4});L.style.backgroundImage=gi?`url(/img/g${gi+1}.webp)`:orig;L.style.backgroundSize='contain'}if(brd)gsap.to(brd,{left:gi*(924/9),duration:.35,ease:'power3.out'});if(cnt)cnt.textContent=`${gi+1} / 9`};
- const fr=E[G];{const TS=924/9,TW=TS-4,strip=E[G+'/IMG:gallery-thumbs'];if(strip)strip.style.display='none';if(brd){brd.style.width=TW+'px';brd.style.left='0px'}for(let i=0;i<9;i++){const z=document.createElement('button');z.className='thz';z.setAttribute('aria-label','Bild '+(i+1));Object.assign(z.style,{left:(i*TS)+'px',top:'1144px',width:TW+'px',height:'113px',padding:'0',border:'0',overflow:'hidden',borderRadius:'11px'});z.innerHTML='<img src="/img/g'+(i+1)+'-t.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:11px">';z.onclick=()=>show(i);fr.appendChild(z)}}
+ const fr=E[G];{const TS=924/9,TW=TS-4,strip=E[G+'/IMG:gallery-thumbs'];if(strip)strip.style.display='none';if(brd){brd.style.width=TW+'px';brd.style.left='0px'}for(let i=0;i<9;i++){const z=document.createElement('button');z.className='thz';z.setAttribute('aria-label','Bild '+(i+1));Object.assign(z.style,{left:(i*TS)+'px',top:'1144px',width:TW+'px',height:'113px',padding:'0',border:'0',overflow:'hidden',borderRadius:'11px'});z.innerHTML='<img src="/img/g'+(i+1)+'-t.webp" alt="" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:11px">';z.onclick=()=>show(i);fr.appendChild(z)}}
  Object.entries(E).forEach(([k,el])=>{if(k.startsWith(G)&&/(Prev|Next|Arrow|chevron)/i.test(k)&&k.split('/').length===4){el.style.cursor='pointer';el.onclick=()=>show(gi+(/(Prev|left)/i.test(k)?-1:1))}});
  // toggles: swap styles between pairs
  const pair=(a,b)=>{if(!a||!b)return;const st=x=>({bc:x.style.backgroundColor,bs:x.style.boxShadow,bo:x.style.border,ou:x.style.outline});const sa=st(a),sb=st(b);
@@ -73,12 +81,12 @@ if(!MOB){const T=STAT.dtop,E=T.els,G='/PDP – gallery + buy box/Frame 3',B='/PD
  pair(E[B+'/Button / Neu/Pill bg'],E[B+'/Button / Refurbished/Pill bg']);const pa=E[B+'/Button / Neu'],pb=E[B+'/Button / Refurbished'];if(pa&&pb){pa.onclick=()=>E[B+'/Button / Neu/Pill bg'].click();pb.onclick=()=>E[B+'/Button / Refurbished/Pill bg'].click()}
  pair(E[B+'/Delivery option – selected'],E[B+'/Delivery option']);
  // 1440 container for gallery+buy box, then JS sticky gallery (stage is transformed, so native sticky cannot work inside it)
- const PD=E['/PDP – gallery + buy box'],KP=1440/1667;PD.style.transformOrigin='0 0';PD.style.left=(240-150*KP)+'px';PD.style.transform=`scale(${KP})`;
+ const PD=E['/PDP – gallery + buy box'],KP=1;PD.style.transformOrigin='0 0';PD.style.left='0px';PD.style.transform=`scale(${KP})`;
  T.H=216+3113*KP+95;T.fit();const fh=1257,subH=71,gap=16;const sub=E['/Sub-nav – sticky product bar'];sub.style.zIndex=5;fr.style.transformOrigin='0 0';fr.style.willChange='transform';
  const sec=document.getElementById('top');
  const onS=()=>{const s=innerWidth/1920;const sc=window.lenis?lenis.scroll:scrollY;const rel=sc-sec.offsetTop;
   sub.style.transform=`translateY(${Math.max(0,Math.min(rel/s-145,3113*KP-71))}px)`;
-  const gk=Math.min(1,(innerHeight-(subH+2*gap)*s)/(fh*KP*s));
+  const gk=1;
   const ty=((subH+gap)*s+rel)/(s*KP)-216/KP-71;const lim=3113-71-fh*gk-60;fr.style.transform=`translateY(${Math.max(0,Math.min(ty,lim))}px) scale(${gk})`};
  onS();if(window.lenis)lenis.on('scroll',onS);addEventListener('scroll',onS,{passive:true});addEventListener('resize',onS);
  // FAQ accordion
@@ -107,10 +115,10 @@ if(!MOB){const T=STAT.dtop,E=T.els,G='/PDP – gallery + buy box/Frame 3',B='/PD
 if(MOB)(function(){const tr=document.querySelector('.m-track');const cnt=document.querySelector('.m-count');const th=[...document.querySelectorAll('.m-th')];
  if(tr){tr.addEventListener('scroll',()=>{const i=Math.round(tr.scrollLeft/tr.clientWidth);cnt.textContent=`${i+1} / 9`;th.forEach((t,j)=>t.classList.toggle('on',j===i))},{passive:true});th.forEach((t,i)=>t.onclick=()=>tr.scrollTo({left:i*tr.clientWidth,behavior:'smooth'}))}
  const grp=sel=>{const b=[...document.querySelectorAll(sel)];b.forEach(x=>x.onclick=()=>b.forEach(y=>{y.classList.toggle('on',y===x);y.setAttribute('aria-checked',y===x)}))};grp('.m-opt');grp('.m-dopt');
- const gb=document.getElementById('gbar');gb.innerHTML=`<div class="m-bar"><img src="${document.querySelector('.m-track img').src}" alt=""><div><b>sTread Pro</b><span>${document.querySelector('.m-price b').textContent}</span></div><button>In den Warenkorb</button></div>`;
+ const gb=document.getElementById('gbar');gb.innerHTML=`<div class="m-bar"><img src="${document.querySelector('.m-track img').src}" alt="" loading="lazy"><div><b>sTread Pro</b><span>${document.querySelector('.m-price b').textContent}</span></div><button>In den Warenkorb</button></div>`;
  let mPast=false;const mU=()=>gb.classList.toggle('show',mPast&&!mIn&&!mF);ScrollTrigger.create({trigger:'#buybox',start:'bottom top',end:()=>'+='+1e6,onToggle:s=>{mPast=s.isActive;mU()}});let mIn=false,mF=false;ScrollTrigger.create({trigger:'#s3d',start:'top bottom',end:'bottom top',onToggle:s=>{mIn=s.isActive;mU()}});ScrollTrigger.create({trigger:'.m-foot',start:'top bottom',end:()=>'+='+1e6,onToggle:s=>{mF=s.isActive;mU()}});
  if(!RM)gsap.utils.toArray('.m-sec > *, .m-foot > *').forEach(e=>gsap.from(e,{y:40,opacity:0,duration:.8,ease:'power3.out',scrollTrigger:{trigger:e,start:'top 92%',once:true}}));
  document.querySelectorAll('.m-faq details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)document.querySelectorAll('.m-faq details').forEach(o=>o!==d&&(o.open=false));setTimeout(()=>ScrollTrigger.refresh(),50)}));
 })();
-document.fonts.ready.then(()=>{fitTexts();document.querySelectorAll('#foot-d .tx').forEach(e=>{if(e.textContent.startsWith('Allgemeine Gesch')){e.style.whiteSpace='pre';e.style.letterSpacing='';e.style.overflow='visible';e.style.textOverflow='clip'}});ScrollTrigger.refresh()});addEventListener('load',()=>ScrollTrigger.refresh());
+document.fonts.ready.then(()=>{fitTexts();document.querySelectorAll('#foot-d .tx').forEach(e=>{if(e.textContent.startsWith('Allgemeine Gesch')){e.style.whiteSpace='pre';e.style.letterSpacing='';e.style.overflow='visible';e.style.textOverflow='clip'}});ScrollTrigger.refresh()});addEventListener('load',()=>{setTimeout(()=>ScrollTrigger.refresh(),500)});
 if(MOB){const t=document.querySelector('#vid [data-k^="/Sticky buy bar/sTread Pro Laufband"]');if(t){t.textContent='sTread Pro Laufband';t.style.overflow='visible';t.style.textOverflow='clip';new MutationObserver(()=>{if(t.textContent!=='sTread Pro Laufband')t.textContent='sTread Pro Laufband'}).observe(t,{childList:true,characterData:true,subtree:true})}}

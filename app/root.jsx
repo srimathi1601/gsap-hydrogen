@@ -8,6 +8,7 @@ import {
   Scripts,
   ScrollRestoration,
   useRouteLoaderData,
+  useMatches,
 } from 'react-router';
 import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
@@ -218,6 +219,14 @@ export function Layout({children}) {
 export default function App() {
   /** @type {RootLoader} */
   const data = useRouteLoaderData('root');
+  // FIX 3 (2026-11-06): a leaf route opts out of the global SiteHeader/
+  // SiteFooter chrome by exporting `handle = {noLayout: true}` — used by
+  // app/routes/($locale).stread-pro-v2.jsx, which brings its own fixed
+  // `.nav` and `#foot` footer in body.html and was rendering BOTH on top
+  // of each other before this fix. useMatches() returns every matched
+  // route from root to leaf; the leaf is always the last entry.
+  const matches = useMatches();
+  const noLayout = Boolean(matches[matches.length - 1]?.handle?.noLayout);
 
   if (!data) {
     return <Outlet />;
@@ -250,7 +259,7 @@ export default function App() {
 
           The component is still in app/components/SmoothScroll.jsx for the
           React sections; it must not be mounted while PrototypePage is. */}
-      <PageLayout {...data}>
+      <PageLayout {...data} noLayout={noLayout}>
         <Outlet />
       </PageLayout>
     </Analytics.Provider>

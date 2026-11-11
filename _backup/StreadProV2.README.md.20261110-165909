@@ -1,0 +1,20 @@
+# StreadProV2 — video assets are not committed
+
+`/public/v2/vid/` is in `.gitignore` (23 MB, mostly `15.mp4` at 13.2 MB) —
+too large to commit. Everything else under `public/v2/` (images, fonts
+reference, the GLB model, the HDR environment, the pre-built JS/CSS
+bundle) **is** committed.
+
+After cloning, copy the videos back in manually before `/stread-pro-v2`
+will show the gallery's video slides and the `#vid` section correctly:
+
+```
+stread-pro-3d-source/public/vid/  →  public/v2/vid/
+```
+
+(`stread-pro-3d-source/` itself ships with its own `public/vid/` already —
+no rebuild needed for this step, just a copy.)
+
+Without this, the gallery's video thumbnails and the `#vid` scrolling
+section will 404 on their `.mp4`/poster `.jpg` sources; every other
+section is unaffected.
